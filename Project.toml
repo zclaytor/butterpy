@@ -1,0 +1,6 @@
+name = "Butterfly"
+author = "Zach Claytor and Miles Lucas"
+uuid = "3f1962e2-3555-592d-b4ed-cf8614a119c6"
+
+[compat]
+julia = "1.2"
