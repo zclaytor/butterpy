@@ -101,7 +101,7 @@ class Spots(object):
         # alpha is spot contrast * spot area
 
     def calc(self, time):
-        """Modulate flux for all spots"""
+        """Modulate flux using chunks for all spots"""
         N = len(time)
 
         if N > 365 * 48:
