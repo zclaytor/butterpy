@@ -6,7 +6,7 @@ Contains the Spots class, which holds parameters for spots on a given star.
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import subplots
-from constants import RAD2DEG, DAY2SEC, OMEGA_SUN
+from .constants import RAD2DEG, DAY2SEC, OMEGA_SUN
 
 
 def diffrot(omega0, delta_omega, lat):

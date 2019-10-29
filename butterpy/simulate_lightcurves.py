@@ -5,11 +5,11 @@ import matplotlib.pylab as plt
 import pandas as pd
 from astropy.io import fits
 from astropy.table import Table
-from butterpy.spots import Spots
-from butterpy.regions import regions
-from butterpy.config import tess_stars_dir, sim_dir, simulation_properties_dir
-from butterpy.config import Nlc, dur, cad
-from butterpy.constants import RAD2DEG, PROT_SUN, FLUX_SCALE, DAY2MIN
+from .spots import Spots
+from .regions import regions
+from .config import sim_dir, simulation_properties_dir
+from .config import Nlc, dur, cad
+from .constants import RAD2DEG, PROT_SUN, FLUX_SCALE, DAY2MIN
 
 
 jstart = 0

@@ -2,7 +2,7 @@ from time import time
 import numpy as np
 from pandas import DataFrame as DF
 from scipy.stats import truncnorm
-from constants import RAD2DEG, YEAR2DAY
+from .constants import RAD2DEG, YEAR2DAY
 import matplotlib.pyplot as plt
 
 
