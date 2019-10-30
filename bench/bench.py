@@ -11,6 +11,8 @@ from butterpy.spots import Spots
 from butterpy.regions import regions
 from butterpy.constants import RAD2DEG, PROT_SUN, FLUX_SCALE, DAY2MIN
 
+np.random.seed(777)
+
 dur = 3650  # Duration in days
 cad = 30  # cadence in minutes
 
