@@ -176,8 +176,8 @@ if __name__ == "__main__":
     for ii in range(len(ax)):
         ax[ii].cla()
 
-    pbar = tqdm(total=Nlc)
-    pbar.update(jstart)
-    for jj, s in sims.iloc[jstart:].iterrows():
-        out = simulate(s, fig, ax, out_str=f"{jj:04d}")
-        pbar.update(1)
+    # pbar = tqdm(total=Nlc)
+    # pbar.update(jstart)
+    # for jj, s in sims.iloc[jstart:].iterrows():
+    #     out = simulate(s, fig, ax, out_str=f"{jj:04d}")
+    #     pbar.update(1)

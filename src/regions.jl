@@ -12,7 +12,7 @@ const nlon = 36
 const nlat = 16
 
 const dcon = 2sinh(ΔlnA / 2)
-const fact = exp.(ΔlnA .* 0:n_bins - 1)
+const fact = exp.(ΔlnA .* 0:n_bins-1)
 const ftot = sum(fact)
 const bipole_widths = sqrt.(max_area ./ fact)
 
@@ -72,18 +72,18 @@ width = 0.4*bsiz.
 function regions(;
     butterfly = true,
     activity_rate = 1,
-    cycle_length = 1,
-    cycle_overlap = 0,
-    max_ave_lat = 40,
-    min_ave_lat = 5,
-    tsim = 1200,
+    cycle_length = 11,
+    cycle_overlap = 2,
+    max_ave_lat = 35,
+    min_ave_lat = 7,
+    tsim = 3650,
     tstart = 0)
 
     amplitude = 10 * activity_rate
     cycle_length_days = cycle_length * 365.25
     nclen = (cycle_length + cycle_overlap) * 365.25
 
-    τ = fill(τ₂, nlon, nlat, 2)
+    τ = fill(Float64(τ₂), nlon, nlat, 2)
 
     lat_width = 7
     lat_max = max_ave_lat + lat_width
@@ -96,12 +96,12 @@ function regions(;
 
     spots = Spot[]
 
-    Nday = repeat(0:tsim - 1, inner = 2)
+    Nday = repeat(1:tsim, inner = 2)
     Icycle = repeat([0, 1], tsim)
 
     n_current_cycle = Nday .÷ cycle_length_days
     Nc = n_current_cycle .- Icycle
-    Nstart = trunc.(Int, cycle_length_days * Nc)
+    Nstart = trunc.(Int, cycle_length_days .* Nc)
     phase = @. (Nday - Nstart) / nclen % 1
 
     ru0_tot = @. amplitude * sin(π * phase)^2 * dcon / max_area
@@ -113,7 +113,6 @@ function regions(;
     lat_bins_matrix = repeat(lat_bins, 1, length(Nday))
 
     p = @. exp(-((lat_min + (lat_bins_matrix + 0.5) * dlat - latavg) / latrms)^2)
-
     for (i_count, nday) in enumerate(Nday)
         τ .+= 1
 
@@ -122,7 +121,6 @@ function regions(;
         rc0[index] .= prob / (τ₂ - τ₁)
 
         psum = sum(p[:, i_count])
-
         if psum == 0
             ru0 = p[:, i_count]
         else
@@ -149,7 +147,6 @@ function regions(;
             lon = dlon * (rand() + i - 1)
             lat = lat_min + dlat * (rand() + j)
 
-
             nday > tstart || continue
 
             flux_dist_width = 0.4 * bipole_widths[nb]
@@ -161,7 +158,7 @@ function regions(;
             lat_rad = deg2rad(lat)
             lon_rad = deg2rad(lon)
 
-            push!(spots, Spot(nday, (1 - 2 * k) * lat_rad, lon_rad, Φmax))
+            push!(spots, Spot(nday, (1 - 2 * k) * lat_rad, lon_rad, Φmax, 0.0))
 
             n_count += 1
             

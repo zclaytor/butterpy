@@ -1,8 +1,7 @@
 using Random
 using Statistics
-using StructArrays
 
-export Spot, Spots
+export Spot, Region, modulate
 
 """
 Siderial rotation period at the equator
@@ -10,37 +9,33 @@ Siderial rotation period at the equator
 const PROT_SUN = 24.5
 const OMEGA_SUN = 2 * π / PROT_SUN / 86400
 
-struct Spot{T<:Number}
-    nday::Integer # day index
+struct Spot{T <: Number}
+    nday::Int # day index
     lat::T
     lon::T
     Φmax::T
+    area_max::T
 end
 
-struct Spots
-    spots::StructArray{Spot}
-    duration
-    inclination
-    ω
-    Δω
-    equatorial_period
-    diffrot_func
-    τ_emergence
-    τ_decay
-    area_max
+struct Region{T <: Number}
+    spots::Vector{<:Spot}
+    duration::T
+    inclination::T
+    ω::T
+    Δω::T
+    equatorial_period::T
+    τ_emergence::T
+    τ_decay::T
 end
 
-function Spots(spots::AbstractVector{Spot};
+function Region(spots::AbstractVector{Spot};
     duration = maximum([s.nday for s in spots]),
     alpha_med = 0.0001,
     inclination = asin(rand()),
-    ω = 2.0,
-    Δω = 0.3,
-    diffrot_func = diffrot,
+    ω = 1.0,
+    Δω = 0.2,
     τ_decay = 5.0,
     threshold = 0.1)
-
-    spots = StructArray(spots)
     
     ω *= OMEGA_SUN
     Δω *= OMEGA_SUN
@@ -49,16 +44,19 @@ function Spots(spots::AbstractVector{Spot};
     τ_decay *= eq_per
 
 
-    filt = s -> (s.nday < duration) && (s.ϕmax > threshold)
+    filt(s) = (s.nday < duration) && (s.Φmax > threshold)
     spots = filter(filt, spots)
-    area_max = alpha_med .* spots.Φmax ./ median(spots.Φmax)
+    Φmax = [s.Φmax for s in spots]
+    area_max = alpha_med .* Φmax ./ median(Φmax)
+    spots = [Spot(s.nday, s.lat, s.lon, s.Φmax, a) for (s, a) in zip(spots, area_max)]
 
-    return Spots(spots, duration, inclination, ω, Δω, eq_per, diffrot, τ_emergence, τ_decay, area_max)
+    return Region(spots, promote(duration, inclination, ω, Δω, eq_per, τ_emergence, τ_decay)...)
 end
 
-Base.length(spots::Spots) = length(spots.spots)
-Base.size(spots::Spots) = size(spots.spots)
-Base.size(spots::Spots, i) = size(spots.spots, i)
+Base.broadcastable(r::Region) = Ref(r)
+Base.length(r::Region) = length(r.spots)
+Base.size(r::Region) = size(r.spots)
+Base.size(r::Region, i) = size(r.spots, i)
 
 """
     diffrot(ω₀, Δω, lat)
@@ -67,36 +65,34 @@ Default differental rotation function
 
 Returns angular velocity as a function of latitude [0°, 90°]
 """
-diffrot(ω₀, Δω, lat) = ω₀ - Δω * sin(lat)^2
+@inline diffrot(ω₀, Δω, lat) = ω₀ - Δω * sin(lat)^2
+
+function modulate(spot::Spot, t,
+    τ_emergence, τ_decay,
+    ω, Δω, inclination, diffrot_func = diffrot)
+    # Get spot area
+    tt = t - spot.nday
+    area = spot.area_max
+    timescale = tt < 0 ? τ_emergence : τ_decay
+    
+    area *= exp(-(tt / timescale)^2 / 2)
+
+    # rotation rate
+    phase = diffrot(ω, Δω, spot.lat) * t * 86400 + spot.lon
+
+    # foreshortening
+    cos_beta = cos(inclination) * sin(spot.lat) + sin(inclination) * cos(spot.lat) * cos(phase)
+
+    return -area * max(cos_beta, 0.0)
+    return -rand() .* 0.02
+end
 
 """
     modulate(::Spots, time)
 
 Modulate the flux for all spots
 """
-function modulate(spots::Spots, time)
-    M = length(spots)
-    N = length(time)
-
-    # Get spot area
-    tt = repeat(time, M) .- repeat(spots.spots.nday, N)
-    area = repeat(spots.area_max, N)
-    emerge = repeat(spots.τ_emergence, N)
-    decay = repeat(spots.τ_decay, N)
-    timescale = ifelse.(tt .< 0, emerge, decay)
-    area .*= exp(-(tt ./ timescale) .^ 2 ./ 2)
-
-    # rotation rate
-    omega = spots.diffrot_func(spots.ω, spots.Δω, spots.spots.lat)
-    phase = omega * (time .* 86400)' .+ repeat(spots.spots.lon, N)
-
-    # foreshortening
-    cos_beta = cos(spots.inclination) .* repeat(sin.(spots.spots.lat), N) .+ sin(spots.inclination) .* repeat(cos.(spots.spots.lat), N) .* cos.(phase)
-
-    dFlux = -area .* maximum(cos_beta)
-
-    return sum(dFlux)
+function modulate(r::Region, t)
+    dFlux = sum(modulate.(r.spots, t, r.τ_emergence, r.τ_decay, r.ω, r.Δω, r.inclination))
+    return dFlux
 end
-
-
-
