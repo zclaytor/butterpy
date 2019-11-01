@@ -84,7 +84,6 @@ function modulate(spot::Spot, t,
     cos_beta = cos(inclination) * sin(spot.lat) + sin(inclination) * cos(spot.lat) * cos(phase)
 
     return -area * max(cos_beta, 0.0)
-    return -rand() .* 0.02
 end
 
 """

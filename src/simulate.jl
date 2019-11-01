@@ -44,7 +44,7 @@ function simulate(simrow::DataFrameRow; duration = 3650, cadence=30)
             min_ave_lat = simrow.θ_low,
             tsim = duration
         )
-    length(spots) == 0 && return zeros(length(0:cadence/1440:duration-1))
+    length(spots) == 0 && return zeros(length(0:cadence/1440:duration))
     S = Region(spots;
         inclination = simrow.inclination,
         ω = simrow.ω,
@@ -72,10 +72,10 @@ Simulate the lightcurves from a region.
 The lightcurve will be simulated at `cadence` times in minutes for a `duration` in days.
 """
 function simulate(r::Region; duration=3650, cadence=30)
-    t = 0:cadence/1440:duration-1
+    t = 0:cadence/1440:duration
     dF = Vector{Float64}(undef, length(t))
     Threads.@threads for i in eachindex(t)
-        dF[i] = modulate(r, t[i])
+        @inbounds dF[i] = modulate(r, t[i])
     end
     return dF
 end
