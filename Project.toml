@@ -1,6 +1,7 @@
 name = "Butterfly"
 uuid = "3f1962e2-3555-592d-b4ed-cf8614a119c6"
-author = "Zach Claytor and Miles Lucas"
+author = "Zach Claytor and Miles Lucas <mdlucas@hawaii.edu>"
+verstion = "0.1.0"
 
 [deps]
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"

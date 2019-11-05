@@ -13,7 +13,7 @@ mkpath(datadir)
 
 times = DataFrame(time = Float64[], nallocs = Int[], datafile = String[])
 @showprogress for (i, row) in enumerate(eachrow(simdata))
-    b = @benchmarkable simulate(row)
+    b = @benchmarkable simulate($row)
     tune!(b)
     t, df = BenchmarkTools.run_result(b)
     dfile = joinpath(datadir, "julia_$i.npy")

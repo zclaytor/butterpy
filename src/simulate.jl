@@ -42,17 +42,17 @@ function simulate(simrow::DataFrameRow; duration = 3650, cadence=30)
             cycle_overlap = simrow.cover,
             max_ave_lat = simrow.θ_high,
             min_ave_lat = simrow.θ_low,
-            tsim = duration
-        )
+            tsim = duration)
 
     length(spots) == 0 && return zeros(length(0:cadence/1440:duration))
+
     S = Region(spots;
         inclination = simrow.inclination,
         ω = simrow.ω,
         Δω = simrow.Δω,
         alpha_med = 3e-4sqrt(simrow.ar),
-        τ_decay = simrow.τ_decay
-    )
+        τ_decay = simrow.τ_decay)
+
     return simulate(S, duration=duration, cadence=cadence)
 end
 
