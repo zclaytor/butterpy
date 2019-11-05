@@ -1,4 +1,4 @@
-export regions
+export evolve
 
 const n_bins = 5
 const ΔlnA = 0.5
@@ -19,7 +19,7 @@ const bipole_widths = sqrt.(max_area ./ fact)
 
 
 """ 
-    regions(;
+    evolve(;
         butterfly=true,
         activity_rate=1,
         cycle_length=1,
@@ -69,7 +69,7 @@ state, i.e., at the time of maximum development of the active region.
 The assumed peak flux density in the initial state is 100 G, and
 width = 0.4*bsiz.
 """
-function regions(;
+function evolve(;
     butterfly = true,
     activity_rate = 1,
     cycle_length = 11,

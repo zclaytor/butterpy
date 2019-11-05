@@ -1,7 +1,7 @@
 using Random
 using Statistics
 
-export Spot, Region, modulate
+export Spot, SpotDynamics, modulate
 
 """
 Siderial rotation period at the equator
@@ -17,7 +17,7 @@ struct Spot{T <: Number}
     area_max::T
 end
 
-struct Region{T <: Number}
+struct SpotDynamics{T <: Number}
     spots::Vector{<:Spot}
     duration::T
     inclination::T
@@ -28,7 +28,7 @@ struct Region{T <: Number}
     τ_decay::T
 end
 
-function Region(spots::AbstractVector{Spot};
+function SpotDynamics(spots::AbstractVector{Spot};
     duration = maximum([s.nday for s in spots]),
     alpha_med = 0.0001,
     inclination = asin(rand()),
@@ -50,13 +50,13 @@ function Region(spots::AbstractVector{Spot};
     area_max = alpha_med .* Φmax ./ median(Φmax)
     spots = [Spot(s.nday, s.lat, s.lon, s.Φmax, a) for (s, a) in zip(spots, area_max)]
 
-    return Region(spots, promote(duration, inclination, ω, Δω, eq_per, τ_emergence, τ_decay)...)
+    return SpotDynamics(spots, promote(duration, inclination, ω, Δω, eq_per, τ_emergence, τ_decay)...)
 end
 
-Base.broadcastable(r::Region) = Ref(r)
-Base.length(r::Region) = length(r.spots)
-Base.size(r::Region) = size(r.spots)
-Base.size(r::Region, i) = size(r.spots, i)
+Base.broadcastable(r::SpotDynamics) = Ref(r)
+Base.length(r::SpotDynamics) = length(r.spots)
+Base.size(r::SpotDynamics) = size(r.spots)
+Base.size(r::SpotDynamics, i) = size(r.spots, i)
 
 """
     diffrot(ω₀, Δω, lat)
@@ -87,11 +87,11 @@ function modulate(spot::Spot, t,
 end
 
 """
-    modulate(::Spots, time)
+    modulate(::SpotDynamics, time)
 
 Modulate the flux for all spots
 """
-function modulate(r::Region, t)
+function modulate(r::SpotDynamics, t)
     dFlux = sum(modulate.(r.spots, t, r.τ_emergence, r.τ_decay, r.ω, r.Δω, r.inclination))
     return dFlux
 end

@@ -35,7 +35,7 @@ function generate_simdata(Nlc::Integer)
 end
 
 function simulate(simrow::DataFrameRow; duration = 3650, cadence=30)
-    spots = regions(
+    spots = evolve(
             butterfly = simrow.butterfly,
             activity_rate = simrow.ar,
             cycle_length = simrow.clen,
@@ -46,7 +46,7 @@ function simulate(simrow::DataFrameRow; duration = 3650, cadence=30)
 
     length(spots) == 0 && return zeros(length(0:cadence/1440:duration))
 
-    S = Region(spots;
+    S = SpotDynamics(spots;
         inclination = simrow.inclination,
         ω = simrow.ω,
         Δω = simrow.Δω,
@@ -66,13 +66,13 @@ function simulate(simdata::DataFrame; duration=3650, cadence=30)
 end
 
 """
-    simulate(::Spots; duration=3650, cadence=30)
+    simulate(::SpotDynamics; duration=3650, cadence=30)
 
 Simulate the lightcurves from a region.
 
 The lightcurve will be simulated at `cadence` times in minutes for a `duration` in days.
 """
-function simulate(r::Region; duration=3650, cadence=30)
+function simulate(r::SpotDynamics; duration=3650, cadence=30)
     t = 0:cadence/1440:duration
     dF = Vector{Float64}(undef, length(t))
     Threads.@threads for i in eachindex(t)

@@ -17,7 +17,7 @@ using Statistics
     nday, rad2deg.(lat)
 end
 
-@recipe function f(r::Region)
+@recipe function f(r::SpotDynamics)
     spots = r.spots
     nday = [s.nday for s in spots]
     lat = [s.lat for s in spots]
