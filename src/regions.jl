@@ -137,7 +137,7 @@ function regions(;
             sumv > x || continue
             cum_sum = rtot .* cumsum(fact)
             nb = findfirst(cum_sum .≥ x)
-            sumb = cum_sum[nb > 1 ? nb - 1 : 1]
+            sumb = cum_sum[max(nb - 1, 1)]
             
             cum_sum = sumb .+ fact[nb] .* cumsum(r0)
             i = findfirst(cum_sum .≥ x)
