@@ -139,5 +139,5 @@ Manifest.toml
 
 # End of https://www.gitignore.io/api/julia
 .venv
-poetry.lock
+Pipfile.lock
 vscode

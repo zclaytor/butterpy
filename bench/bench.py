@@ -5,13 +5,12 @@ import pandas as pd
 from datetime import datetime
 from tqdm import tqdm
 
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-
 from butterpy.spots import Spots
 from butterpy.regions import regions
 from butterpy.constants import RAD2DEG, PROT_SUN, FLUX_SCALE, DAY2MIN
 
 np.random.seed(777)
+
 
 def simulate(s, dur=3650, cad=30):
     spot_properties = regions(

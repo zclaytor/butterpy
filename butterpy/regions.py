@@ -159,7 +159,7 @@ def regions(
                 r0 = ru0[j] + rc0[:, j, k]
                 rtot = r0.sum()
                 sumv = rtot * ftot
-                
+
                 x = np.random.uniform()
                 if sumv > x:  # emerge spot
                     # Add rtot*fact elements until the sum is greater than x
