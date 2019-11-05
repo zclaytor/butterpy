@@ -44,6 +44,7 @@ function simulate(simrow::DataFrameRow; duration = 3650, cadence=30)
             min_ave_lat = simrow.θ_low,
             tsim = duration
         )
+
     length(spots) == 0 && return zeros(length(0:cadence/1440:duration))
     S = Region(spots;
         inclination = simrow.inclination,

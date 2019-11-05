@@ -12,7 +12,7 @@ const nlon = 36
 const nlat = 16
 
 const dcon = 2sinh(ΔlnA / 2)
-const fact = exp.(ΔlnA .* 0:n_bins-1)
+const fact = exp.(ΔlnA .* (0:n_bins - 1))
 const ftot = sum(fact)
 const bipole_widths = sqrt.(max_area ./ fact)
 
@@ -80,12 +80,12 @@ function regions(;
     tstart = 0)
 
     amplitude = 10 * activity_rate
-    cycle_length_days = cycle_length * 365.25
-    nclen = (cycle_length + cycle_overlap) * 365.25
+    cycle_length_days = cycle_length * 365
+    nclen = (cycle_length + cycle_overlap) * 365
 
     τ = fill(Float64(τ₂), nlon, nlat, 2)
 
-    lat_width = 7
+    lat_width = 7 # degrees
     lat_max = max_ave_lat + lat_width
     lat_min = max(min_ave_lat - lat_width, 0)
     dlat = (lat_max - lat_min) / nlat
@@ -96,14 +96,13 @@ function regions(;
 
     spots = Spot[]
 
-    Nday = repeat(1:tsim, inner = 2)
+    Nday = repeat(0:tsim-1, inner = 2)
     Icycle = repeat([0, 1], tsim)
 
     n_current_cycle = Nday .÷ cycle_length_days
     Nc = n_current_cycle .- Icycle
     Nstart = trunc.(Int, cycle_length_days .* Nc)
     phase = @. (Nday - Nstart) / nclen % 1
-
     ru0_tot = @. amplitude * sin(π * phase)^2 * dcon / max_area
 
     lats = active_latitudes.(min_ave_lat, max_ave_lat, phase, butterfly = butterfly)
@@ -129,19 +128,19 @@ function regions(;
 
         for k in [0, 1], j in lat_bins
             r0 = ru0[j + 1] .+ rc0[:, j + 1, k + 1]
+
             rtot = sum(r0)
             sumv = rtot * ftot
             x = rand()
 
             # choose to emerge spot
             sumv > x || continue
-
             cum_sum = rtot .* cumsum(fact)
-            nb = argmax(cum_sum .≥ x)
-            sumb = cum_sum[nb > 1 ? nb - 1 : nb]
+            nb = findfirst(cum_sum .≥ x)
+            sumb = cum_sum[nb - 1]
             
             cum_sum = sumb .+ fact[nb] .* cumsum(r0)
-            i = argmax(cum_sum .≥ x)
+            i = findfirst(cum_sum .≥ x)
             sumb = cum_sum[i]
 
             lon = dlon * (rand() + i - 1)

@@ -5,6 +5,7 @@ from scipy.stats import truncnorm
 from .constants import RAD2DEG, YEAR2DAY
 import matplotlib.pyplot as plt
 
+import logging
 
 n_bins = 5  # number of area bins
 delta_lnA = 0.5  # bin width in log-area
@@ -51,11 +52,11 @@ def random_latitudes(min_lat, max_lat, phase):
 def regions(
     butterfly=True,
     activity_rate=1,
-    cycle_length=1,
-    cycle_overlap=0,
-    max_ave_lat=40,
-    min_ave_lat=5,
-    tsim=1200,
+    cycle_length=11,
+    cycle_overlap=2,
+    max_ave_lat=35,
+    min_ave_lat=7,
+    tsim=3650,
     tstart=0,
 ):
     """ 
@@ -99,7 +100,6 @@ def regions(
     width = 0.4*bsiz.
 
     """
-
     amplitude = 10 * activity_rate  # why 10*activity rate?
     cycle_length_days = cycle_length * YEAR2DAY
     nclen = (cycle_length + cycle_overlap) * YEAR2DAY
@@ -126,7 +126,6 @@ def regions(
     Nc = n_current_cycle - Icycle
     Nstart = np.fix(cycle_length_days * Nc)
     phase = (Nday - Nstart) / nclen % 1
-
     # Emergence rate of uncorrelated active regions, from
     # Schrijver & Harvey (1994)
     ru0_tot = amplitude * np.sin(np.pi * phase) ** 2 * dcon / max_area
@@ -160,6 +159,7 @@ def regions(
                 r0 = ru0[j] + rc0[:, j, k]
                 rtot = r0.sum()
                 sumv = rtot * ftot
+                
                 x = np.random.uniform()
                 if sumv > x:  # emerge spot
                     # Add rtot*fact elements until the sum is greater than x

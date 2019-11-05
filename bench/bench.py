@@ -26,7 +26,6 @@ def simulate(s, dur=3650, cad=30):
     )
 
     time = np.arange(0, dur, cad / DAY2MIN)
-
     if len(spot_properties) == 0:
         dF = np.zeros_like(time)
 
@@ -46,16 +45,18 @@ def simulate(s, dur=3650, cad=30):
 
 if __name__ == "__main__":
     simdata = pd.read_csv("benchmark_data.csv")
-    times = []
-    fnames = []
-    for i, s in tqdm(simdata.iterrows(), total=len(simdata)):
-        t0 = datetime.now()
-        out = simulate(s)
-        t1 = datetime.now()
-        times.append(t1 - t0)
-        fname = os.path.join("data", f"python_{i+1}.npy")
-        np.save(fname, out)
-        fnames.append(fname)
+    f = simulate(simdata.iloc[21])
+    np.save("ndata.npy", f)
+    # times = []
+    # fnames = []
+    # for i, s in tqdm(simdata.iterrows(), total=len(simdata)):
+    #     t0 = datetime.now()
+    #     out = simulate(s)
+    #     t1 = datetime.now()
+    #     times.append(t1 - t0)
+    #     fname = os.path.join("data", f"python_{i+1}.npy")
+    #     np.save(fname, out)
+    #     fnames.append(fname)
 
-    df = pd.DataFrame.from_dict({"time": times, "datafile": fnames})
-    df.to_csv("python_times.csv")
+    # df = pd.DataFrame.from_dict({"time": times, "datafile": fnames})
+    # df.to_csv("python_times.csv")
