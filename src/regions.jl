@@ -96,7 +96,7 @@ function regions(;
 
     spots = Spot[]
 
-    Nday = repeat(0:tsim-1, inner = 2)
+    Nday = repeat(0:tsim - 1, inner = 2)
     Icycle = repeat([0, 1], tsim)
 
     n_current_cycle = Nday .÷ cycle_length_days
@@ -137,7 +137,7 @@ function regions(;
             sumv > x || continue
             cum_sum = rtot .* cumsum(fact)
             nb = findfirst(cum_sum .≥ x)
-            sumb = cum_sum[nb - 1]
+            sumb = cum_sum[nb > 1 ? nb - 1 : 1]
             
             cum_sum = sumb .+ fact[nb] .* cumsum(r0)
             i = findfirst(cum_sum .≥ x)
@@ -145,7 +145,7 @@ function regions(;
 
             lon = dlon * (rand() + i - 1)
             lat = lat_min + dlat * (rand() + j)
-
+            
             nday > tstart || continue
 
             flux_dist_width = 0.4 * bipole_widths[nb]

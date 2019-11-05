@@ -58,7 +58,7 @@ end
 
 function simulate(simdata::DataFrame; duration=3650, cadence=30)
     dFs = []
-    Threads.@threads for row in eachrow(simdata)
+    for row in eachrow(simdata)
         df = simulate(row, duration=duration, cadence=cadence)
         push!(dFs, df)
     end
