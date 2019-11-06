@@ -1,6 +1,6 @@
 name = "Butterfly"
 uuid = "3f1962e2-3555-592d-b4ed-cf8614a119c6"
-author = "Zach Claytor and Miles Lucas <mdlucas@hawaii.edu>"
+author = "Zach Claytor <zclaytor@hawaii.edu> and Miles Lucas <mdlucas@hawaii.edu>"
 verstion = "0.1.0"
 
 [deps]

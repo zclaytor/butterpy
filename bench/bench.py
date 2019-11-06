@@ -12,6 +12,7 @@ np.random.seed(777)
 
 DIR = os.path.dirname(__file__)
 
+
 def simulate(s, dur=3650, cad=30):
     spot_properties = regions(
         butterfly=s["butterfly"],
