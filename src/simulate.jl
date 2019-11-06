@@ -4,6 +4,11 @@ using Distributions
 
 export generate_simdata, simulate
 
+"""
+    generate_simdata(n::Integer)
+
+Generate `n` simulation datasets returned in a `DataFrame`.
+"""
 function generate_simdata(Nlc::Integer)
     inclination = asin.(sqrt.(rand(Nlc)))
     ar = 10 .^ rand(Uniform(-2, 1), Nlc)
@@ -34,6 +39,11 @@ function generate_simdata(Nlc::Integer)
     )
 end
 
+"""
+    simulate(::DataFrameRow; duration=3650, cadence=30)
+
+Given a row from a dataframe with simulation data, will simulate the lightcurve modulation over `duration` days every `cadence` minutes.
+"""
 function simulate(simrow::DataFrameRow; duration = 3650, cadence=30)
     spots = evolve(
             butterfly = simrow.butterfly,
@@ -56,6 +66,11 @@ function simulate(simrow::DataFrameRow; duration = 3650, cadence=30)
     return simulate(S, duration=duration, cadence=cadence)
 end
 
+"""
+    simulate(::DataFrame; duration=3650, cadence=30)
+
+Given a full dataframe with simulation data, will return a `Vector` of lightcurve modulations over `duration` days every `cadence` minutes.
+"""
 function simulate(simdata::DataFrame; duration=3650, cadence=30)
     dFs = []
     for row in eachrow(simdata)
@@ -68,9 +83,7 @@ end
 """
     simulate(::SpotDynamics; duration=3650, cadence=30)
 
-Simulate the lightcurves from a region.
-
-The lightcurve will be simulated at `cadence` times in minutes for a `duration` in days.
+Simulate the lightcurve modulation over `duration` days every `cadence` minutes.
 """
 function simulate(r::SpotDynamics; duration=3650, cadence=30)
     t = 0:cadence/1440:duration

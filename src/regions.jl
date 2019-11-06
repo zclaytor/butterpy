@@ -20,36 +20,28 @@ const bipole_widths = sqrt.(max_area ./ fact)
 
 """ 
     evolve(;
-        butterfly=true,
-        activity_rate=1,
-        cycle_length=1,
-        cycle_overlap=0,
-        max_ave_lat=40,
-        min_ave_lat=5,
-        tsim=1200,
-        tstart=0)
+        butterfly = true,
+        activity_rate = 1,
+        cycle_length = 11,
+        cycle_overlap = 2,
+        max_ave_lat = 35,
+        min_ave_lat = 7,
+        tsim = 3650,
+        tstart = 0)
 
 Simulates the emergence and evolution of starspots. 
 
 Output is a list of active regions.
 
 # Parameters
-
-- butterfly = bool - have spots decrease from maxlat to minlat or be randomly located in latitude
-
-- activityrate = Number of magnetic bipoles, normalized such that for the Sun, activityrate = 1.
-
-- cycle_length - length of cycle in years (Sun is 11)
-
-- cycle_overlap - overlap of cycles in years
-
-- max_ave_lat = maximum average latitude of spot emergence (deg)
-
-- min_ave_lat = minimum average latitutde of emergence (deg)
-
-- tsim = how many days to emerge spots for
-
-- tstart = First day to simulate bipoles
+* butterfly = bool - have spots decrease from maxlat to minlat or be randomly located in latitude
+* activityrate = Number of magnetic bipoles, normalized such that for the Sun, activityrate = 1.
+* cycle_length - length of cycle in years (Sun is 11)
+* cycle_overlap - overlap of cycles in years
+* max_ave_lat = maximum average latitude of spot emergence (deg)
+* min_ave_lat = minimum average latitutde of emergence (deg)
+* tsim = how many days to emerge spots for
+* tstart = First day to simulate bipoles
 
 Based on Section 4 of van Ballegooijen 1998, ApJ 501: 866
 and Schrijver and Harvey 1994, SoPh 150: 1S
@@ -67,7 +59,7 @@ in days; a(t) varies from 1.23 at cycle minimum to 10 at cycle maximum.
 The bipole area is the area with the 25-Gauss contour in the "initial"
 state, i.e., at the time of maximum development of the active region.
 The assumed peak flux density in the initial state is 100 G, and
-width = 0.4*bsiz.
+width = 0.4bsiz.
 """
 function evolve(;
     butterfly = true,

@@ -1,4 +1,3 @@
-import sys
 import os
 import numpy as np
 import pandas as pd
@@ -7,10 +6,11 @@ from tqdm import tqdm
 
 from butterpy.spots import Spots
 from butterpy.regions import regions
-from butterpy.constants import RAD2DEG, PROT_SUN, FLUX_SCALE, DAY2MIN
+from butterpy.constants import FLUX_SCALE, DAY2MIN
 
 np.random.seed(777)
 
+DIR = os.path.dirname(__file__)
 
 def simulate(s, dur=3650, cad=30):
     spot_properties = regions(
@@ -43,19 +43,17 @@ def simulate(s, dur=3650, cad=30):
 
 
 if __name__ == "__main__":
-    simdata = pd.read_csv("benchmark_data.csv")
-    f = simulate(simdata.iloc[21])
-    np.save("ndata.npy", f)
-    # times = []
-    # fnames = []
-    # for i, s in tqdm(simdata.iterrows(), total=len(simdata)):
-    #     t0 = datetime.now()
-    #     out = simulate(s)
-    #     t1 = datetime.now()
-    #     times.append(t1 - t0)
-    #     fname = os.path.join("data", f"python_{i+1}.npy")
-    #     np.save(fname, out)
-    #     fnames.append(fname)
+    simdata = pd.read_csv(os.path.join(DIR, "benchmark_data.csv"))
+    times = []
+    fnames = []
+    for i, s in tqdm(simdata.iterrows(), total=len(simdata)):
+        t0 = datetime.now()
+        out = simulate(s)
+        t1 = datetime.now()
+        times.append(t1 - t0)
+        fname = os.path.join(DIR, "data", f"python_{i+1}.npy")
+        np.save(fname, out)
+        fnames.append(fname)
 
-    # df = pd.DataFrame.from_dict({"time": times, "datafile": fnames})
-    # df.to_csv("python_times.csv")
+    df = pd.DataFrame.from_dict({"time": times, "datafile": fnames})
+    df.to_csv(os.path.join(DIR, "python_times.csv"))

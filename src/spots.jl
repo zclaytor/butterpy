@@ -28,6 +28,28 @@ struct SpotDynamics{T <: Number}
     τ_decay::T
 end
 
+"""
+    SpotDynamics(spots::AbstractVector{Spot};
+        duration = maximum([s.nday for s in spots]),
+        alpha_med = 0.0001,
+        inclination = asin(rand()),
+        ω = 1.0,
+        Δω = 0.2,
+        τ_decay = 5.0,
+        threshold = 0.1)
+
+A container for the dynamics of starspots.
+
+# Parameters
+* spots - The list of `Spot`s evolved over time
+* duration - The length of the evolution time
+* alpha_med - An activation parameter for the magnetic flux
+* inclination - Inclination of the star from our line of sight in radians
+* ω - Rotational velocity of the star in solar units
+* Δω - change in rotational velocity over the time in solar untis
+* τ_decay - The decay timescale
+* threshold - The threshold in magnetic flux for filtering starspots
+"""
 function SpotDynamics(spots::AbstractVector{Spot};
     duration = maximum([s.nday for s in spots]),
     alpha_med = 0.0001,
@@ -58,6 +80,19 @@ Base.length(r::SpotDynamics) = length(r.spots)
 Base.size(r::SpotDynamics) = size(r.spots)
 Base.size(r::SpotDynamics, i) = size(r.spots, i)
 
+function Base.show(io::IO, sd::SpotDynamics)
+    out = """
+    $(typeof(sd))
+      nspots: $(length(sd))
+      duration: $(sd.duration)
+      inclination: $(sd.inclination)
+      ω: $(sd.ω)
+      Δω: $(sd.Δω)
+      equatorial_period: $(sd.equatorial_period)
+      τ_emergence: $(sd.τ_emergence)
+      τ_decay: $(sd.τ_decay)"""
+    print(io, out)
+end
 """
     diffrot(ω₀, Δω, lat)
 
@@ -89,7 +124,7 @@ end
 """
     modulate(::SpotDynamics, time)
 
-Modulate the flux for all spots
+Modulate the flux due to starspots at the given timestep in days.
 """
 function modulate(r::SpotDynamics, t)
     dFlux = sum(modulate.(r.spots, t, r.τ_emergence, r.τ_decay, r.ω, r.Δω, r.inclination))
