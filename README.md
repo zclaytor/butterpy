@@ -39,7 +39,7 @@ $ julia
 
 and set up the environment
 
-```julia-repl
+```julia
 julia> ]
 
 (v1.2) pkg> dev .
@@ -55,7 +55,7 @@ The main workflow is similar to the python implementation
 
 ### Generate and evolve starspots
 
-```julia-repl
+```julia
 julia> spots = evolve() # Solar values by default for 10 year time-span
 3371-element Array{Spot,1}:
  Spot{Float64}(25, -0.16473381557930752, 0.6011891165889124, 151.63266492815836, 0.0) 
@@ -87,7 +87,7 @@ julia> spots = evolve(
 
 you can view the docstring by pressing `?` and then typing in `evolve` like so
 
-```julia-repl
+```julia
 help?> evolve
 search: evolve
 
@@ -141,7 +141,7 @@ search: evolve
 
 Start by creating a `SpotDynamics` object
 
-```julia-repl
+```julia
 julia> sd = SpotDynamics(spots)
 SpotDynamics{Float64}
   nspots: 3370
@@ -155,7 +155,7 @@ SpotDynamics{Float64}
 ```
 
 
-```julia-repl
+```julia
 help?> SpotDynamics
 search: SpotDynamics
 
@@ -192,7 +192,7 @@ search: SpotDynamics
 
 to view the modulation of the star's flux at a given timestep, use `modulate`
 
-```julia-repl
+```julia
 julia> df = modulate(sd, 0)
 -3.7839717125012525e-5
 
@@ -215,7 +215,7 @@ julia> dfs = modulate.(sd, 0:0.01:1)
  -2.953996172573867e-5
 ```
 
-```julia-repl
+```julia
 help?> modulate
 search: modulate
 
@@ -226,7 +226,7 @@ search: modulate
 
 we can simulate using multithreading using `simulate`. Note, you must have the environment variable `JULIA_NUM_THREADS` set to make use of multithreading.
 
-```julia-repl
+```julia
 julia> dfs = simulate(sd, duration=365, cadence=60)
 8761-element Array{Float64,1}:
  -3.7839717125012525e-5 
@@ -246,7 +246,7 @@ julia> dfs = simulate(sd, duration=365, cadence=60)
  -0.00018320390870043565
 ```
 
-```julia-repl
+```julia
 help?> simulate
 search: simulate
 
@@ -272,7 +272,7 @@ search: simulate
 
 Using `generate_simdata` we can produce a dataframe of simulation data that can be saved and passed directly to `simulate`
 
-```julia-repl
+```julia
 help?> generate_simdata
 search: generate_simdata
 
