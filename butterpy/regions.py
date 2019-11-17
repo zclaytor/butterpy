@@ -125,7 +125,10 @@ def regions(
     n_current_cycle = Nday // cycle_length_days
     Nc = n_current_cycle - Icycle
     Nstart = np.fix(cycle_length_days * Nc)
-    phase = (Nday - Nstart) / nclen % 1
+    phase = (Nday - Nstart) / nclen
+    # Quick fix to handle phases > 1
+    Nday[phase >= 1] = -1
+    
     # Emergence rate of uncorrelated active regions, from
     # Schrijver & Harvey (1994)
     ru0_tot = amplitude * np.sin(np.pi * phase) ** 2 * dcon / max_area
@@ -139,6 +142,10 @@ def regions(
     p = np.exp(-((lat_min + (lat_bins_matrix + 0.5) * dlat - latavg) / latrms) ** 2)
 
     for i_count, nday in enumerate(Nday):
+        # Quick fix to handle phases > 1
+        if nday == -1:
+            continue
+            
         tau += 1
 
         # Emergence rate of correlated active regions
@@ -165,7 +172,10 @@ def regions(
                     # Add rtot*fact elements until the sum is greater than x
                     cum_sum = rtot * fact.cumsum()
                     nb = (cum_sum >= x).argmax()
-                    sumb = cum_sum[nb - 1]
+                    if nb == 0:
+                        sumb = 0
+                    else:
+                        sumb = cum_sum[nb - 1]
 
                     cum_sum = sumb + fact[nb] * r0.cumsum()
                     i = (cum_sum >= x).argmax()
