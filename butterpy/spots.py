@@ -1,12 +1,17 @@
+# pylint: disable=no-member
 """
 spots.py
 Contains the Spots class, which holds parameters for spots on a given star.
 """
 
 import numpy as np
+import pandas as pd
+from astropy.io import fits
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import subplots
-from .constants import RAD2DEG, DAY2SEC, OMEGA_SUN
+
+from .constants import RAD2DEG, DAY2SEC, DAY2MIN, OMEGA_SUN, FLUX_SCALE
+from .config import dur, cad
 
 
 def diffrot(omega0, delta_omega, lat):
@@ -47,10 +52,10 @@ class Spots(object):
         self,
         spot_properties,
         dur=None,
-        alpha_med=0.0001,
+        alpha_med=FLUX_SCALE,
         incl=None,
-        omega=2.0,
-        delta_omega=0.3,
+        omega=1.0,
+        delta_omega=0.18,
         diffrot_func=diffrot,
         decay_timescale=5.0,
         threshold=0.1,
@@ -93,12 +98,29 @@ class Spots(object):
         self.t0 = time[keep]
         self.latitude = latitude[keep]
         self.longitude = longitude[keep]
-        # self.area_max = active_region_tilt[keep] * alpha_med / np.median(active_region_tilt[keep]) # median-divide to scale.
-        # Aigrain et al. (2015) has this value as alpha_med*Bmax/mean(Bmax)
         self.area_max = (
             alpha_med * (peak_magnetic_flux / np.median(peak_magnetic_flux))[keep]
         )
         # alpha is spot contrast * spot area
+
+    def calc_i(self, time):
+        """Modulate flux for single time step"""
+        tt = time - self.t0
+        t_emerge = self.emergence_timescale
+        t_decay = self.decay_timescale
+        timescale = np.where(tt < 0, t_emerge, t_decay)
+        current_area = self.area_max * np.exp(-0.5 * (tt / timescale) ** 2)
+
+        omega_lat = self.diffrot_func(self.omega, self.delta_omega, self.latitude)
+        current_lon = omega_lat * time * DAY2SEC + self.longitude
+
+        cos_beta = np.cos(self.inclination) * np.sin(self.latitude) + np.sin(
+            self.inclination
+        ) * np.cos(self.latitude) * np.cos(current_lon)
+
+        dF = -current_area * np.maximum(cos_beta, 0)
+
+        return self.latitude, current_lon, current_area, dF
 
     def calc(self, time):
         """Modulate flux using chunks for all spots"""
@@ -150,31 +172,177 @@ class Spots(object):
         # return area, omega, beta, dFlux
         return dFlux.sum(axis=0)
 
+    def plot_butterfly(self, fig=None, ax=None):
+        """Plot the butterfly diagram"""
+        latitude = self.spot_properties["lat"]
 
-def butterfly(self):
-    """Plot the butterfly diagram"""
-    latitude = self.spot_properties["lat"]
+        if fig is None:
+            fig = plt.figure()
+        if ax is None:
+            ax = fig.add_subplot()
 
-    fig, ax = subplots()
-    ax.scatter(
-        self.spot_properties["nday"],
-        latitude * RAD2DEG,
-        s=10 * self.spot_properties["bmax"] / np.median(self.spot_properties["bmax"]),
-        alpha=0.5,
-        c="#996699",
-        lw=0.5,
+        ax.scatter(
+            self.spot_properties["nday"],
+            latitude * RAD2DEG,
+            s=10
+            * self.spot_properties["bmax"]
+            / np.median(self.spot_properties["bmax"]),
+            alpha=0.5,
+            c="#996699",
+            lw=0.5,
+        )
+        ax.set_xlim(0, self.spot_properties["nday"].max())
+        ax.set_ylim(-90, 90)
+        ax.set_yticks((-90, -45, 0, 45, 90))
+        ax.set_xlabel("Time (days)")
+        ax.set_ylabel("Latitude (deg)")
+
+    def animate_evolution(self, time, sim, lightcurve, window_size=50, **kw):
+        nlat = 16
+        nlon = 36
+        dlon = 360 / nlon
+
+        lat_width = 7
+        lat_min = max(sim["Spot Min"] - lat_width, 0)
+        lat_max = sim["Spot Max"] + lat_width
+
+        fig = plt.figure(figsize=(5, 6), constrained_layout=False)
+        fig.subplots_adjust(
+            top=0.95, bottom=0.08, left=0.16, right=0.95, hspace=0.3, wspace=0.2
+        )
+        gs = gridspec.GridSpec(2, 1, figure=fig, height_ratios=(1, 0.5))
+        ax1 = fig.add_subplot(gs[0])
+        ax2 = fig.add_subplot(gs[1])
+
+        ax1.set_xlim(-180, 180)
+        ax1.set_xticks(np.linspace(-180, 180, 7))
+        ymax = np.ceil(lat_max / 5) * 5
+        ax1.set_ylim(-ymax, ymax)
+        ax1.set_yticks(np.linspace(-ymax, ymax, 5))
+        ax1.xaxis.set_ticklabels([180, 240, 300, 0, 60, 120, 180])
+
+        ax1.vlines(
+            np.linspace(dlon - 180, 180 - dlon, nlon - 1),
+            ymin=lat_min,
+            ymax=lat_max,
+            lw=0.2,
+        )
+        ax1.vlines(
+            np.linspace(dlon - 180, 180 - dlon, nlon - 1),
+            ymin=-lat_max,
+            ymax=-lat_min,
+            lw=0.2,
+        )
+        ax1.hlines(np.linspace(lat_min, lat_max, nlat + 1), xmin=-180, xmax=180, lw=0.2)
+        ax1.hlines(
+            -np.linspace(lat_min, lat_max, nlat + 1), xmin=-180, xmax=180, lw=0.2
+        )
+
+        ax1.set_xlabel("Longitude (degrees)")
+        ax1.set_ylabel("Latitude (degrees)")
+        ax1.scatter([], [], s=1, alpha=0.5, c="#996699", lw=0.5)
+
+        ax2.plot(lightcurve["TIME"], lightcurve["MODEL_FLUX"])
+        ax2.add_artist(
+            patches.Ellipse(
+                (0.5, 0.5),
+                width=0.02,
+                height=0.05,
+                color="r",
+                transform=ax2.transAxes,
+                zorder=2,
+            )
+        )
+        width = window_size / 2
+        ax2.set_ylim(0.97, 1)
+        ax2.set_xticks(np.arange(time[0] - width / 2, time[-1] + width / 2, width / 2))
+        ax2.set_xlim(time[0] - width, time[0] + width)
+        ax2.set_xlabel("Time (days)")
+        ax2.set_ylabel("Relative Flux")
+        ax2.vlines(0.5, color="r", ymin=0, ymax=1, transform=ax2.transAxes)
+        title = fig.suptitle("")
+        fig.align_labels()
+
+        ax = (ax1, ax2)
+        ani = animation.FuncAnimation(
+            fig,
+            _update_figure,
+            frames=time,
+            blit=False,
+            repeat=False,
+            fargs=(self, ax, title),
+            **kw,
+        )
+        return ani
+
+
+def _update_figure(time, spots, ax, title):
+    ax1, ax2 = ax
+
+    latitudes, longitudes, areas, fluxes = spots.calc_i(time)
+    longitudes = (longitudes * RAD2DEG) % 360
+    longitudes[longitudes >= 180] -= 360
+
+    im1 = ax1.collections[-1]
+    im1.set_offsets(np.c_[longitudes, latitudes * RAD2DEG])
+    im1.set_sizes(10 * areas / FLUX_SCALE)
+    new_flux = 1 + fluxes.sum()
+
+    y1, y2 = ax2.get_ylim()
+    if new_flux < y1 + 0.01:
+        new_y1 = new_flux - 0.01
+        ax2.set_ylim(new_y1, y2)
+    circle_y = (new_flux - y1) / (y2 - y1)
+    circle, = ax2.artists
+    circle.set_center((0.5, circle_y))
+
+    t1, t2 = ax2.get_xlim()
+    t0 = (t1 + t2) / 2
+    delta_t = time - t0
+    ax2.set_xlim(t1 + delta_t, t2 + delta_t)
+
+    time_minutes = time * 24 * 60
+    hours, minutes = divmod(time_minutes, 60)
+    days, hours = divmod(hours, 24)
+    title.set_text(f"Elapsed: {days:4.0f}d{hours:02.0f}h{minutes:02.0f}m")
+    return (im1,)
+
+
+def get_animation(path, time, **kw):
+    path_list = path.split("/")
+    fname = path_list.pop(-1)
+    sim_number = int("".join([char for char in fname if char.isdigit()]))
+
+    path_list.append("simulation_properties.csv")
+    path_to_sims = "/".join(path_list)
+
+    my_sim = pd.read_csv(path_to_sims).iloc[sim_number]
+    with fits.open(path) as f:
+        lightcurve = f[1].data
+        spot_properties = f[2].data
+
+    my_spots = Spots(
+        pd.DataFrame(spot_properties),
+        incl=my_sim["Inclination"],
+        omega=my_sim["Omega"],
+        delta_omega=my_sim["Delta Omega"],
+        alpha_med=np.sqrt(my_sim["Activity Rate"]) * FLUX_SCALE,
+        decay_timescale=my_sim["Decay Time"],
     )
-    ax.set_xlim(0, self.spot_properties["nday"].max())
-    ax.set_ylim(-90, 90)
-    ax.set_yticks((-90, -45, 0, 45, 90))
-    ax.set_xlabel("Time (days)")
-    ax.set_ylabel("Latitude (deg)")
-    fig.tight_layout()
 
-
-def main():
-    print('"main" functionality not implemented yet!')
+    ani = my_spots.animate_evolution(time, my_sim, lightcurve, **kw)
+    return ani
 
 
 if __name__ == "__main__":
-    main()
+    time = np.linspace(1040, 1070, 361)
+    ani = get_animation(
+        "/home/zach/PhD/tess_sim/lightcurves/0008.fits",
+        time,
+        window_size=100,
+        interval=20,
+    )
+    plt.show()
+
+    exit()
+    ani.save("/home/zach/Desktop/lightcurve.gif", writer="imagemagick", dpi=100, fps=10)
