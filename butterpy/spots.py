@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 from astropy.io import fits
 import matplotlib.pyplot as plt
-from matplotlib.pyplot import subplots
+from matplotlib import animation, gridspec, patches
 
 from .constants import RAD2DEG, DAY2SEC, DAY2MIN, OMEGA_SUN, FLUX_SCALE
 from .config import dur, cad
@@ -334,7 +334,7 @@ def get_animation(path, time, **kw):
     return ani
 
 
-if __name__ == "__main__":
+def _test():
     time = np.linspace(1040, 1070, 361)
     ani = get_animation(
         "/home/zach/PhD/tess_sim/lightcurves/0008.fits",
@@ -346,3 +346,8 @@ if __name__ == "__main__":
 
     exit()
     ani.save("/home/zach/Desktop/lightcurve.gif", writer="imagemagick", dpi=100, fps=10)
+
+
+if __name__ == "__main__":
+    _test()
+    
