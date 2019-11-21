@@ -337,7 +337,7 @@ def get_animation(path, time, **kw):
 def _test():
     time = np.linspace(1040, 1070, 361)
     ani = get_animation(
-        "/home/zach/PhD/tess_sim/lightcurves/0008.fits",
+        "/home/zach/PhD/tess_sim/lightcurves/0100.fits",
         time,
         window_size=100,
         interval=20,
