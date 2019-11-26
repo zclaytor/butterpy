@@ -103,7 +103,7 @@ class Spots(object):
         )
         # alpha is spot contrast * spot area
 
-    def calc_i(self, time):
+    def calc_i(self, time, animate=False):
         """Modulate flux for single time step"""
         tt = time - self.t0
         t_emerge = self.emergence_timescale
@@ -120,21 +120,26 @@ class Spots(object):
 
         dF = -current_area * np.maximum(cos_beta, 0)
 
-        return self.latitude, current_lon, current_area, dF
+        if animate:
+            return self.latitude, current_lon, current_area, dF
+        return dF.sum()
 
-    def calc(self, time):
+    def calc(self, time, max_memory=1000):
         """Modulate flux using chunks for all spots"""
+        M = self.nspot
         N = len(time)
+        memory_ceil = max_memory * (1024 ** 2) # bytes
 
-        if N > 365 * 48:
-            nbins = 100
+        if 8 * M * N < memory_ceil:
+            dFlux = self.matrix_calc(time)
+        else:
+            nbins = int(np.ceil(8 * M * N / memory_ceil))
             n = int(N / nbins)
             dFlux = np.zeros(N)
             for i in range(nbins):
                 dFlux[i * n : (i + 1) * n] = self.matrix_calc(time[i * n : (i + 1) * n])
-        else:
-            dFlux = self.matrix_calc(time)
-
+            if nbins * n < N:
+                dFlux[nbins * n :] = self.matrix_calc(time[nbins * n :])
         return dFlux
 
     def matrix_calc(self, time):
@@ -279,7 +284,7 @@ class Spots(object):
 def _update_figure(time, spots, ax, title):
     ax1, ax2 = ax
 
-    latitudes, longitudes, areas, fluxes = spots.calc_i(time)
+    latitudes, longitudes, areas, fluxes = spots.calc_i(time, animate=True)
     longitudes = (longitudes * RAD2DEG) % 360
     longitudes[longitudes >= 180] -= 360
 
@@ -334,7 +339,7 @@ def get_animation(path, time, **kw):
     return ani
 
 
-def _test():
+def _test_animation():
     time = np.linspace(1040, 1070, 361)
     ani = get_animation(
         "/home/zach/PhD/tess_sim/lightcurves/0100.fits",
@@ -349,5 +354,5 @@ def _test():
 
 
 if __name__ == "__main__":
-    _test()
+    _test_animation()
     
