@@ -9,6 +9,7 @@ import pandas as pd
 from astropy.io import fits
 import matplotlib.pyplot as plt
 from matplotlib import animation, gridspec, patches
+import cartopy.crs as ccrs
 
 from .constants import RAD2DEG, DAY2SEC, DAY2MIN, OMEGA_SUN, FLUX_SCALE
 from .config import dur, cad
@@ -202,6 +203,61 @@ class Spots(object):
         ax.set_xlabel("Time (days)")
         ax.set_ylabel("Latitude (deg)")
 
+    def ortho_animation(self, time, sim, lightcurve, window_size=50, **kw):
+        nlat = 16
+        nlon = 36
+        dlon = 360 / nlon
+
+        lat_width = 7
+        lat_min = max(sim["Spot Min"] - lat_width, 0)
+        lat_max = sim["Spot Max"] + lat_width
+
+        fig = plt.figure(figsize=(5, 6), constrained_layout=False)
+        fig.subplots_adjust(
+            top=0.95, bottom=0.08, left=0.16, right=0.95, hspace=0.1)
+        gs = gridspec.GridSpec(2, 1, figure=fig, height_ratios=(1, 0.5))
+        ax1 = fig.add_subplot(gs[0], 
+            projection=ccrs.Orthographic(0, 90 - RAD2DEG * self.inclination))
+        ax2 = fig.add_subplot(gs[1])
+
+        ax1.set_global()
+        ax1.gridlines(color='k', linestyle='dotted')
+        ax1.scatter([], [], s=1, alpha=0.5, c="#996699", lw=0.5,
+            transform=ccrs.PlateCarree())
+
+        ax2.plot(lightcurve["TIME"], lightcurve["MODEL_FLUX"])
+        ax2.add_artist(
+            patches.Ellipse(
+                (0.5, 0.5),
+                width=0.02,
+                height=0.05,
+                color="r",
+                transform=ax2.transAxes,
+                zorder=2,
+            )
+        )
+        width = window_size / 2
+        ax2.set_ylim(0.97, 1)
+        ax2.set_xticks(np.arange(time[0] - width / 2, time[-1] + width / 2, width / 2))
+        ax2.set_xlim(time[0] - width, time[0] + width)
+        ax2.set_xlabel("Time (days)")
+        ax2.set_ylabel("Relative Flux")
+        ax2.vlines(0.5, color="r", ymin=0, ymax=1, transform=ax2.transAxes)
+        title = fig.suptitle("")
+        fig.align_labels()
+
+        ax = (ax1, ax2)
+        ani = animation.FuncAnimation(
+            fig,
+            _update_figure,
+            frames=time,
+            blit=False,
+            repeat=False,
+            fargs=(self, ax, title, 'ortho'),
+            **kw,
+        )
+        return ani
+
     def animate_evolution(self, time, sim, lightcurve, window_size=50, **kw):
         nlat = 16
         nlon = 36
@@ -281,16 +337,23 @@ class Spots(object):
         return ani
 
 
-def _update_figure(time, spots, ax, title):
+def _update_figure(time, spots, ax, title, projection=None):
     ax1, ax2 = ax
 
     latitudes, longitudes, areas, fluxes = spots.calc_i(time, animate=True)
     longitudes = (longitudes * RAD2DEG) % 360
     longitudes[longitudes >= 180] -= 360
 
-    im1 = ax1.collections[-1]
+    if projection == 'ortho':
+        coll_idx = 0
+        sizes = -10 * fluxes / FLUX_SCALE
+    else:
+        coll_idx = -1
+        sizes = 10 * areas / FLUX_SCALE
+
+    im1 = ax1.collections[coll_idx]
     im1.set_offsets(np.c_[longitudes, latitudes * RAD2DEG])
-    im1.set_sizes(10 * areas / FLUX_SCALE)
+    im1.set_sizes(sizes)
     new_flux = 1 + fluxes.sum()
 
     y1, y2 = ax2.get_ylim()
@@ -313,7 +376,7 @@ def _update_figure(time, spots, ax, title):
     return (im1,)
 
 
-def get_animation(path, time, **kw):
+def get_animation(path, time, projection=None, **kw):
     path_list = path.split("/")
     fname = path_list.pop(-1)
     sim_number = int("".join([char for char in fname if char.isdigit()]))
@@ -335,7 +398,10 @@ def get_animation(path, time, **kw):
         decay_timescale=my_sim["Decay Time"],
     )
 
-    ani = my_spots.animate_evolution(time, my_sim, lightcurve, **kw)
+    if projection == 'ortho':
+        ani = my_spots.ortho_animation(time, my_sim, lightcurve, **kw)
+    else:
+        ani = my_spots.animate_evolution(time, my_sim, lightcurve, **kw)
     return ani
 
 
@@ -344,6 +410,7 @@ def _test_animation():
     ani = get_animation(
         "/home/zach/PhD/tess_sim/lightcurves/0100.fits",
         time,
+        projection='ortho',
         window_size=100,
         interval=20,
     )
