@@ -203,15 +203,7 @@ class Spots(object):
         ax.set_xlabel("Time (days)")
         ax.set_ylabel("Latitude (deg)")
 
-    def ortho_animation(self, time, sim, lightcurve, window_size=50, **kw):
-        nlat = 16
-        nlon = 36
-        dlon = 360 / nlon
-
-        lat_width = 7
-        lat_min = max(sim["Spot Min"] - lat_width, 0)
-        lat_max = sim["Spot Max"] + lat_width
-
+    def ortho_animation(self, time, lightcurve, window_size=50, **kw):
         fig = plt.figure(figsize=(5, 6), constrained_layout=False)
         fig.subplots_adjust(
             top=0.95, bottom=0.08, left=0.16, right=0.95, hspace=0.1)
@@ -399,7 +391,7 @@ def get_animation(path, time, projection=None, **kw):
     )
 
     if projection == 'ortho':
-        ani = my_spots.ortho_animation(time, my_sim, lightcurve, **kw)
+        ani = my_spots.ortho_animation(time, lightcurve, **kw)
     else:
         ani = my_spots.animate_evolution(time, my_sim, lightcurve, **kw)
     return ani
@@ -416,7 +408,6 @@ def _test_animation():
     )
     plt.show()
 
-    exit()
     ani.save("/home/zach/Desktop/lightcurve.gif", writer="imagemagick", dpi=100, fps=10)
 
 

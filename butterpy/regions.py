@@ -1,6 +1,6 @@
 from time import time
 import numpy as np
-from pandas import DataFrame as DF
+from pandas import DataFrame, Series
 from scipy.stats import truncnorm
 from .constants import RAD2DEG, YEAR2DAY
 import matplotlib.pyplot as plt
@@ -23,8 +23,11 @@ fact = np.exp(
     delta_lnA * np.arange(n_bins)
 )  # array of area reduction factors, = [1, 1.64, 2.71, 4.48, 7.39]
 ftot = fact.sum()  # sum of reduction factors
-bipole_widths = np.sqrt(max_area / fact)  # array of bipole widths (deg)
+areas = max_area / fact
+bipole_widths = np.sqrt(areas)  # array of bipole widths (deg)
 
+total_area = 4 * 180**2 / np.pi
+threshold_area = 0.8 * total_area
 
 def active_latitudes(min_ave_lat, max_ave_lat, phase, butterfly=True):
     if butterfly:
@@ -56,6 +59,7 @@ def regions(
     cycle_overlap=2,
     max_ave_lat=35,
     min_ave_lat=7,
+    decay_timescale=5.0,
     tsim=3650,
     tstart=0,
 ):
@@ -116,10 +120,9 @@ def regions(
     dlat = (lat_max - lat_min) / nlat
     dlon = 360 / nlon
 
-    n_count = 0
     n_current_cycle = 0
 
-    spots = {}
+    spots = DataFrame(columns=['nday', 'lat', 'lon', 'area', 'bmax'])
 
     Nday, Icycle = np.mgrid[0:tsim, 0:2].reshape(2, 2 * tsim)
     n_current_cycle = Nday // cycle_length_days
@@ -147,6 +150,12 @@ def regions(
             continue
             
         tau += 1
+
+        # Check if there's room for spots to emerge. 
+        earliest = max(nday - decay_timescale, 0)
+        total_area = spots.query(f'nday > {earliest}').area.sum()
+        if total_area > threshold_area: 
+            continue
 
         # Emergence rate of correlated active regions
         rc0 = np.zeros((nlon, nlat, 2))
@@ -199,15 +208,12 @@ def regions(
                         lat_rad = lat / RAD2DEG
                         lon_rad = lon / RAD2DEG
 
-                        spots[n_count] = {
-                            "nday": nday,
-                            "lat": (1 - 2 * k) * lat_rad,  # +lat for N, -lat for S
-                            "lon": lon_rad,
-                            "bmax": peak_magnetic_flux,
-                        }
+                        spots = spots.append(
+                            Series([nday, (1 - 2*k) * lat_rad, lon_rad, areas[nb], peak_magnetic_flux], spots.columns),
+                            ignore_index=True
+                        )
 
-                        n_count += 1
                         if nb < 1:
                             tau[i, j, k] = 0
 
-    return DF.from_dict(spots, orient="index")
+    return spots
