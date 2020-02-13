@@ -3,6 +3,7 @@
 spots.py
 Contains the Spots class, which holds parameters for spots on a given star.
 """
+import os
 
 import numpy as np
 import pandas as pd
@@ -11,7 +12,8 @@ import matplotlib.pyplot as plt
 from matplotlib import animation, gridspec, patches
 import cartopy.crs as ccrs
 
-from .constants import RAD2DEG, DAY2SEC, DAY2MIN, OMEGA_SUN, FLUX_SCALE
+from .regions import regions
+from .constants import RAD2DEG, DAY2SEC, PROT_SUN, FLUX_SCALE
 from .config import dur, cad
 
 
@@ -54,33 +56,28 @@ class Spots(object):
         spot_properties,
         dur=None,
         alpha_med=FLUX_SCALE,
-        incl=None,
-        omega=1.0,
-        delta_omega=0.18,
+        incl=1,
+        period=PROT_SUN,
+        diffrot_shear=0.2,
         diffrot_func=diffrot,
         decay_timescale=5.0,
         threshold=0.1,
     ):
 
         ## global stellar parameters, same for all spots
-
         self.spot_properties = spot_properties
-        if incl is None:
-            self.inclination = np.arcsin(np.random.uniform())
-        else:
-            self.inclination = incl
+        self.inclination = incl
 
         # rotation
-        self.omega = omega * OMEGA_SUN
-        self.delta_omega = delta_omega * OMEGA_SUN
-        self.equatorial_period = 2 * np.pi / self.omega / DAY2SEC
+        self.omega = 2 * np.pi / (period * DAY2SEC)
+        self.delta_omega = diffrot_shear * self.omega
         self.diffrot_func = diffrot_func
 
         # spot emergence and decay timescales
         self.emergence_timescale = max(
-            2.0, self.equatorial_period * decay_timescale / 5
+            2.0, period * decay_timescale / 5
         )
-        self.decay_timescale = self.equatorial_period * decay_timescale
+        self.decay_timescale = period * decay_timescale
 
         # convert active region properties
         time = spot_properties["nday"].values
@@ -217,7 +214,7 @@ class Spots(object):
         ax1.scatter([], [], s=1, alpha=0.5, c="#996699", lw=0.5,
             transform=ccrs.PlateCarree())
 
-        ax2.plot(lightcurve["TIME"], lightcurve["MODEL_FLUX"])
+        ax2.plot(lightcurve["time"], lightcurve["flux"])
         ax2.add_artist(
             patches.Ellipse(
                 (0.5, 0.5),
@@ -295,7 +292,7 @@ class Spots(object):
         ax1.set_ylabel("Latitude (degrees)")
         ax1.scatter([], [], s=1, alpha=0.5, c="#996699", lw=0.5)
 
-        ax2.plot(lightcurve["TIME"], lightcurve["MODEL_FLUX"])
+        ax2.plot(lightcurve["time"], lightcurve["flux"])
         ax2.add_artist(
             patches.Ellipse(
                 (0.5, 0.5),
@@ -369,12 +366,9 @@ def _update_figure(time, spots, ax, title, projection=None):
 
 
 def get_animation(path, time, projection=None, **kw):
-    path_list = path.split("/")
-    fname = path_list.pop(-1)
+    root, fname = os.path.split()
     sim_number = int("".join([char for char in fname if char.isdigit()]))
-
-    path_list.append("simulation_properties.csv")
-    path_to_sims = "/".join(path_list)
+    path_to_sims = os.path.join(root, 'simulation_properties.csv')
 
     my_sim = pd.read_csv(path_to_sims).iloc[sim_number]
     with fits.open(path) as f:
@@ -384,8 +378,8 @@ def get_animation(path, time, projection=None, **kw):
     my_spots = Spots(
         pd.DataFrame(spot_properties),
         incl=my_sim["Inclination"],
-        omega=my_sim["Omega"],
-        delta_omega=my_sim["Delta Omega"],
+        period=my_sim["Period"],
+        diffrot_shear=my_sim["Shear"],
         alpha_med=np.sqrt(my_sim["Activity Rate"]) * FLUX_SCALE,
         decay_timescale=my_sim["Decay Time"],
     )
@@ -396,6 +390,25 @@ def get_animation(path, time, projection=None, **kw):
         ani = my_spots.animate_evolution(time, my_sim, lightcurve, **kw)
     return ani
 
+def _sun_test():
+    _star_test()
+
+def _star_test(activity_rate=1, cycle_length=11, cycle_overlap=2,
+        decay_timescale=5, period=24.5, max_ave_lat=35, min_ave_lat=7):
+    print('Generating spot evolution for the star...')
+    star = regions(activity_rate=activity_rate, cycle_length=cycle_length,
+        cycle_overlap=cycle_overlap, decay_time=(period*decay_timescale),
+        max_ave_lat=max_ave_lat, min_ave_lat=min_ave_lat)
+    spots = Spots(star, alpha_med=(activity_rate*FLUX_SCALE), period=period,
+        decay_timescale=decay_timescale)
+    
+    print('Generating light curve...')
+    time = np.arange(0, 3650)
+    flux = 1 + spots.calc(time)
+
+    lc = pd.DataFrame(np.vstack([time, flux]).T, columns=['time', 'flux'])
+    ani = spots.ortho_animation(time, lc)
+    plt.show()
 
 def _test_animation():
     time = np.linspace(1040, 1070, 361)
@@ -408,9 +421,4 @@ def _test_animation():
     )
     plt.show()
 
-    ani.save("/home/zach/Desktop/lightcurve.gif", writer="imagemagick", dpi=100, fps=10)
-
-
-if __name__ == "__main__":
-    _test_animation()
-    
+    #ani.save("/home/zach/Desktop/lightcurve.gif", writer="imagemagick", dpi=100, fps=10)   
