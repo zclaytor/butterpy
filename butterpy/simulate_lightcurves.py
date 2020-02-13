@@ -48,15 +48,15 @@ def simulate(s, fig, ax, out_str):
         lc = Spots(
             spot_properties,
             incl=s["Inclination"],
-            omega=s["Omega"],
-            delta_omega=s["Delta Omega"],
+            period=s["Period"],
+            diffrot_shear=s["Shear"],
             alpha_med=np.sqrt(s["Activity Rate"]) * FLUX_SCALE,
             decay_timescale=s["Decay Time"],
         )
 
         dF = lc.calc(time)
 
-    final = Table(np.c_[time, 1 + dF], names=["TIME", "MODEL_FLUX"])
+    final = Table(np.c_[time, 1 + dF], names=["time", "flux"])
     hdu_lc = fits.BinTableHDU(final)
     hdu_spots = fits.BinTableHDU(Table.from_pandas(spot_properties))
     hdul = fits.HDUList([fits.PrimaryHDU(), hdu_lc, hdu_spots])
@@ -76,7 +76,7 @@ def simulate(s, fig, ax, out_str):
     ax[0].set_ylim(-90, 90)
     ax[0].set_yticks((-90, -45, 0, 45, 90))
     ax[0].set_ylabel("Latitude (deg)")
-    ax[1].plot(final["TIME"], final["MODEL_FLUX"], c="C2")
+    ax[1].plot(final["time"], final["flux"], c="C2")
     ax[1].set_ylabel("Model Flux")
     ax[0].set_title(f"Simulation {out_str}")
     fig.savefig(f"{sim_dir}/{out_str}.png", dpi=150)
