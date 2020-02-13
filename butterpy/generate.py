@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from config import Nlc, sim_dir
-from constants import PROT_SUN, RAD2DEG
+from constants import RAD2DEG
 
 
 def generate_simdata():
@@ -28,15 +28,14 @@ def generate_simdata():
     # if butterfly==True, spot emergence latitude has cycle phase dependence
     butterfly = np.random.choice([True, False], size=Nlc, p=[0.8, 0.2])
     # differential rotation shear ~ log uniform, and allow for negative values
-    delta_omega = np.zeros(Nlc)
+    diffrot_shear = np.zeros(Nlc)
     n_pos = int(Nlc * 0.5)
     n_neg = int(Nlc * 0.25)
-    delta_omega[:n_pos] = 10 ** np.random.uniform(-1, 0, size=n_pos)
-    delta_omega[n_pos : n_pos + n_neg] = -10 ** np.random.uniform(-1, 0, size=n_neg)
-    np.random.shuffle(delta_omega)
+    diffrot_shear[:n_pos] = 10 ** np.random.uniform(-1, 0, size=n_pos)
+    diffrot_shear[n_pos : n_pos + n_neg] = -10 ** np.random.uniform(-1, 0, size=n_neg)
+    np.random.shuffle(diffrot_shear)
 
-    omega = PROT_SUN / period
-    delta_omega *= omega
+    omega = 2 * np.pi / period # rad / day
 
     plt.figure(figsize=(12, 7))
     plt.subplot2grid((2, 3), (0, 0))
@@ -56,8 +55,8 @@ def generate_simdata():
     plt.xlabel("Stellar activity rate (x Solar)")
     plt.ylabel("N")
     plt.subplot2grid((2, 3), (1, 1))
-    plt.hist(delta_omega, 20, color="C5")
-    plt.xlabel(r"Differential Rotation Shear $\Delta \Omega$ (x Solar)")
+    plt.hist(diffrot_shear, 20, color="C5")
+    plt.xlabel(r"Differential Rotation Shear $\Delta \Omega / \Omega$")
     plt.ylabel("N")
     plt.subplot2grid((2, 3), (1, 2))
     plt.hist(theta_high - theta_low, 20, color="C6")
@@ -76,7 +75,7 @@ def generate_simdata():
     sims["Spot Max"] = theta_high
     sims["Period"] = period
     sims["Omega"] = omega
-    sims["Delta Omega"] = delta_omega
+    sims["Shear"] = diffrot_shear
     sims["Decay Time"] = tau_evol
     sims["Butterfly"] = butterfly
     sims = pd.DataFrame.from_dict(sims)
