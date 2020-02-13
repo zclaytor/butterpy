@@ -391,7 +391,8 @@ def get_animation(path, time, projection=None, **kw):
     return ani
 
 def _sun_test():
-    _star_test()
+    ani = _star_test()
+    return ani
 
 def _star_test(activity_rate=1, cycle_length=11, cycle_overlap=2,
         decay_timescale=5, period=24.5, max_ave_lat=35, min_ave_lat=7):
@@ -410,6 +411,8 @@ def _star_test(activity_rate=1, cycle_length=11, cycle_overlap=2,
     ani = spots.ortho_animation(time, lc)
     plt.show()
 
+    return ani
+
 def _test_animation():
     time = np.linspace(1040, 1070, 361)
     ani = get_animation(
@@ -421,4 +424,5 @@ def _test_animation():
     )
     plt.show()
 
-    #ani.save("/home/zach/Desktop/lightcurve.gif", writer="imagemagick", dpi=100, fps=10)   
+    #ani.save("/home/zach/Desktop/lightcurve.gif", writer="imagemagick", dpi=100, fps=10) 
+    return ani  
