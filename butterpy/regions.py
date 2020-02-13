@@ -26,8 +26,6 @@ ftot = fact.sum()  # sum of reduction factors
 areas = max_area / fact
 bipole_widths = np.sqrt(areas)  # array of bipole widths (deg)
 
-total_area = 4 * 180**2 / np.pi
-threshold_area = 0.8 * total_area
 
 def active_latitudes(min_ave_lat, max_ave_lat, phase, butterfly=True):
     if butterfly:
@@ -59,7 +57,7 @@ def regions(
     cycle_overlap=2,
     max_ave_lat=35,
     min_ave_lat=7,
-    decay_timescale=5.0,
+    decay_time=120,
     tsim=3650,
     tstart=0,
 ):
@@ -104,11 +102,11 @@ def regions(
     width = 0.4*bsiz.
 
     """
-    amplitude = 10 * activity_rate  # why 10*activity rate?
+    amplitude = 10 * activity_rate
     cycle_length_days = cycle_length * YEAR2DAY
     nclen = (cycle_length + cycle_overlap) * YEAR2DAY
 
-    # tau is time since last emergence
+    # tau is time since last emergence in each lat/lon bin
     tau = np.ones((nlon, nlat, 2), dtype=np.long) * tau2
 
     # width of latitude and longitude bins
@@ -120,7 +118,11 @@ def regions(
     dlat = (lat_max - lat_min) / nlat
     dlon = 360 / nlon
 
-    n_current_cycle = 0
+    # The total area taken up by the active latitude bands, in degrees.
+    # If area taken up by spots reaches the threshold, suppress spot emergence.
+    total_area = 4 * 180**2 / np.pi * \
+        (np.sin(lat_max/RAD2DEG) - np.sin(lat_min/RAD2DEG))
+    threshold_area = 0.8 * total_area
 
     spots = DataFrame(columns=['nday', 'lat', 'lon', 'area', 'bmax'])
 
@@ -152,7 +154,7 @@ def regions(
         tau += 1
 
         # Check if there's room for spots to emerge. 
-        earliest = max(nday - decay_timescale, 0)
+        earliest = max(nday - decay_time, 0)
         total_area = spots.query(f'nday > {earliest}').area.sum()
         if total_area > threshold_area: 
             continue
