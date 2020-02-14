@@ -2,10 +2,12 @@ from time import time
 import numpy as np
 from pandas import DataFrame, Series
 from scipy.stats import truncnorm
-from .constants import RAD2DEG, YEAR2DAY
+from .constants import RAD2DEG, YEAR2DAY, FLUX_SCALE
 import matplotlib.pyplot as plt
 
 import logging
+
+spot_contrast = 0.75
 
 n_bins = 5  # number of area bins
 delta_lnA = 0.5  # bin width in log-area
@@ -58,6 +60,7 @@ def regions(
     max_ave_lat=35,
     min_ave_lat=7,
     decay_time=120,
+    alpha_med=FLUX_SCALE,
     tsim=3650,
     tstart=0,
 ):
@@ -118,13 +121,15 @@ def regions(
     dlat = (lat_max - lat_min) / nlat
     dlon = 360 / nlon
 
-    # The total area taken up by the active latitude bands, in degrees.
-    # If area taken up by spots reaches the threshold, suppress spot emergence.
-    total_area = 4 * 180**2 / np.pi * \
-        (np.sin(lat_max/RAD2DEG) - np.sin(lat_min/RAD2DEG))
-    threshold_area = 0.8 * total_area
+    # The fractional area taken up by the active latitude bands is
+    # 2 * 2pi * delta_lat / 4pi = delta_lat
+    # If we treat that entire area as a spot with a given contrast,
+    # we find a floor for the flux modulation. If we hit that floor,
+    # we suppress the formation of spots.  
+    frac_area = np.sin(lat_max/RAD2DEG) - np.sin(lat_min/RAD2DEG)
+    threshold_flux = spot_contrast*frac_area
 
-    spots = DataFrame(columns=['nday', 'lat', 'lon', 'area', 'bmax'])
+    spots = DataFrame(columns=['nday', 'lat', 'lon', 'bmax'])
 
     Nday, Icycle = np.mgrid[0:tsim, 0:2].reshape(2, 2 * tsim)
     n_current_cycle = Nday // cycle_length_days
@@ -153,10 +158,11 @@ def regions(
             
         tau += 1
 
-        # Check if there's room for spots to emerge. 
-        earliest = max(nday - decay_time, 0)
-        total_area = spots.query(f'nday > {earliest}').area.sum()
-        if total_area > threshold_area: 
+        # Check if we're close to the threshold flux. 
+        earliest = max(nday - 0.5*decay_time, 0)
+        total_flux_removed = alpha_med * spots.query(f'nday > {earliest}').bmax.sum()/ 55.78254
+
+        if total_flux_removed > threshold_flux: 
             continue
 
         # Emergence rate of correlated active regions
@@ -200,9 +206,7 @@ def regions(
                         width_threshold = 4.0
 
                         # Eq. 15: B_r ~= B_max * (flux_distribution_width/width_threshold)^2
-                        Bmax = (
-                            250
-                        )  # Solar-calibrated initial peak flux density in gauss
+                        Bmax = 250 # Solar-calibrated initial peak flux density in gauss
                         peak_magnetic_flux = (
                             Bmax * (flux_distribution_width / width_threshold) ** 2
                         )
@@ -211,7 +215,7 @@ def regions(
                         lon_rad = lon / RAD2DEG
 
                         spots = spots.append(
-                            Series([nday, (1 - 2*k) * lat_rad, lon_rad, areas[nb], peak_magnetic_flux], spots.columns),
+                            Series([nday, (1 - 2*k) * lat_rad, lon_rad, peak_magnetic_flux], spots.columns),
                             ignore_index=True
                         )
 
