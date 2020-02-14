@@ -160,7 +160,9 @@ def regions(
 
         # Check if we're close to the threshold flux. 
         earliest = max(nday - 0.5*decay_time, 0)
-        total_flux_removed = alpha_med * spots.query(f'nday > {earliest}').bmax.sum()/ 55.78254
+        # flux removed corresponds to calculation of dF in spots.py.
+        # field strength is normalized by median strength, 55.8 gauss
+        total_flux_removed = alpha_med * spots.query(f'nday > {earliest}').bmax.sum()/ 55.8
 
         if total_flux_removed > threshold_flux: 
             continue
@@ -202,15 +204,16 @@ def regions(
                     lat = lat_min + dlat * (np.random.uniform() + j)
 
                     if nday > tstart:
-                        flux_distribution_width = 0.4 * bipole_widths[nb]
-                        width_threshold = 4.0
-
-                        # Eq. 15: B_r ~= B_max * (flux_distribution_width/width_threshold)^2
-                        Bmax = 250 # Solar-calibrated initial peak flux density in gauss
-                        peak_magnetic_flux = (
-                            Bmax * (flux_distribution_width / width_threshold) ** 2
-                        )
-
+                        # Eq. 15 from van Ballegooijen:
+                        # B_r = B_max * (flux_width/width_threshold)^2, Bmax is
+                        # solar-calibrated initial peak flux density in gauss
+                        # if Bmax = 250, then Bmax*(flux_width/width_thresh)^2
+                        # = 250 * (0.4 * bipole_width/4.0)^2
+                        # = 250/100 * bipole_area
+                        # = 2.5 * bipole_area
+                
+                        peak_magnetic_flux = 2.5 * areas[nb]
+                        
                         lat_rad = lat / RAD2DEG
                         lon_rad = lon / RAD2DEG
 
