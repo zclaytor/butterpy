@@ -399,7 +399,8 @@ def _star_test(activity_rate=1, cycle_length=11, cycle_overlap=2,
     print('Generating spot evolution for the star...')
     star = regions(activity_rate=activity_rate, cycle_length=cycle_length,
         cycle_overlap=cycle_overlap, decay_time=(period*decay_timescale),
-        max_ave_lat=max_ave_lat, min_ave_lat=min_ave_lat)
+        max_ave_lat=max_ave_lat, min_ave_lat=min_ave_lat,
+        alpha_med=(activity_rate*FLUX_SCALE))
     spots = Spots(star, alpha_med=(activity_rate*FLUX_SCALE), period=period,
         decay_timescale=decay_timescale)
     

@@ -35,6 +35,7 @@ def simulate(s, fig, ax, out_str):
         cycle_overlap=s["Cycle Overlap"],
         max_ave_lat=s["Spot Max"],
         min_ave_lat=s["Spot Min"],
+        alpha_med=np.sqrt(s["Activity Rate"]) * FLUX_SCALE,
         tsim=dur,
         tstart=0,
     )
