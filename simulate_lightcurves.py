@@ -1,17 +1,17 @@
 import sys
 from tqdm import tqdm
 import numpy as np
-import matplotlib.pylab as plt
+import matplotlib.pyplot as plt
 import pandas as pd
 from astropy.io import fits
 from astropy.table import Table
 
-from .spots import Spots
-from .regions import regions
-from .generate import generate_simdata
-from .config import sim_dir, simulation_properties_dir
-from .config import Nlc, dur, cad
-from .constants import RAD2DEG, PROT_SUN, FLUX_SCALE, DAY2MIN
+from butterpy import regions, Spots
+from butterpy.constants import RAD2DEG, PROT_SUN, FLUX_SCALE, DAY2MIN
+
+from config import sim_dir, simulation_properties_dir
+from config import Nlc, dur, cad
+from generate import generate_simdata
 
 
 def scale_tess_flux(f1, f2):
