@@ -51,7 +51,7 @@ def simulate(s, fig, ax, out_str):
             incl=s["Inclination"],
             period=s["Period"],
             diffrot_shear=s["Shear"],
-            alpha_med=np.sqrt(s["Activity Rate"]) * FLUX_SCALE,
+            alpha_med=np.sqrt(s["Activity Rate"])*FLUX_SCALE,
             decay_timescale=s["Decay Time"],
         )
 

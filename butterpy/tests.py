@@ -6,22 +6,24 @@ from .regions import regions
 from .spots import Spots, get_animation
 from .constants import FLUX_SCALE
 
-def _sun_test():
-    ani = _star_test()
+def sun_test():
+    ani = star_test()
     return ani
 
-def _star_test(activity_rate=1, cycle_length=11, cycle_overlap=2,
-        decay_timescale=5, period=24.5, max_ave_lat=35, min_ave_lat=7):
+def star_test(activity_rate=1, cycle_length=11, cycle_overlap=2, inclination=1,
+        spot_min=7, spot_max=35, period=24.5, shear=0.2, decay_time=5, 
+        butterfly=True, t1=0, t2=3650, tstep=1):
     print('Generating spot evolution for the star...')
-    star = regions(activity_rate=activity_rate, cycle_length=cycle_length,
-        cycle_overlap=cycle_overlap, decay_time=(period*decay_timescale),
-        max_ave_lat=max_ave_lat, min_ave_lat=min_ave_lat,
+    star = regions(butterfly=butterfly, activity_rate=activity_rate, 
+        cycle_length=cycle_length, cycle_overlap=cycle_overlap, 
+        decay_time=(period*decay_time),
+        max_ave_lat=spot_max, min_ave_lat=spot_min,
         alpha_med=(activity_rate*FLUX_SCALE))
     spots = Spots(star, alpha_med=(activity_rate*FLUX_SCALE), period=period,
-        decay_timescale=decay_timescale)
+        incl=inclination, decay_timescale=decay_time, diffrot_shear=shear)
     
     print('Generating light curve...')
-    time = np.arange(0, 3650)
+    time = np.arange(t1, t2, tstep)
     flux = 1 + spots.calc(time)
 
     lc = pd.DataFrame(np.vstack([time, flux]).T, columns=['time', 'flux'])
@@ -30,10 +32,10 @@ def _star_test(activity_rate=1, cycle_length=11, cycle_overlap=2,
 
     return ani
 
-def _test_animation():
-    time = np.linspace(1040, 1070, 361)
+def test_animation(path, t1=1000, t2=1365, tstep=1):
+    time = np.arange(t1, t2, tstep)
     ani = get_animation(
-        "/home/zach/PhD/tess_sim/lightcurves/0100.fits",
+        path,
         time,
         projection='ortho',
         window_size=100,
