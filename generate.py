@@ -2,9 +2,9 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from butterpy.config import Nlc, sim_dir
 from butterpy.constants import RAD2DEG
 
+from config import Nlc, sim_dir
 
 def generate_simdata():
     # inclination ~ uniform in sin^2(i)
