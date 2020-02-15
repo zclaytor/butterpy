@@ -13,7 +13,6 @@ from matplotlib import animation, gridspec, patches
 import cartopy.crs as ccrs
 
 from .constants import RAD2DEG, DAY2SEC, PROT_SUN, FLUX_SCALE
-from .config import dur, cad
 
 
 def diffrot(omega0, delta_omega, lat):
