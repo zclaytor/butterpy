@@ -1,10 +1,14 @@
-root = "/home/zach/PhD/tess_sim/"
-tess_dir = root + "ETE6/"
-tess_stars_dir = root + "tess_stars.csv"
-sim_dir = root + "lightcurves/"
-simulation_properties_dir = sim_dir + "simulation_properties.csv"
+import os
 
+root = "/home/zach/Desktop/tesstoys/"
+tess_stars_dir = os.path.join(root, "tess_stars.csv")
+sim_dir = os.path.join(root, "lightcurves/")
+simulation_properties_dir = os.path.join(sim_dir, "simulation_properties.csv")
 
-Nlc = 1000  # How many light curves are we making?
+# Create directories if they don't exist
+if not os.path.exists(sim_dir):
+    os.makedirs(sim_dir)
+
+Nlc = 100  # How many light curves are we making?
 dur = 3650  # Duration in days
 cad = 30  # cadence in minutes
