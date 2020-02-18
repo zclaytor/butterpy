@@ -345,8 +345,8 @@ def _update_figure(time, spots, ax, title, projection=None):
 
     y1, y2 = ax2.get_ylim()
     if new_flux < y1 + 0.01:
-        new_y1 = new_flux - 0.01
-        ax2.set_ylim(new_y1, y2)
+        y1 = new_flux - 0.01
+        ax2.set_ylim(y1, y2)
     circle_y = (new_flux - y1) / (y2 - y1)
     circle, = ax2.artists
     circle.set_center((0.5, circle_y))
