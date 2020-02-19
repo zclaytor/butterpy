@@ -80,7 +80,8 @@ def generate_simdata():
     sims["Decay Time"] = tau_evol
     sims["Butterfly"] = butterfly
     sims = pd.DataFrame.from_dict(sims)
-    sims.to_csv(sim_dir + "simulation_properties.csv", float_format="%5.4f")
+    sims.to_csv(sim_dir + "simulation_properties.csv", float_format="%5.4f",
+        index_label="Simulation Number")
 
     return sims
 
