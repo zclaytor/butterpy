@@ -13,6 +13,7 @@ def sun_test():
 def star_test(activity_rate=1, cycle_length=11, cycle_overlap=2, inclination=1,
         spot_min=7, spot_max=35, period=24.5, shear=0.2, decay_time=5, 
         butterfly=True, t1=0, t2=3650, tstep=1):
+        
     print('Generating spot evolution for the star...')
     star = regions(butterfly=butterfly, activity_rate=activity_rate, 
         cycle_length=cycle_length, cycle_overlap=cycle_overlap, 
