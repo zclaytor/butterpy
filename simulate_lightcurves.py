@@ -1,3 +1,4 @@
+import os
 import sys
 from tqdm import tqdm
 import numpy as np
@@ -6,7 +7,7 @@ import pandas as pd
 from astropy.io import fits
 from astropy.table import Table
 
-from butterpy import regions, Spots
+from butterpy import regions, Spots, tests
 from butterpy.constants import RAD2DEG, PROT_SUN, FLUX_SCALE, DAY2MIN
 
 from config import sim_dir, simulation_properties_dir
@@ -36,6 +37,7 @@ def simulate(s, fig, ax, out_str):
         max_ave_lat=s["Spot Max"],
         min_ave_lat=s["Spot Min"],
         alpha_med=np.sqrt(s["Activity Rate"]) * FLUX_SCALE,
+        decay_time=s["Decay Time"]*s["Period"],
         tsim=dur,
         tstart=0,
     )
@@ -87,6 +89,14 @@ def simulate(s, fig, ax, out_str):
 
     return 0
 
+def read_simdata(path=simulation_properties_dir):
+    try:
+        sims = pd.read_csv(path)
+    except FileNotFoundError:
+        raise FileNotFoundError(
+            'Missing simulation properties file. '
+            'Try running with keyword "new".')
+    return sims        
 
 if __name__ == "__main__":
     np.random.seed(777)
@@ -95,13 +105,19 @@ if __name__ == "__main__":
         if sys.argv[1] == "new":
             sims = generate_simdata()
 
-    else:
-        try:
-            sims = pd.read_csv(simulation_properties_dir)
-        except FileNotFoundError:
-            print("Missing simulation properties file.")
-            print('Try running with keyword "new".')
+        elif sys.argv[1] == "test":
+            sims = read_simdata(simulation_properties_dir)
+            
+            testno = int(sys.argv[2])
+
+            print(f'Testing simulation {testno:04d}:')
+            print(sims.iloc[testno])
+            tests.test_animation(os.path.join(sim_dir, f'{testno:04d}.fits'),
+                t1=0, t2=3000)
             exit()
+
+    else:
+        sims = read_simdata(simulation_properties_dir)
 
     # Make the light curves
     fig, ax = plt.subplots(2, 1, sharex=True, figsize=(8.5, 6))
