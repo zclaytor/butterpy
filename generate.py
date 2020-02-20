@@ -1,9 +1,10 @@
+import os
+
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
 from butterpy.constants import RAD2DEG
-
 from config import Nlc, sim_dir
 
 def generate_simdata():
