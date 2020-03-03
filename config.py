@@ -1,7 +1,6 @@
 import os
 
 root = "/home/zach/Desktop/tesstoys/"
-tess_stars_dir = os.path.join(root, "tess_stars.csv")
 sim_dir = os.path.join(root, "lightcurves/")
 simulation_properties_dir = os.path.join(sim_dir, "simulation_properties.csv")
 
