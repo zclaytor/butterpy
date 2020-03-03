@@ -117,7 +117,7 @@ def regions(
     # `lat_width` above max_ave_lat and below min_ave_lat
     lat_width = 7  # degrees
     lat_max = max_ave_lat + lat_width
-    lat_min = max(min_ave_lat - lat_width, 0)
+    lat_min = max(min_ave_lat - lat_width, 1) # Using 1 instead of 0 avoids dividing by zero later
     dlat = (lat_max - lat_min) / nlat
     dlon = 360 / nlon
 
@@ -201,7 +201,7 @@ def regions(
                     sumb = cum_sum[i]
 
                     lon = dlon * (np.random.uniform() + i)
-                    lat = lat_min + dlat * (np.random.uniform() + j)
+                    lat = max(lat_min + dlat * (np.random.uniform() + j), 0)
 
                     if nday > tstart:
                         # Eq. 15 from van Ballegooijen:
