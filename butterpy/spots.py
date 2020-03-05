@@ -363,12 +363,17 @@ def _update_figure(time, spots, ax, title, projection=None):
     return (im1,)
 
 
-def get_animation(path, time, projection=None, **kw):
+def get_animation(path, time, projection=None, verbose=False, **kw):
     root, fname = os.path.split(path)
     sim_number = int("".join([char for char in fname if char.isdigit()]))
     path_to_sims = os.path.join(root, 'simulation_properties.csv')
 
     my_sim = pd.read_csv(path_to_sims).iloc[sim_number]
+
+    if verbose:
+        for label, item in my_sim.iteritems():
+            print(f'{label.ljust(20, ".")}{item}')
+
     with fits.open(path) as f:
         lightcurve = f[1].data
         spot_properties = f[2].data

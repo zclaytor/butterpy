@@ -55,7 +55,7 @@ def star_test(
 
     return ani
 
-def test_animation(path, t1=1000, t2=1365, tstep=1):
+def test_animation(path, t1=1000, t2=1365, tstep=1, verbose=False):
     time = np.arange(t1, t2, tstep)
     ani = get_animation(
         path,
@@ -63,6 +63,7 @@ def test_animation(path, t1=1000, t2=1365, tstep=1):
         projection='ortho',
         window_size=100,
         interval=20,
+        verbose=verbose,
     )
     plt.show()
 
