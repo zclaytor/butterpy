@@ -4,32 +4,17 @@ from tqdm import tqdm
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-from astropy.io import fits
-from astropy.table import Table
 
 from butterpy import regions, Spots
 from butterpy.constants import RAD2DEG, PROT_SUN, FLUX_SCALE, DAY2MIN
 
-from config import sim_dir
+from config import sim_dir, spots_dir
 from config import Nlc, dur, cad
 from generate import generate_simdata
 
 
-def scale_tess_flux(f1, f2):
-    """Routine to scale the TESS ETE simulations"""
-    ii = f2 > 0
-    keep = f2[~ii]
-    jj = f1 > 0
-    f2 -= np.median(f2[ii])
-    f2 /= np.std(f2[ii])
-    f2 *= np.std(f1[jj])
-    f2 += np.median(f1[jj])
-    f2[~ii] = keep
-    return f2
-
-
 def simulate(s, out_str):
-    if os.path.exists(f"{sim_dir}/lc{out_str}.fits"):
+    if os.path.exists(os.path.join(sim_dir, "lc{out_str}.pqt")):
         return 0
 
     spot_properties = regions(
@@ -63,11 +48,9 @@ def simulate(s, out_str):
 
         dF = lc.calc(time)
 
-    final = Table(np.c_[time, 1 + dF], names=["time", "flux"])
-    hdu_lc = fits.BinTableHDU(final)
-    hdu_spots = fits.BinTableHDU(Table.from_pandas(spot_properties))
-    hdul = fits.HDUList([fits.PrimaryHDU(), hdu_lc, hdu_spots])
-    hdul.writeto(f"{sim_dir}/lc{out_str}.fits", overwrite=True)
+    lightcurve = pd.DataFrame(np.c_[time, 1 + dF], columns=["time", "flux"])
+    lightcurve.to_parquet(os.path.join(sim_dir, "lc{out_str}.pqt"))
+    spot_properties.to_parquet(os.path.join(spots_dir, "spots{out_str}.pqt"))
 
     return 0
 
@@ -86,9 +69,7 @@ def read_simdata(path, nstart, nrows):
     return sims        
 
 if __name__ == "__main__":
-    np.random.seed(777)
-
-    nrows = 1000
+    nrows = 100
     task_N = int(sys.argv[1])
     nstart = task_N * nrows
 
