@@ -15,19 +15,6 @@ from config import Nlc, dur, cad
 from generate import generate_simdata
 
 
-def scale_tess_flux(f1, f2):
-    """Routine to scale the TESS ETE simulations"""
-    ii = f2 > 0
-    keep = f2[~ii]
-    jj = f1 > 0
-    f2 -= np.median(f2[ii])
-    f2 /= np.std(f2[ii])
-    f2 *= np.std(f1[jj])
-    f2 += np.median(f1[jj])
-    f2[~ii] = keep
-    return f2
-
-
 def simulate(s, fig, ax, out_str):
     spot_properties = regions(
         butterfly=s["Butterfly"],
