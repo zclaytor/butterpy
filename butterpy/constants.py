@@ -9,4 +9,5 @@ RAD2DEG = 180 / pi  # radians to degrees
 PROT_SUN = 24.5  # siderial rotation period at the equator
 OMEGA_SUN = 2 * pi / (PROT_SUN * DAY2SEC)
 
-FLUX_SCALE = 3e-4  # Scaled to Sun
+# Realized 6/26/2020 that this is 1 square degree in radians
+FLUX_SCALE = 3e-4  # Scaled to Sun 
