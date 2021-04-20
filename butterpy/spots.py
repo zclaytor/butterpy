@@ -198,10 +198,11 @@ class Spots(object):
         ax.set_xlabel("Time (days)")
         ax.set_ylabel("Latitude (deg)")
 
-    def ortho_animation(self, time, lightcurve, window_size=50, **kw):
-        fig = plt.figure(figsize=(5, 6), constrained_layout=False)
-        fig.subplots_adjust(
-            top=0.95, bottom=0.08, left=0.16, right=0.95, hspace=0.1)
+    def ortho_animation(self, time, lightcurve, window_size=50, 
+        fig_kw={"figsize": (5, 6)}, **kw):
+        fig = plt.figure(**fig_kw)
+        #fig.subplots_adjust(
+        #    top=0.95, bottom=0.08, left=0.16, right=0.95, hspace=0.1)
         gs = gridspec.GridSpec(2, 1, figure=fig, height_ratios=(1, 0.5))
         ax1 = fig.add_subplot(gs[0], 
             projection=ccrs.Orthographic(0, 90 - RAD2DEG * self.inclination))
