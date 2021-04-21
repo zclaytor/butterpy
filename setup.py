@@ -12,7 +12,7 @@ setup(
     description="Tools for simulating stellar rotational light curves using realistic spot evolution",
     long_description=readme,
     long_description_content_type="text/markdown",
-    url="https://github.com/zclaytor/butterpy"
+    url="https://github.com/zclaytor/butterpy",
     license="MIT",
     python_requires="==3.*,>=3.6.0",
     packages=find_packages(),
