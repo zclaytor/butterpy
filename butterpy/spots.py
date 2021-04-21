@@ -10,7 +10,6 @@ import pandas as pd
 from astropy.io import fits
 import matplotlib.pyplot as plt
 from matplotlib import animation, gridspec, patches
-import cartopy.crs as ccrs
 
 from .constants import RAD2DEG, DAY2SEC, PROT_SUN, FLUX_SCALE
 
@@ -200,6 +199,16 @@ class Spots(object):
 
     def ortho_animation(self, time, lightcurve, window_size=50, 
         fig_kw={"figsize": (5, 6)}, **kw):
+        try:
+            import cartopy.crs as ccrs
+        except:
+            raise ImportError(
+                "butterpy requires the use of cartopy to run orthographic animations, "
+                "but cartopy is not installed. Please install using "
+                "`conda install -c conda-forge cartopy`, or if using pip, see "
+                "https://scitools.org.uk/cartopy/docs/latest/installing.html for details."
+            )
+
         fig = plt.figure(**fig_kw)
         #fig.subplots_adjust(
         #    top=0.95, bottom=0.08, left=0.16, right=0.95, hspace=0.1)
