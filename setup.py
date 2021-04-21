@@ -6,6 +6,7 @@ with open("README.md", "r") as fh:
 exec(open("butterpy/version.py").read())
 
 setup(
+    description="Tools for simulating stellar rotational light curves using realistic spot evolution",
     long_description=readme,
     long_description_content_type="text/markdown",
     name="butterpy",
