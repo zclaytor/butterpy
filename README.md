@@ -21,7 +21,7 @@ Depending on your preferred virtualenv setup.
 
 ## Usage
 
-See `butterpy/simulate_lightcurves.py` for general usage.
+See `butterpy/simulate_lightcurves.py` or `notebooks/surface_fig.ipynb` for general usage.
 
 # Butterfly.jl
 
