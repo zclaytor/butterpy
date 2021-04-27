@@ -9,15 +9,14 @@ The code is written in both Python and Julia. See the Butterfly.jl section for t
 
 ## Installation
 
-After cloning, run
+You can install `butterpy` using pip:
 ```
-$ pipenv install
+$ pip install butterpy
 ```
-or
+But note that using the animation tools requires `cartopy`, which is easiest to install in an Anaconda environment using conda:
 ```
-$ pip install -e .
+$ conda install -c conda-forge cartopy
 ```
-Depending on your preferred virtualenv setup.
 
 ## Usage
 
