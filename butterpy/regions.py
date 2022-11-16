@@ -1,6 +1,6 @@
 from time import time
 import numpy as np
-from pandas import DataFrame, Series
+from pandas import DataFrame, concat 
 from scipy.stats import truncnorm
 from .constants import RAD2DEG, YEAR2DAY, FLUX_SCALE
 import matplotlib.pyplot as plt
@@ -217,10 +217,11 @@ def regions(
                         lat_rad = lat / RAD2DEG
                         lon_rad = lon / RAD2DEG
 
-                        spots = spots.append(
-                            Series([nday, (1 - 2*k) * lat_rad, lon_rad, peak_magnetic_flux], spots.columns),
-                            ignore_index=True
-                        )
+                        new_row = DataFrame(
+                            [[nday, (1 - 2*k) * lat_rad, lon_rad, peak_magnetic_flux]], 
+                            columns=spots.columns)
+
+                        spots = concat([spots, new_row], ignore_index=True)
 
                         if nb < 1:
                             tau[i, j, k] = 0
