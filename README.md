@@ -6,7 +6,7 @@ Simulate starspot evolution and the corresponding lightcurves.
 
 The code is written in both Python and Julia. See the Butterfly.jl section for the Julia documentation. The Python code can be found under the `butterpy` directory.
 
-To cite the code, please use the Zenodo DOI [10.5281/zenodo.4722052](https://zenodo.org/record/4722052) and the introductory paper by [Claytor et al. (2021, in review.)](https://arxiv.org/abs/2104.14566).
+To cite the code, please use the Zenodo DOI [10.5281/zenodo.4722052](https://zenodo.org/record/4722052) and the introductory paper by [Claytor et al. (2022)](https://ui.adsabs.harvard.edu/abs/2022ApJ...927..219C/abstract).
 
 
 ## Installation
