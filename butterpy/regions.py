@@ -214,11 +214,8 @@ def regions(
                 
                         peak_magnetic_flux = 2.5 * areas[nb]
                         
-                        lat_rad = lat / RAD2DEG
-                        lon_rad = lon / RAD2DEG
-
                         new_row = DataFrame(
-                            [[nday, (1 - 2*k) * lat_rad, lon_rad, peak_magnetic_flux]], 
+                            [[nday, (1 - 2*k) * lat, lon, peak_magnetic_flux]], 
                             columns=spots.columns)
 
                         spots = concat([spots, new_row], ignore_index=True)

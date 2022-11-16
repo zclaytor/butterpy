@@ -77,9 +77,9 @@ class Spots(object):
         self.decay_timescale = period * decay_timescale
 
         # convert active region properties
-        time = spot_properties["nday"].values
-        latitude = spot_properties["lat"].values
-        longitude = spot_properties["lon"].values
+        time = spot_properties["nday"].values.astype(float)
+        latitude = spot_properties["lat"].values / RAD2DEG
+        longitude = spot_properties["lon"].values / RAD2DEG
         peak_magnetic_flux = spot_properties["bmax"]
 
         # keep only spots emerging within specified timespan and with peak B-field > threshold
@@ -183,7 +183,7 @@ class Spots(object):
 
         ax.scatter(
             self.spot_properties["nday"],
-            latitude * RAD2DEG,
+            latitude,
             s=10
             * self.spot_properties["bmax"]
             / np.median(self.spot_properties["bmax"]),
