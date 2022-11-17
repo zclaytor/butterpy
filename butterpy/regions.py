@@ -1,9 +1,7 @@
-from time import time
 import numpy as np
 from pandas import DataFrame, concat 
 from scipy.stats import truncnorm
 from .constants import RAD2DEG, YEAR2DAY, FLUX_SCALE
-import matplotlib.pyplot as plt
 
 
 spot_contrast = 0.75
