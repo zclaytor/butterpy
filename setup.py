@@ -3,11 +3,13 @@ from setuptools import setup, find_packages
 with open("README.md", "r") as fh:
     readme = fh.read()
 
-exec(open("butterpy/version.py").read())
+version = {}
+with open("butterpy/version.py") as fp:
+    exec(fp.read(), version)
 
 setup(
     name="butterpy",
-    version=__version__,
+    version=version["__version__"],
     author="Zachary R. Claytor <zclaytor@hawaii.edu> and Miles Lucas <mdlucas@hawaii.edu>",
     description="Tools for simulating stellar rotational light curves using realistic spot evolution",
     long_description=readme,
