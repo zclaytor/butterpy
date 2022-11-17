@@ -5,7 +5,6 @@ from scipy.stats import truncnorm
 from .constants import RAD2DEG, YEAR2DAY, FLUX_SCALE
 import matplotlib.pyplot as plt
 
-import logging
 
 spot_contrast = 0.75
 
