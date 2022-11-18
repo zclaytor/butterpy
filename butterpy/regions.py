@@ -1,6 +1,5 @@
 import numpy as np
 from pandas import DataFrame, concat 
-from scipy.stats import truncnorm
 from .constants import RAD2DEG, YEAR2DAY, FLUX_SCALE
 
 
@@ -22,8 +21,7 @@ fact = np.exp(
     delta_lnA * np.arange(n_bins)
 )  # array of area reduction factors, = [1, 1.64, 2.71, 4.48, 7.39]
 ftot = fact.sum()  # sum of reduction factors
-areas = max_area / fact
-bipole_widths = np.sqrt(areas)  # array of bipole widths (deg)
+areas = max_area / fact # bipole areas (deg^2)
 
 
 def active_latitudes(min_ave_lat, max_ave_lat, phase, butterfly=True):
