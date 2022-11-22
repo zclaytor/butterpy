@@ -183,17 +183,15 @@ def regions(randspots=False, activityrate=1, cyclelength=1, \
                     start_day = np.fix(ncycle*nc)
             nstart = start_day
             ic = 1. - 2.*(np.mod((nc + 2.), 2)) # This might be wrong
-            phase = float(nday - nstart) / nclen
+            phase = (nday - nstart) / nclen
             ru0_tot = atm*np.sin(np.pi*phase)**2.*(dcon)/amax
             if randspots == False:
                 #This is a bit of a fudge. For the sun, y =35 - 48x + 20x^2
                 latavg = maxlat - (maxlat+minlat)*phase + \
                         +2*minlat*phase**2.
                 latrms = (maxlat/5.) - latrmsd*phase
-                nlat1 = float(np.fix(np.max(\
-                    [(maxlat*0.9) - (1.2*maxlat)*phase, 0.])/dlat))
-                nlat2 = np.fix(np.min(\
-                    [(maxlat + 6.) - maxlat*phase, maxlat])/dlat)
+                nlat1 = np.fix(np.max([(maxlat*0.9) - (1.2*maxlat)*phase, 0.])/dlat)
+                nlat2 = np.fix(np.min([(maxlat + 6.) - maxlat*phase, maxlat])/dlat)
                 nlat2 = np.min([nlat2, nlat-1])
             else:
                 latavg = (maxlat - minlat) / 2.
@@ -222,8 +220,8 @@ def regions(randspots=False, activityrate=1, cyclelength=1, \
                         while x > sumb:
                             i += 1
                             sumb += r0[i]*fact[nb]
-                        lon = dlon*(np.random.uniform() + float(i))
-                        lat = dlat*(np.random.uniform() + float(j))
+                        lon = dlon*(np.random.uniform() + i)
+                        lat = dlat*(np.random.uniform() + j)
                         if nday > tstart:
                             w_org = 0.4*bsiz[nb]
                             width = 4.0
