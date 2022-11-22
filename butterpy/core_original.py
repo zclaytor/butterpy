@@ -149,7 +149,6 @@ def regions(randspots=False, activityrate=1, cyclelength=1, \
     nlat = 16                      #number of latitude bins
     nday1 = 0                     #first day to be simulated
     ndays = tsim                  #number of days to be simulated
-    dt = 1
     tau = np.zeros((nlon,nlat,2), dtype=int)+tau2
     dlon = 360. / nlon
     dlat = maxlat/nlat
@@ -160,8 +159,6 @@ def regions(randspots=False, activityrate=1, cyclelength=1, \
     spots = Table(names=('nday', 'thpos', 'phpos','thneg','phneg', 'width', 'bmax', 'ang'),
         dtype=(int, float, float, float, float, float, float, float))
     for nday in np.arange(nday1, nday1+ndays, dtype=int):
-        ncur_now = nday / cycle_days
-        ncur_prev = (nday-1) / cycle_days
         if np.mod(nday, cycle_days) == 0:
             ncur += 1
             cycle_days += ncycle
