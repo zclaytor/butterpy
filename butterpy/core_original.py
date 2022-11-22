@@ -150,7 +150,7 @@ def regions(randspots=False, activityrate=1, cyclelength=1, \
     nday1 = 0                     #first day to be simulated
     ndays = tsim                  #number of days to be simulated
     dt = 1
-    tau = np.zeros((nlon,nlat,2), dtype=np.long)+tau2
+    tau = np.zeros((nlon,nlat,2), dtype=int)+tau2
     dlon = 360. / nlon
     dlat = maxlat/nlat
     ncnt = 0
@@ -158,8 +158,8 @@ def regions(randspots=False, activityrate=1, cyclelength=1, \
     cycle_days = ncycle[0]
     start_day  = 0
     spots = Table(names=('nday', 'thpos', 'phpos','thneg','phneg', 'width', 'bmax', 'ang'),
-        dtype=(np.long, np.float, np.float, np.float, np.float, np.float, np.float, np.float))
-    for nday in np.arange(nday1, nday1+ndays, dtype=np.long):
+        dtype=(int, float, float, float, float, float, float, float))
+    for nday in np.arange(nday1, nday1+ndays, dtype=int):
         ncur_now = nday / cycle_days
         ncur_prev = (nday-1) / cycle_days
         if np.mod(nday, cycle_days) == 0:
@@ -183,17 +183,17 @@ def regions(randspots=False, activityrate=1, cyclelength=1, \
                     if icycle == 1:
                         start_day = 0
                 else:
-                    start_day = np.float(np.fix(np.sum(ncycle[0:nc])))
+                    start_day = float(np.fix(np.sum(ncycle[0:nc])))
             nstart = start_day
             ic = 1. - 2.*(np.mod((nc + 2.), 2)) # This might be wrong
-            phase = np.float(nday - nstart) / nclen[nc1]
+            phase = float(nday - nstart) / nclen[nc1]
             ru0_tot = atm[ncur]*np.sin(np.pi*phase)**2.*(dcon)/amax
             if randspots == False:
                 #This is a bit of a fudge. For the sun, y =35 - 48x + 20x^2
                 latavg = maxlat - (maxlat+minlat)*phase + \
                         +2*minlat*phase**2.
                 latrms = (maxlat/5.) - latrmsd[ncur]*phase
-                nlat1 = np.float(np.fix(np.max(\
+                nlat1 = float(np.fix(np.max(\
                     [(maxlat*0.9) - (1.2*maxlat)*phase, 0.])/dlat))
                 nlat2 = np.fix(np.min(\
                     [(maxlat + 6.) - maxlat*phase, maxlat])/dlat)
@@ -205,11 +205,11 @@ def regions(randspots=False, activityrate=1, cyclelength=1, \
                 nlat2 = np.fix(maxlat / dlat)
                 nlat2 = np.min([nlat2, nlat-1])
             p = np.zeros(nlat)
-            for j in np.arange(nlat1, nlat2, dtype=np.long):
+            for j in np.arange(nlat1, nlat2, dtype=int):
                 p[j] = np.exp(-((dlat*(0.5+j)-latavg)/latrms)**2.)
                 ru0 = ru0_tot*p/(np.sum(p)*nlon*2)
             for k in [0, 1]:
-                for j in np.arange(nlat1, nlat2, dtype=np.long):
+                for j in np.arange(nlat1, nlat2, dtype=int):
                     r0 = ru0[j] + rc0[:, j, k]
                     rtot = np.sum(r0)
                     sumv = rtot * ftot
@@ -225,8 +225,8 @@ def regions(randspots=False, activityrate=1, cyclelength=1, \
                         while x > sumb:
                             i += 1
                             sumb += r0[i]*fact[nb]
-                        lon = dlon*(np.random.uniform() + np.float(i))
-                        lat = dlat*(np.random.uniform() + np.float(j))
+                        lon = dlon*(np.random.uniform() + float(i))
+                        lat = dlat*(np.random.uniform() + float(j))
                         if nday > tstart:
                             w_org = 0.4*bsiz[nb]
                             width = 4.0
