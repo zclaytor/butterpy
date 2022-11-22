@@ -15,11 +15,15 @@ def default_surface():
         activityrate=1, minlat=5, maxlat=35, 
         cyclelength=3, cycleoverlap=1, tsim=3600)
     
+@pytest.fixture
+def load_test_data():
+    return Table.read(os.path.join(cwd, "data/default_surface.fits"))
+
 def test_regions(default_surface):
     surface = default_surface
     assert isinstance(surface, Table)
 
-def test_output(default_surface):
+def test_output(default_surface, load_test_data):
     surface = default_surface
-    expected = Table.read(os.path.join(cwd, "data/default_surface.fits"))
+    expected = load_test_data
     assert surface == pytest.approx(expected)
