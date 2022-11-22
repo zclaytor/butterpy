@@ -133,10 +133,10 @@ def regions(randspots=False, activityrate=1, cyclelength=1, \
     amax=100.  # orig. area of largest bipoles (deg^2)
     dcon = np.exp(0.5*delt)- np.exp(-0.5*delt)
     deviation = (maxlat-minlat) / 7.
-    atm = np.zeros(300) + 10.*activityrate
-    ncycle = np.zeros(300) + cyclelength
-    nclen = np.zeros(300) + cyclelength + cycleoverlap
-    latrmsd = np.zeros(300) + deviation
+    atm = 10*activityrate
+    ncycle = cyclelength
+    nclen = cyclelength + cycleoverlap
+    latrmsd = deviation
     ncycle *= 365
     nclen *= 365
     fact = np.exp(delt*np.arange(nbin)) #array of area reduction factors
@@ -155,7 +155,7 @@ def regions(randspots=False, activityrate=1, cyclelength=1, \
     dlat = maxlat/nlat
     ncnt = 0
     ncur = 0
-    cycle_days = ncycle[0]
+    cycle_days = ncycle
     start_day  = 0
     spots = Table(names=('nday', 'thpos', 'phpos','thneg','phneg', 'width', 'bmax', 'ang'),
         dtype=(int, float, float, float, float, float, float, float))
@@ -164,7 +164,7 @@ def regions(randspots=False, activityrate=1, cyclelength=1, \
         ncur_prev = (nday-1) / cycle_days
         if np.mod(nday, cycle_days) == 0:
             ncur += 1
-            cycle_days += ncycle[ncur]
+            cycle_days += ncycle
         tau += 1
         rc0 = np.zeros((nlon, nlat, 2))
         index = np.logical_and(tau > tau1, tau < tau2)
@@ -174,25 +174,25 @@ def regions(randspots=False, activityrate=1, cyclelength=1, \
             nc = ncur - icycle
             if ncur == 0.:
                 nc1 = 0.
-                start_day = nc * ncycle[0]
+                start_day = nc * ncycle
             else:
                 nc1 = nc
                 if ncur == 1:
                     if icycle == 0:
-                        start_day = np.fix(np.sum(ncycle[0:nc]))
+                        start_day = np.fix(ncycle*nc)
                     if icycle == 1:
                         start_day = 0
                 else:
-                    start_day = float(np.fix(np.sum(ncycle[0:nc])))
+                    start_day = np.fix(ncycle*nc)
             nstart = start_day
             ic = 1. - 2.*(np.mod((nc + 2.), 2)) # This might be wrong
-            phase = float(nday - nstart) / nclen[nc1]
-            ru0_tot = atm[ncur]*np.sin(np.pi*phase)**2.*(dcon)/amax
+            phase = float(nday - nstart) / nclen
+            ru0_tot = atm*np.sin(np.pi*phase)**2.*(dcon)/amax
             if randspots == False:
                 #This is a bit of a fudge. For the sun, y =35 - 48x + 20x^2
                 latavg = maxlat - (maxlat+minlat)*phase + \
                         +2*minlat*phase**2.
-                latrms = (maxlat/5.) - latrmsd[ncur]*phase
+                latrms = (maxlat/5.) - latrmsd*phase
                 nlat1 = float(np.fix(np.max(\
                     [(maxlat*0.9) - (1.2*maxlat)*phase, 0.])/dlat))
                 nlat2 = np.fix(np.min(\
