@@ -21,9 +21,9 @@ def load_test_data():
 
 def test_regions(default_surface):
     surface = default_surface
-    assert isinstance(surface, Table)
+    assert isinstance(surface, Table), "Result of `regions` call is not an astropy Table."
 
 def test_output(default_surface, load_test_data):
     surface = default_surface
     expected = load_test_data
-    assert surface == pytest.approx(expected)
+    assert surface == pytest.approx(expected), "Result of `regions` call does not match test data."
