@@ -170,10 +170,8 @@ def regions(randspots=False, activityrate=1, cyclelength=1, \
         for icycle in [0, 1]:
             nc = ncur - icycle
             if ncur == 0.:
-                nc1 = 0.
                 start_day = nc * ncycle
             else:
-                nc1 = nc
                 if ncur == 1:
                     if icycle == 0:
                         start_day = np.fix(ncycle*nc)
