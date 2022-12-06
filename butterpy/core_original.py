@@ -164,7 +164,7 @@ def regions(randspots=False, activityrate=1, cyclelength=1, \
             cycle_days += ncycle
         tau += 1
         rc0 = np.zeros((nlon, nlat, 2))
-        index = np.logical_and(tau > tau1, tau < tau2)
+        index = (tau1 < tau) & (tau < tau2)
         if np.sum(index) != 0:
             rc0[index] = prob / (tau2 - tau1)
         for icycle in [0, 1]:
