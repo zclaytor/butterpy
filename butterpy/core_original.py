@@ -159,7 +159,7 @@ def regions(randspots=False, activityrate=1, cyclelength=1, \
     spots = Table(names=('nday', 'thpos', 'phpos','thneg','phneg', 'width', 'bmax', 'ang'),
         dtype=(int, float, float, float, float, float, float, float))
     for nday in np.arange(nday1, nday1+ndays, dtype=int):
-        if np.mod(nday, cycle_days) == 0:
+        if nday % cycle_days == 0:
             ncur += 1
             cycle_days += ncycle
         tau += 1
@@ -180,7 +180,7 @@ def regions(randspots=False, activityrate=1, cyclelength=1, \
                 else:
                     start_day = np.fix(ncycle*nc)
             nstart = start_day
-            ic = 1. - 2.*(np.mod((nc + 2.), 2)) # This might be wrong
+            ic = 1. - 2.*((nc + 2.) % 2) # This might be wrong
             phase = (nday - nstart) / nclen
             ru0_tot = atm*np.sin(np.pi*phase)**2.*(dcon)/amax
             if randspots == False:
