@@ -113,7 +113,7 @@ class spots():
 
 
 def regions(randspots=False, activityrate=1, cyclelength=1, \
-    cycleoverlap=0, maxlat=40, minlat=5, tsim=1200, tstart=0):
+    cycleoverlap=0, maxlat=40, minlat=5, tsim=1200):
     ''' Routine to produce a butterfly pattern and save it in regions.txt
         The inputs are:
         randspots=True / False - have spots decrease from maxlat to minlat or be randomly located in latitude
@@ -123,7 +123,6 @@ def regions(randspots=False, activityrate=1, cyclelength=1, \
         maxlat = maximum latitude of spot emergence (deg)
         minlat = minimum latitutde of emergence (deg)
         tsim = how many days to emerge spots for
-        tstart = First day of simulation
         Based on Section 4 of van Ballegooijen 1998
         Written by Joe Llama (joe.llama@lowell.edu) V 11/1/16
         # Converted to Python 3 9/5/2017
@@ -147,7 +146,6 @@ def regions(randspots=False, activityrate=1, cyclelength=1, \
     prob = 0.0001                   #total probability for "correlation"
     nlon = 36                      #number of longitude bins
     nlat = 16                      #number of latitude bins
-    nday1 = 0                     #first day to be simulated
     ndays = tsim                  #number of days to be simulated
     tau = np.zeros((nlon,nlat,2), dtype=int)+tau2
     dlon = 360. / nlon
@@ -158,7 +156,7 @@ def regions(randspots=False, activityrate=1, cyclelength=1, \
     start_day  = 0
     spots = Table(names=('nday', 'thpos', 'phpos','thneg','phneg', 'width', 'bmax', 'ang'),
         dtype=(int, float, float, float, float, float, float, float))
-    for nday in np.arange(nday1, nday1+ndays, dtype=int):
+    for nday in np.arange(ndays, dtype=int):
         if nday % cycle_days == 0:
             ncur += 1
             cycle_days += ncycle
@@ -220,44 +218,44 @@ def regions(randspots=False, activityrate=1, cyclelength=1, \
                             sumb += r0[i]*fact[nb]
                         lon = dlon*(np.random.uniform() + i)
                         lat = dlat*(np.random.uniform() + j)
-                        if nday > tstart:
-                            w_org = 0.4*bsiz[nb]
-                            width = 4.0
-                            bmax = 250.*(w_org / width)**2.
-                            bsizr = np.pi * bsiz[nb] / 180.
-                            width *= np.pi / 180.
+
+                        w_org = 0.4*bsiz[nb]
+                        width = 4.0
+                        bmax = 250.*(w_org / width)**2.
+                        bsizr = np.pi * bsiz[nb] / 180.
+                        width *= np.pi / 180.
+                        while True:
+                            x = np.random.normal()
+                            if np.abs(x) < 1.6:
+                                break
+                        while True:
+                            y = np.random.normal()
+                            if np.abs(y) < 1.8:
+                                break
+                        z = np.random.uniform()
+                        if z > 0.14:
+                            ang = (0.5*lat + 2.0) + 27.*x*y
+                        else:
                             while True:
-                                x = np.random.normal()
-                                if np.abs(x) < 1.6:
+                                z = np.random.normal()
+                                if np.abs(z) < 0.5:
                                     break
-                            while True:
-                                y = np.random.normal()
-                                if np.abs(y) < 1.8:
-                                    break
-                            z = np.random.uniform()
-                            if z > 0.14:
-                                ang = (0.5*lat + 2.0) + 27.*x*y
-                            else:
-                                while True:
-                                    z = np.random.normal()
-                                    if np.abs(z) < 0.5:
-                                        break
-                                ang = z*np.pi/180.
-                            lat = np.pi * lat / 180.
-                            ang *= np.pi/180.
-                            dph = ic*0.5*bsizr*np.cos(ang)/np.cos(lat)
-                            dth = ic*0.5*bsizr*np.sin(ang)
-                            phcen = np.pi*lon/180.
-                            if k == 0:
-                                thcen = 0.5*np.pi - lat
-                            else:
-                                thcen = 0.5*np.pi + lat
-                            phpos = phcen + dph
-                            phneg = phcen - dph
-                            thpos = thcen + dth
-                            thneg = thcen - dth
-                            spots.add_row([nday, thpos, phpos, thneg, phneg, width, bmax, ang])
-                            ncnt += 1
-                            if nb < 1:
-                                tau[i, j, k] = 0
+                            ang = z*np.pi/180.
+                        lat = np.pi * lat / 180.
+                        ang *= np.pi/180.
+                        dph = ic*0.5*bsizr*np.cos(ang)/np.cos(lat)
+                        dth = ic*0.5*bsizr*np.sin(ang)
+                        phcen = np.pi*lon/180.
+                        if k == 0:
+                            thcen = 0.5*np.pi - lat
+                        else:
+                            thcen = 0.5*np.pi + lat
+                        phpos = phcen + dph
+                        phneg = phcen - dph
+                        thpos = thcen + dth
+                        thneg = thcen - dth
+                        spots.add_row([nday, thpos, phpos, thneg, phneg, width, bmax, ang])
+                        ncnt += 1
+                        if nb < 1:
+                            tau[i, j, k] = 0
     return spots
