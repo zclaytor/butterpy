@@ -133,11 +133,9 @@ def regions(randspots=False, activityrate=1, cyclelength=1, \
     dcon = np.exp(0.5*delt)- np.exp(-0.5*delt)
     deviation = (maxlat-minlat) / 7.
     atm = 10*activityrate
-    ncycle = cyclelength
-    nclen = cyclelength + cycleoverlap
+    ncycle = 365 * cyclelength
+    nclen = 365 * (cyclelength + cycleoverlap)
     latrmsd = deviation
-    ncycle *= 365
-    nclen *= 365
     fact = np.exp(delt*np.arange(nbin)) #array of area reduction factors
     ftot = np.sum(fact)             #sum of reduction factors
     bsiz = np.sqrt(amax/fact)         #array of bipole separations (deg)
