@@ -13,7 +13,7 @@ def default_surface():
     np.random.seed(88)
     return regions(
         activityrate=1, minlat=5, maxlat=35, 
-        cyclelength=3, cycleoverlap=1, tsim=3600)
+        cyclelength=3, cycleoverlap=1, ndays=3600)
     
 @pytest.fixture
 def load_test_data():

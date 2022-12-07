@@ -113,7 +113,7 @@ class spots():
 
 
 def regions(randspots=False, activityrate=1, cyclelength=1, \
-    cycleoverlap=0, maxlat=40, minlat=5, tsim=1200):
+    cycleoverlap=0, maxlat=40, minlat=5, ndays=1200):
     ''' Routine to produce a butterfly pattern and save it in regions.txt
         The inputs are:
         randspots=True / False - have spots decrease from maxlat to minlat or be randomly located in latitude
@@ -122,7 +122,7 @@ def regions(randspots=False, activityrate=1, cyclelength=1, \
         cycleovelap - overlap of cycles in years
         maxlat = maximum latitude of spot emergence (deg)
         minlat = minimum latitutde of emergence (deg)
-        tsim = how many days to emerge spots for
+        ndays = how many days to emerge spots for
         Based on Section 4 of van Ballegooijen 1998
         Written by Joe Llama (joe.llama@lowell.edu) V 11/1/16
         # Converted to Python 3 9/5/2017
@@ -144,7 +144,6 @@ def regions(randspots=False, activityrate=1, cyclelength=1, \
     prob = 0.0001                   #total probability for "correlation"
     nlon = 36                      #number of longitude bins
     nlat = 16                      #number of latitude bins
-    ndays = tsim                  #number of days to be simulated
     tau = np.zeros((nlon,nlat,2), dtype=int)+tau2
     dlon = 360. / nlon
     dlat = maxlat/nlat
