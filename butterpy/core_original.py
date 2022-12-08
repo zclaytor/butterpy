@@ -160,23 +160,22 @@ def regions(randspots=False, activityrate=1, cyclelength=1, \
         tau += 1
         rc0 = np.zeros((nlon, nlat, 2))
         index = (tau1 < tau) & (tau < tau2)
-        if np.sum(index) != 0:
+        if index.any():
             rc0[index] = prob / (tau2 - tau1)
         for icycle in [0, 1]:
             nc = ncur - icycle
-            if ncur == 0.:
-                start_day = nc * ncycle
-            else:
-                if ncur == 1:
-                    if icycle == 0:
-                        start_day = np.fix(ncycle*nc)
-                    if icycle == 1:
-                        start_day = 0
-                else:
+            if ncur == 1:
+                if icycle == 0:
                     start_day = np.fix(ncycle*nc)
+                if icycle == 1:
+                    start_day = 0
+            else:
+                start_day = np.fix(ncycle*nc)
             nstart = start_day
             ic = 1. - 2.*((nc + 2.) % 2) # This might be wrong
             phase = (nday - nstart) / nclen
+            #print(icycle, ncur, nc, ic, start_day, phase)
+            #input()
             ru0_tot = atm*np.sin(np.pi*phase)**2.*(dcon)/amax
             if randspots == False:
                 #This is a bit of a fudge. For the sun, y =35 - 48x + 20x^2
@@ -193,6 +192,8 @@ def regions(randspots=False, activityrate=1, cyclelength=1, \
                 nlat2 = np.fix(maxlat / dlat)
                 nlat2 = np.min([nlat2, nlat-1])
             p = np.zeros(nlat)
+            #print(phase, latavg, latrms, dlat, nlat1, nlat2)
+            #exit()
             for j in np.arange(nlat1, nlat2, dtype=int):
                 p[j] = np.exp(-((dlat*(0.5+j)-latavg)/latrms)**2.)
                 ru0 = ru0_tot*p/(np.sum(p)*nlon*2)
