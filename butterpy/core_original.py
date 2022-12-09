@@ -245,7 +245,10 @@ def regions(butterfly=True, activityrate=1, cyclelength=1, \
             # Uncorrelated emergence rate per lat/lon bin, as function of lat
             for j in np.arange(nlat1, nlat2, dtype=int):
                 p[j] = np.exp(-((dlat*(0.5+j)-latavg)/latrms)**2.)
+            if p.any():
                 ru0 = ru0_tot*p/(np.sum(p)*nlon*2)
+            #else:
+                #ru0 = p
             for k in [0, 1]: # loop over hemisphere and latitude
                 for j in np.arange(nlat1, nlat2, dtype=int):
                     r0 = ru0[j] + rc0[:, j, k]
