@@ -27,4 +27,5 @@ def test_output(default_surface, load_test_data):
     surface = default_surface
     expected = load_test_data
     assert len(surface) == len(expected), "Length of `regions` output does not match test data."
+    assert surface["thpos"][0] == expected["thpos"][0]
     assert surface["nday"][-1] == expected["nday"][-1], "Final `nday` values do not match."

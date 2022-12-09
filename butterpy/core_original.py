@@ -172,7 +172,7 @@ def regions(randspots=False, activityrate=1, cyclelength=1, \
             else:
                 start_day = ncycle*nc
             nstart = start_day
-            ic = 1. - 2.*((nc + 2.) % 2) # This might be wrong
+            ic = 1. - 2.*(nc % 2) # 
             phase = (nday - nstart) / nclen
             #print(nday, ncur, cycle_days, icycle, nc, ic, start_day, phase)
             #input()
@@ -244,10 +244,7 @@ def regions(randspots=False, activityrate=1, cyclelength=1, \
                         dph = ic*0.5*bsizr*np.cos(ang)/np.cos(lat)
                         dth = ic*0.5*bsizr*np.sin(ang)
                         phcen = np.pi*lon/180.
-                        if k == 0:
-                            thcen = 0.5*np.pi - lat
-                        else:
-                            thcen = 0.5*np.pi + lat
+                        thcen = 0.5*np.pi - lat + 2*k*lat
                         phpos = phcen + dph
                         phneg = phcen - dph
                         thpos = thcen + dth
