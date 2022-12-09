@@ -112,21 +112,71 @@ class spots():
         plt.tight_layout();
 
 
-def regions(randspots=False, activityrate=1, cyclelength=1, \
+def regions(butterfly=True, activityrate=1, cyclelength=1, \
     cycleoverlap=0, maxlat=40, minlat=5, ndays=1200):
-    ''' Routine to produce a butterfly pattern and save it in regions.txt
-        The inputs are:
-        randspots=True / False - have spots decrease from maxlat to minlat or be randomly located in latitude
-        activityrate = No. of spots x Solar rate
-        cyclelength - length of cycle in years (Sun is 11)
-        cycleovelap - overlap of cycles in years
-        maxlat = maximum latitude of spot emergence (deg)
-        minlat = minimum latitutde of emergence (deg)
-        ndays = how many days to emerge spots for
-        Based on Section 4 of van Ballegooijen 1998
-        Written by Joe Llama (joe.llama@lowell.edu) V 11/1/16
-        # Converted to Python 3 9/5/2017
-    '''
+    """     
+    Simulates the emergence and evolution of starspots. 
+    Output is a list of active regions.
+
+    Parameters
+    ----------
+    butterfly (bool, True): have spots decrease from maxlat to minlat (True)
+        or be randomly located in latitude (False)
+
+    activityrate (float, 1.0): Number of magnetic bipoles, normalized such that 
+        for the Sun, activityrate = 1.
+
+    cyclelength (float, 1.0): length of cycle in years (Sun is 11)
+
+    cycleoverlap (float, 0.0): overlap of cycles in years
+
+    maxlat (float, 40) = maximum latitude of spot emergence (deg)
+
+    minlat (float, 5) = minimum latitutde of emergence (deg)
+
+    ndays (int, 1200) = how many days to emerge spots for
+
+    Returns
+    -------
+    spots (astropy Table): Each row is an active region 
+        with the following parameters:
+
+        nday = day of emergence
+        thpos= theta of positive pole (radians)
+        phpos= phi   of positive pole (radians)
+        thneg= theta of negative pole (radians)
+        phneg= phi   of negative pole (radians)
+        width= width of each pole (radians)
+        bmax = maximum flux density (Gauss)
+
+    Notes
+    -----
+    Based on Section 4 of van Ballegooijen 1998, ApJ 501: 866
+    and Schrijver and Harvey 1994, SoPh 150: 1S.
+
+    Written by Joe Llama (joe.llama@lowell.edu) V 11/1/16
+    Converted to Python 3 9/5/2017
+
+    According to Schrijver and Harvey (1994), the number of active regions
+    emerging with areas in the range [A,A+dA] in a time dt is given by 
+
+        n(A,t) dA dt = a(t) A^(-2) dA dt ,
+
+    where A is the "initial" area of a bipole in square degrees, and t is
+    the time in days; a(t) varies from 1.23 at cycle minimum to 10 at cycle
+    maximum.
+
+    The bipole area is the area within the 25-Gauss contour in the
+    "initial" state, i.e. time of maximum development of the active region.
+    The assumed peak flux density in the initial state is 1100 G, and
+    width = 0.4*bsiz (see disp_region). The parameters are corrected for 
+    further diffusion and correspond to the time when width = 4 deg, the 
+    smallest width that can be resolved with lmax=63.
+
+    In our simulation we use a lower value of a(t) to account for "correlated"
+    regions.
+
+    """
     nbin=5 # number of area bins
     delt=0.5  # delta ln(A)
     amax=100.  # orig. area of largest bipoles (deg^2)
@@ -136,21 +186,20 @@ def regions(randspots=False, activityrate=1, cyclelength=1, \
     ncycle = 365 * cyclelength
     nclen = 365 * (cyclelength + cycleoverlap)
     latrmsd = deviation
-    fact = np.exp(delt*np.arange(nbin)) #array of area reduction factors
-    ftot = np.sum(fact)             #sum of reduction factors
-    bsiz = np.sqrt(amax/fact)         #array of bipole separations (deg)
-    tau1 = 5                       #first and last times (in days) for
-    tau2 = 15                      #  emergence of "correlated" regions
-    prob = 0.0001                   #total probability for "correlation"
-    nlon = 36                      #number of longitude bins
-    nlat = 16                      #number of latitude bins
+    fact = np.exp(delt*np.arange(nbin)) # array of area reduction factors
+    ftot = np.sum(fact)                 # sum of reduction factors
+    bsiz = np.sqrt(amax/fact)           # array of bipole separations (deg)
+    tau1 = 5                            # first and last times (in days) for
+    tau2 = 15                           #   emergence of an active region
+    prob = 0.0001                       # total probability for "correlation"
+    nlon = 36                           # number of longitude bins
+    nlat = 16                           # number of latitude bins
     tau = np.zeros((nlon,nlat,2), dtype=int)+tau2
     dlon = 360. / nlon
     dlat = maxlat/nlat
     ncnt = 0
     ncur = 0
     cycle_days = ncycle
-    start_day  = 0
     spots = Table(names=('nday', 'thpos', 'phpos','thneg','phneg', 'width', 'bmax', 'ang'),
         dtype=(int, float, float, float, float, float, float, float))
     for nday in np.arange(ndays, dtype=int):
@@ -162,22 +211,21 @@ def regions(randspots=False, activityrate=1, cyclelength=1, \
         index = (tau1 < tau) & (tau < tau2)
         if index.any():
             rc0[index] = prob / (tau2 - tau1)
-        for icycle in [0, 1]:
-            nc = ncur - icycle
-            if ncur == 1:
-                if icycle == 0:
-                    start_day = ncycle*nc
-                if icycle == 1:
-                    start_day = 0
+
+        for icycle in [0, 1]: # loop over current and previous cycle
+            nc = ncur - icycle # index of cycle
+            # determine cycle start day
+            if ncur == 1 and icycle == 1:
+                nstart = 0
             else:
-                start_day = ncycle*nc
-            nstart = start_day
-            ic = 1. - 2.*(nc % 2) # 
+                nstart = ncycle*nc
             phase = (nday - nstart) / nclen
             #print(nday, ncur, cycle_days, icycle, nc, ic, start_day, phase)
             #input()
+            # Emergence rate of laragest uncorrelated regions (number per day,
+            # both hemispheres), from Shrijver and Harvey (1994)
             ru0_tot = atm*np.sin(np.pi*phase)**2.*(dcon)/amax
-            if randspots == False:
+            if butterfly:
                 #This is a bit of a fudge. For the sun, y =35 - 48x + 20x^2
                 latavg = maxlat - (maxlat+minlat)*phase + \
                         +2*minlat*phase**2.
@@ -194,10 +242,11 @@ def regions(randspots=False, activityrate=1, cyclelength=1, \
             p = np.zeros(nlat)
             #print(phase, latavg, latrms, dlat, nlat1, nlat2)
             #exit()
+            # Uncorrelated emergence rate per lat/lon bin, as function of lat
             for j in np.arange(nlat1, nlat2, dtype=int):
                 p[j] = np.exp(-((dlat*(0.5+j)-latavg)/latrms)**2.)
                 ru0 = ru0_tot*p/(np.sum(p)*nlon*2)
-            for k in [0, 1]:
+            for k in [0, 1]: # loop over hemisphere and latitude
                 for j in np.arange(nlat1, nlat2, dtype=int):
                     r0 = ru0[j] + rc0[:, j, k]
                     rtot = np.sum(r0)
@@ -217,40 +266,68 @@ def regions(randspots=False, activityrate=1, cyclelength=1, \
                         lon = dlon*(np.random.uniform() + i)
                         lat = dlat*(np.random.uniform() + j)
 
-                        w_org = 0.4*bsiz[nb]
-                        width = 4.0
-                        bmax = 250.*(w_org / width)**2.
-                        bsizr = np.pi * bsiz[nb] / 180.
-                        width *= np.pi / 180.
-                        while True:
-                            x = np.random.normal()
-                            if np.abs(x) < 1.6:
-                                break
-                        while True:
-                            y = np.random.normal()
-                            if np.abs(y) < 1.8:
-                                break
-                        z = np.random.uniform()
-                        if z > 0.14:
-                            ang = (0.5*lat + 2.0) + 27.*x*y
-                        else:
-                            while True:
-                                z = np.random.normal()
-                                if np.abs(z) < 0.5:
-                                    break
-                            ang = z*np.pi/180.
-                        lat = np.pi * lat / 180.
-                        ang *= np.pi/180.
-                        dph = ic*0.5*bsizr*np.cos(ang)/np.cos(lat)
-                        dth = ic*0.5*bsizr*np.sin(ang)
-                        phcen = np.pi*lon/180.
-                        thcen = 0.5*np.pi - lat + 2*k*lat
-                        phpos = phcen + dph
-                        phneg = phcen - dph
-                        thpos = thcen + dth
-                        thneg = thcen - dth
-                        spots.add_row([nday, thpos, phpos, thneg, phneg, width, bmax, ang])
+                        new_region = add_region(nc, lon, lat, k, bsiz[nb])
+                        spots.add_row([nday, *new_region])
+
                         ncnt += 1
-                        if nb < 1:
+                        if nb == 0:
                             tau[i, j, k] = 0
     return spots
+
+def add_region(nc, lon, lat, k, bsize):
+    """
+    Add one active region of a particular size at a particular location.
+
+    Parameters
+    ----------
+    nc (int): cycle index
+    lon (float): longitude
+    lat (float): latitude
+    k (int): hemisphere index (0 for North, 1 for South)
+    bsize (float): the size of the bipole
+
+    Returns
+    -------
+    thpos (float): theta of positive bipole
+    phpos (float): longitude of positive bipole
+    thneg (float): theta of negative bipole
+    phneg (float): longitude of negative bipole
+    width (float): bipole width threshold, always 4...?
+    bmax (float): magnetic field strength of bipole
+    ang (float): Joy's law bipole angle
+    """
+    ic = 1. - 2.*(nc % 2) # +1 for even, -1 for odd cycle
+    w_org = 0.4*bsize
+    width = 4.0
+    bmax = 250.*(w_org / width)**2.
+    bsizr = np.pi * bsize / 180.
+    width *= np.pi / 180.
+    while True:
+        x = np.random.normal()
+        if np.abs(x) < 1.6:
+            break
+    while True:
+        y = np.random.normal()
+        if np.abs(y) < 1.8:
+            break
+    z = np.random.uniform()
+    if z > 0.14:
+        ang = (0.5*lat + 2.0) + 27.*x*y
+    else:
+        while True:
+            z = np.random.normal()
+            if np.abs(z) < 0.5:
+                break
+        ang = z*np.pi/180.
+    lat = np.pi * lat / 180.
+    ang *= np.pi/180.
+    dph = ic*0.5*bsizr*np.cos(ang)/np.cos(lat)
+    dth = ic*0.5*bsizr*np.sin(ang)
+    phcen = np.pi*lon/180.
+    thcen = 0.5*np.pi - lat + 2*k*lat
+    phpos = phcen + dph
+    phneg = phcen - dph
+    thpos = thcen + dth
+    thneg = thcen - dth
+
+    return thpos, phpos, thneg, phneg, width, bmax, ang
