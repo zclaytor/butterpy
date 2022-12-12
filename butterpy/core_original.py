@@ -220,8 +220,7 @@ def regions(butterfly=True, activityrate=1, cyclelength=1, \
             else:
                 nstart = ncycle*nc
             phase = (nday - nstart) / nclen
-            #print(nday, ncur, cycle_days, icycle, nc, ic, start_day, phase)
-            #input()
+
             # Emergence rate of laragest uncorrelated regions (number per day,
             # both hemispheres), from Shrijver and Harvey (1994)
             ru0_tot = atm*np.sin(np.pi*phase)**2.*(dcon)/amax
@@ -239,18 +238,19 @@ def regions(butterfly=True, activityrate=1, cyclelength=1, \
                 nlat1 = np.fix(minlat / dlat)
                 nlat2 = np.fix(maxlat / dlat)
                 nlat2 = np.min([nlat2, nlat-1])
-            p = np.zeros(nlat)
-            #print(phase, latavg, latrms, dlat, nlat1, nlat2)
-            #exit()
+
             # Uncorrelated emergence rate per lat/lon bin, as function of lat
-            for j in np.arange(nlat1, nlat2, dtype=int):
-                p[j] = np.exp(-((dlat*(0.5+j)-latavg)/latrms)**2.)
-            if p.any():
-                ru0 = ru0_tot*p/(np.sum(p)*nlon*2)
-            #else:
-                #ru0 = p
+            # Only if nlat1 < nlat2
+            if nlat2 <= nlat1:
+                continue
+            
+            jlat = np.arange(nlat1, nlat2, dtype=int)
+            p = np.zeros(nlat)
+            p[jlat] = np.exp(-((dlat*(0.5+jlat)-latavg)/latrms)**2.)              
+            ru0 = ru0_tot*p/(np.sum(p)*nlon*2)
+            
             for k in [0, 1]: # loop over hemisphere and latitude
-                for j in np.arange(nlat1, nlat2, dtype=int):
+                for j in jlat:
                     r0 = ru0[j] + rc0[:, j, k]
                     rtot = np.sum(r0)
                     sumv = rtot * ftot
