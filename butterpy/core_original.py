@@ -3,6 +3,8 @@ import matplotlib.pylab as plt
 import astropy.units as u
 from astropy.table import Table
 
+from .utils.activelat import random, quadratic
+
 D2S = 1*u.day.to(u.s)
 
 PROT_SUN = 27.0
@@ -223,19 +225,9 @@ def regions(butterfly=True, activityrate=1, cyclelength=1, \
 
             # Determine active latitude bins
             if butterfly:
-                #This is a bit of a fudge. For the sun, y =35 - 48x + 20x^2
-                latavg = maxlat - (maxlat+minlat)*phase + \
-                        +2*minlat*phase**2.
-                latrms = (maxlat/5.) - latrmsd*phase
-                nlat1 = int(np.max([(maxlat*0.9) - (1.2*maxlat)*phase, 0.])/dlat)
-                nlat2 = int(np.min([(maxlat + 6.) - maxlat*phase, maxlat])/dlat)
-                nlat2 = np.min([nlat2, nlat-1])
+                latavg, latrms, nlat1, nlat2 = quadratic(minlat, maxlat, phase)
             else:
-                latavg = (maxlat - minlat) / 2.
-                latrms = (maxlat - minlat)
-                nlat1 = int(minlat / dlat)
-                nlat2 = int(maxlat / dlat)
-                nlat2 = np.min([nlat2, nlat-1])
+                latavg, latrms, nlat1, nlat2 = random(minlat, maxlat)
 
             # Compute emergence probabilities only if nlat1 < nlat2
             if nlat2 <= nlat1:
@@ -247,7 +239,9 @@ def regions(butterfly=True, activityrate=1, cyclelength=1, \
             # Uncorrelated emergence rate per lat/lon bin, as function of lat
             jlat = np.arange(nlat1, nlat2, dtype=int)
             p = np.zeros(nlat)
-            p[jlat] = np.exp(-((dlat*(0.5+jlat)-latavg)/latrms)**2.)              
+            p[jlat] = np.exp(-((dlat*(0.5+jlat)-latavg)/latrms)**2.)
+            #print(nday, icycle, phase, minlat, maxlat, nlat1, nlat2, (0.5+jlat)*dlat)
+            #input()
             ru0 = ru0_tot*p/(np.sum(p)*nlon*2)
             
             for k in [0, 1]: # loop over hemisphere and latitude
