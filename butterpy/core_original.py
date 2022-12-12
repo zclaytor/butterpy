@@ -221,9 +221,7 @@ def regions(butterfly=True, activityrate=1, cyclelength=1, \
                 nstart = ncycle*nc
             phase = (nday - nstart) / nclen
 
-            # Emergence rate of laragest uncorrelated regions (number per day,
-            # both hemispheres), from Shrijver and Harvey (1994)
-            ru0_tot = atm*np.sin(np.pi*phase)**2.*(dcon)/amax
+            # Determine active latitude bins
             if butterfly:
                 #This is a bit of a fudge. For the sun, y =35 - 48x + 20x^2
                 latavg = maxlat - (maxlat+minlat)*phase + \
@@ -239,11 +237,14 @@ def regions(butterfly=True, activityrate=1, cyclelength=1, \
                 nlat2 = np.fix(maxlat / dlat)
                 nlat2 = np.min([nlat2, nlat-1])
 
-            # Uncorrelated emergence rate per lat/lon bin, as function of lat
-            # Only if nlat1 < nlat2
+            # Compute emergence probabilities only if nlat1 < nlat2
             if nlat2 <= nlat1:
                 continue
             
+            # Emergence rate of laragest uncorrelated regions (number per day,
+            # both hemispheres), from Shrijver and Harvey (1994)
+            ru0_tot = atm*np.sin(np.pi*phase)**2.*(dcon)/amax
+            # Uncorrelated emergence rate per lat/lon bin, as function of lat
             jlat = np.arange(nlat1, nlat2, dtype=int)
             p = np.zeros(nlat)
             p[jlat] = np.exp(-((dlat*(0.5+jlat)-latavg)/latrms)**2.)              
