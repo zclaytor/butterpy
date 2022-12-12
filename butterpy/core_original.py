@@ -227,14 +227,14 @@ def regions(butterfly=True, activityrate=1, cyclelength=1, \
                 latavg = maxlat - (maxlat+minlat)*phase + \
                         +2*minlat*phase**2.
                 latrms = (maxlat/5.) - latrmsd*phase
-                nlat1 = np.fix(np.max([(maxlat*0.9) - (1.2*maxlat)*phase, 0.])/dlat)
-                nlat2 = np.fix(np.min([(maxlat + 6.) - maxlat*phase, maxlat])/dlat)
+                nlat1 = int(np.max([(maxlat*0.9) - (1.2*maxlat)*phase, 0.])/dlat)
+                nlat2 = int(np.min([(maxlat + 6.) - maxlat*phase, maxlat])/dlat)
                 nlat2 = np.min([nlat2, nlat-1])
             else:
                 latavg = (maxlat - minlat) / 2.
                 latrms = (maxlat - minlat)
-                nlat1 = np.fix(minlat / dlat)
-                nlat2 = np.fix(maxlat / dlat)
+                nlat1 = int(minlat / dlat)
+                nlat2 = int(maxlat / dlat)
                 nlat2 = np.min([nlat2, nlat-1])
 
             # Compute emergence probabilities only if nlat1 < nlat2
