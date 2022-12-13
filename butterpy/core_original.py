@@ -114,8 +114,8 @@ class spots():
         plt.tight_layout();
 
 
-def regions(butterfly=True, activityrate=1, cyclelength=1, \
-    cycleoverlap=0, maxlat=40, minlat=5, ndays=1200):
+def regions(butterfly=True, activityrate=1.0, cyclelength=1.0, \
+    cycleoverlap=0.0, maxlat=40.0, minlat=5.0, ndays=1200):
     """     
     Simulates the emergence and evolution of starspots. 
     Output is a list of active regions.
@@ -143,13 +143,13 @@ def regions(butterfly=True, activityrate=1, cyclelength=1, \
     spots (astropy Table): Each row is an active region 
         with the following parameters:
 
-        nday = day of emergence
-        thpos= theta of positive pole (radians)
-        phpos= phi   of positive pole (radians)
-        thneg= theta of negative pole (radians)
-        phneg= phi   of negative pole (radians)
-        width= width of each pole (radians)
-        bmax = maximum flux density (Gauss)
+        nday  = day of emergence
+        thpos = theta of positive pole (radians)
+        phpos = phi   of positive pole (radians)
+        thneg = theta of negative pole (radians)
+        phneg = phi   of negative pole (radians)
+        width = width of each pole (radians)
+        bmax  = maximum flux density (Gauss)
 
     Notes
     -----
