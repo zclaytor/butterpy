@@ -114,7 +114,7 @@ class spots():
         plt.tight_layout();
 
 
-def regions(butterfly=True, activityrate=1.0, cyclelength=1.0, \
+def regions(butterfly=True, activityrate=1.0, cyclelength=1.0,
     cycleoverlap=0.0, maxlat=40.0, minlat=5.0, ndays=1200):
     """     
     Simulates the emergence and evolution of starspots. 
@@ -128,7 +128,7 @@ def regions(butterfly=True, activityrate=1.0, cyclelength=1.0, \
     activityrate (float, 1.0): Number of magnetic bipoles, normalized such that 
         for the Sun, activityrate = 1.
 
-    cyclelength (float, 1.0): length of cycle in years (Sun is 11)
+    cyclelength (float, 1.0): interval (years) between cycle starts (Sun is 11)
 
     cycleoverlap (float, 0.0): overlap of cycles in years
 
@@ -183,7 +183,7 @@ def regions(butterfly=True, activityrate=1.0, cyclelength=1.0, \
     delt=0.5  # delta ln(A)
     amax=100.  # orig. area of largest bipoles (deg^2)
     dcon = np.exp(0.5*delt)- np.exp(-0.5*delt)
-    deviation = (maxlat-minlat) / 7.
+    deviation = (maxlat-minlat) / 7
     atm = 10*activityrate
     ncycle = 365 * cyclelength
     nclen = 365 * (cyclelength + cycleoverlap)
@@ -197,22 +197,30 @@ def regions(butterfly=True, activityrate=1.0, cyclelength=1.0, \
     nlon = 36                           # number of longitude bins
     nlat = 16                           # number of latitude bins
     tau = np.zeros((nlon,nlat,2), dtype=int)+tau2
-    dlon = 360. / nlon
+    dlon = 360 / nlon
     dlat = maxlat/nlat
     ncnt = 0
     ncur = 0
     cycle_days = ncycle
+
     spots = Table(names=('nday', 'thpos', 'phpos','thneg','phneg', 'width', 'bmax', 'ang'),
         dtype=(int, float, float, float, float, float, float, float))
+
     for nday in np.arange(ndays, dtype=int):
-        if nday % cycle_days == 0:
-            ncur += 1
-            cycle_days += ncycle
+        # Emergence rates for correlated regions
         tau += 1
         rc0 = np.zeros((nlon, nlat, 2))
         index = (tau1 < tau) & (tau < tau2)
         if index.any():
             rc0[index] = prob / (tau2 - tau1)
+
+        # Determine whether to start a new cycle
+        # change behavior so that old cycle is finishing
+        # at beginning? test extensively before committing.
+        #ncur = nday // ncycle; switch nday = 1, n+1
+        if nday % cycle_days == 0:
+            ncur += 1
+            cycle_days += ncycle
 
         for icycle in [0, 1]: # loop over current and previous cycle
             nc = ncur - icycle # index of cycle
@@ -231,11 +239,11 @@ def regions(butterfly=True, activityrate=1.0, cyclelength=1.0, \
             
             # Emergence rate of laragest uncorrelated regions (number per day,
             # both hemispheres), from Shrijver and Harvey (1994)
-            ru0_tot = atm*np.sin(np.pi*phase)**2.*(dcon)/amax
+            ru0_tot = atm*np.sin(np.pi*phase)**2 * dcon/amax
             # Uncorrelated emergence rate per lat/lon bin, as function of lat
             jlat = np.arange(nlat1, nlat2, dtype=int)
             p = np.zeros(nlat)
-            p[jlat] = np.exp(-((dlat*(0.5+jlat)-latavg)/latrms)**2.)
+            p[jlat] = np.exp(-((dlat*(0.5+jlat)-latavg)/latrms)**2)
             #print(nday, icycle, phase, minlat, maxlat, nlat1, nlat2, (0.5+jlat)*dlat)
             #input()
             ru0 = ru0_tot*p/(np.sum(p)*nlon*2)
