@@ -216,12 +216,8 @@ def regions(butterfly=True, activityrate=1.0, cyclelength=1.0, \
 
         for icycle in [0, 1]: # loop over current and previous cycle
             nc = ncur - icycle # index of cycle
-            # determine cycle start day
-            if ncur == 1 and icycle == 1:
-                nstart = 0
-            else:
-                nstart = ncycle*nc
-            phase = (nday - nstart) / nclen
+            nstart = ncycle*nc # start day of cycle
+            phase = (nday - nstart) / nclen # phase relative to start day
 
             # Determine active latitude bins
             if butterfly:
