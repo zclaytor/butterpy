@@ -30,16 +30,25 @@ def random(minlat, maxlat):
     nlat2 = np.min([nlat2, nlat-1])
     return latavg, latrms, nlat1, nlat2
 
+def linear(minlat, maxlat, phase):
+    nlat = 16
+    dlat = maxlat/nlat
+    latavg = maxlat - (maxlat - minlat)*phase
+    latrms = maxlat/5 - phase*(maxlat-minlat)/7
+    nlat1=int(np.max([0.9*maxlat - 1.2*maxlat*phase, 0.0])/dlat)
+    nlat2=int(np.min([15 + maxlat - maxlat*phase, maxlat])/dlat)
+    nlat2=min([nlat2,nlat-1])
+    return latavg, latrms, nlat1, nlat2
+
 def quadratic(minlat, maxlat, phase):
     #This is a bit of a fudge. For the sun, y =35 - 48x + 20x^2
     nlat = 16
     dlat = maxlat/nlat
-    latrmsd = (maxlat-minlat) / 7.
-    latavg = maxlat - (maxlat+minlat)*phase + \
-            +2*minlat*phase**2.
-    latrms = (maxlat/5.) - latrmsd*phase
-    nlat1 = int(np.max([(maxlat*0.9) - (1.2*maxlat)*phase, 0.])/dlat)
-    nlat2 = int(np.min([(maxlat + 6.) - maxlat*phase, maxlat])/dlat)
+    latrmsd = (maxlat-minlat)/7
+    latavg = maxlat - (maxlat+minlat)*phase + 2*minlat*phase**2.
+    latrms = maxlat/5 - latrmsd*phase
+    nlat1 = int(np.max([0.9*maxlat - 1.2*maxlat*phase, 0])/dlat)
+    nlat2 = int(np.min([6 + maxlat - maxlat*phase, maxlat])/dlat)
     nlat2 = np.min([nlat2, nlat-1])
     return latavg, latrms, nlat1, nlat2
 

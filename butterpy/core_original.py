@@ -3,7 +3,7 @@ import matplotlib.pylab as plt
 import astropy.units as u
 from astropy.table import Table
 
-from .utils.activelat import random, quadratic
+from .utils.activelat import random, linear, quadratic
 
 D2S = 1*u.day.to(u.s)
 
