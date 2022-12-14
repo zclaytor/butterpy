@@ -214,18 +214,13 @@ def regions(butterfly=True, activityrate=1.0, cyclelength=1.0,
         if index.any():
             rc0[index] = prob / (tau2 - tau1)
 
-        # Determine whether to start a new cycle
-        # change behavior so that old cycle is finishing
-        # at beginning? test extensively before committing.
-        #ncur = nday // ncycle; switch nday = 1, n+1
-        if nday % cycle_days == 0:
-            ncur += 1
-            cycle_days += ncycle
-
+        ncur = nday // ncycle # index of current active cycle
         for icycle in [0, 1]: # loop over current and previous cycle
-            nc = ncur - icycle # index of cycle
+            nc = ncur - icycle # index of current or previous cycle
             nstart = ncycle*nc # start day of cycle
-            phase = (nday - nstart) / nclen # phase relative to start day
+            phase = (nday - nstart) / nclen # phase relative to cycle start day
+            if not (0 <= phase <= 1): # phase outside of [0, 1] is nonphysical
+                continue
 
             # Determine active latitude bins
             if butterfly:
@@ -233,9 +228,7 @@ def regions(butterfly=True, activityrate=1.0, cyclelength=1.0,
             else:
                 latavg, latrms, nlat1, nlat2 = random(minlat, maxlat)
 
-            # Compute emergence probabilities only if nlat1 < nlat2
-            if nlat2 <= nlat1:
-                continue
+            # Compute emergence probabilities
             
             # Emergence rate of laragest uncorrelated regions (number per day,
             # both hemispheres), from Shrijver and Harvey (1994)
@@ -244,10 +237,8 @@ def regions(butterfly=True, activityrate=1.0, cyclelength=1.0,
             jlat = np.arange(nlat1, nlat2, dtype=int)
             p = np.zeros(nlat)
             p[jlat] = np.exp(-((dlat*(0.5+jlat)-latavg)/latrms)**2)
-            #print(nday, icycle, phase, minlat, maxlat, nlat1, nlat2, (0.5+jlat)*dlat)
-            #input()
             ru0 = ru0_tot*p/(np.sum(p)*nlon*2)
-            
+
             for k in [0, 1]: # loop over hemisphere and latitude
                 for j in jlat:
                     r0 = ru0[j] + rc0[:, j, k]
