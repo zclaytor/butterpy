@@ -181,7 +181,7 @@ def regions(butterfly=True, activityrate=1.0, cyclelength=1.0,
     """
     nbin=5 # number of area bins
     delt=0.5  # delta ln(A)
-    amax=100.  # orig. area of largest bipoles (deg^2)
+    amax=100  # orig. area of largest bipoles (deg^2)
     dcon = np.exp(0.5*delt)- np.exp(-0.5*delt)
     deviation = (maxlat-minlat) / 7
     atm = 10*activityrate
@@ -189,7 +189,7 @@ def regions(butterfly=True, activityrate=1.0, cyclelength=1.0,
     nclen = 365 * (cyclelength + cycleoverlap)
     latrmsd = deviation
     fact = np.exp(delt*np.arange(nbin)) # array of area reduction factors
-    ftot = np.sum(fact)                 # sum of reduction factors
+    ftot = fact.sum()                   # sum of reduction factors
     bsiz = np.sqrt(amax/fact)           # array of bipole separations (deg)
     tau1 = 5                            # first and last times (in days) for
     tau2 = 15                           #   emergence of an active region
@@ -201,7 +201,6 @@ def regions(butterfly=True, activityrate=1.0, cyclelength=1.0,
     dlat = maxlat/nlat
     ncnt = 0
     ncur = 0
-    cycle_days = ncycle
     spots = Table(names=('nday', 'thpos', 'phpos','thneg','phneg', 'width', 'bmax', 'ang'),
         dtype=(int, float, float, float, float, float, float, float))
 
@@ -234,12 +233,12 @@ def regions(butterfly=True, activityrate=1.0, cyclelength=1.0,
             jlat = np.arange(nlat1, nlat2, dtype=int)
             p = np.zeros(nlat)
             p[jlat] = np.exp(-((dlat*(0.5+jlat)-latavg)/latrms)**2)
-            ru0 = ru0_tot*p/(np.sum(p)*nlon*2)
+            ru0 = ru0_tot*p/(p.sum()*nlon*2)
 
             for k in [0, 1]: # loop over hemisphere and latitude
                 for j in jlat:
                     r0 = ru0[j] + rc0[:, j, k]
-                    rtot = np.sum(r0)
+                    rtot = r0.sum()
                     sumv = rtot * ftot
                     x = np.random.uniform()
                     if x < sumv:
