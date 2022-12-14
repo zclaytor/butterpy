@@ -196,23 +196,20 @@ def regions(butterfly=True, activityrate=1.0, cyclelength=1.0,
     prob = 0.0001                       # total probability for "correlation"
     nlon = 36                           # number of longitude bins
     nlat = 16                           # number of latitude bins
-    tau = np.zeros((nlon,nlat,2), dtype=int)+tau2
+    tau = np.zeros((nlon, nlat, 2), dtype=int) + tau2
     dlon = 360 / nlon
     dlat = maxlat/nlat
     ncnt = 0
     ncur = 0
     cycle_days = ncycle
-
     spots = Table(names=('nday', 'thpos', 'phpos','thneg','phneg', 'width', 'bmax', 'ang'),
         dtype=(int, float, float, float, float, float, float, float))
 
     for nday in np.arange(ndays, dtype=int):
         # Emergence rates for correlated regions
         tau += 1
-        rc0 = np.zeros((nlon, nlat, 2))
-        index = (tau1 < tau) & (tau < tau2)
-        if index.any():
-            rc0[index] = prob / (tau2 - tau1)
+        index = (tau1 <= tau) & (tau < tau2)
+        rc0 = np.where(index, prob/(tau2-tau1), 0)
 
         ncur = nday // ncycle # index of current active cycle
         for icycle in [0, 1]: # loop over current and previous cycle
