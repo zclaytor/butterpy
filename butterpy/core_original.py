@@ -206,6 +206,8 @@ def regions(butterfly=True, activityrate=1.0, cyclelength=1.0,
 
     for nday in np.arange(ndays, dtype=int):
         # Emergence rates for correlated regions
+        # Note that correlated emergence only occurs for the largest regions,
+        # i.e., for bsiz[0]
         tau += 1
         index = (tau1 <= tau) & (tau < tau2)
         rc0 = np.where(index, prob/(tau2-tau1), 0)
@@ -237,16 +239,20 @@ def regions(butterfly=True, activityrate=1.0, cyclelength=1.0,
 
             for k in [0, 1]: # loop over hemisphere and latitude
                 for j in jlat:
-                    r0 = ru0[j] + rc0[:, j, k]
-                    rtot = r0.sum()
+                    r0 = ru0[j] + rc0[:, j, k] # rate per lon, lat, and hem
+                    rtot = r0.sum() # rate per lat, hem
                     sumv = rtot * ftot
                     x = np.random.uniform()
-                    if x < sumv:
+                    if sumv > x: # emerge spot
+                        # determine bipole size
                         nb = 0
                         sumb = rtot*fact[0]
                         while x > sumb:
                             nb += 1
                             sumb += rtot*fact[nb]
+                        bsize = bsiz[nb]
+
+                        # determine longitude
                         i = 0
                         sumb += (r0[0]-rtot)*fact[nb]
                         while x > sumb:
@@ -255,7 +261,7 @@ def regions(butterfly=True, activityrate=1.0, cyclelength=1.0,
                         lon = dlon*(np.random.uniform() + i)
                         lat = dlat*(np.random.uniform() + j)
 
-                        new_region = add_region(nc, lon, lat, k, bsiz[nb])
+                        new_region = add_region(nc, lon, lat, k, bsize)
                         spots.add_row([nday, *new_region])
 
                         ncnt += 1
