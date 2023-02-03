@@ -198,7 +198,7 @@ class Spots(object):
         ax.set_ylabel("Latitude (deg)")
 
     def ortho_animation(self, time, lightcurve, window_size=50, 
-        fig_kw={"figsize": (5, 6)}, **kw):
+        fig_kw={"figsize": (5, 9)}, **kw):
         try:
             import cartopy.crs as ccrs
         except:
@@ -210,9 +210,9 @@ class Spots(object):
             )
 
         fig = plt.figure(**fig_kw)
-        #fig.subplots_adjust(
-        #    top=0.95, bottom=0.08, left=0.16, right=0.95, hspace=0.1)
-        gs = gridspec.GridSpec(2, 1, figure=fig, height_ratios=(1, 0.5))
+        fig.subplots_adjust(
+            top=0.93, bottom=0.12, left=0.21, right=0.95, hspace=0.05)
+        gs = gridspec.GridSpec(2, 1, figure=fig, height_ratios=(1, 0.3))
         ax1 = fig.add_subplot(gs[0], 
             projection=ccrs.Orthographic(0, 90 - RAD2DEG * self.inclination))
         ax2 = fig.add_subplot(gs[1])
@@ -240,7 +240,7 @@ class Spots(object):
         ax2.set_xlabel("Time (days)")
         ax2.set_ylabel("Relative Flux")
         ax2.vlines(0.5, color="r", ymin=0, ymax=1, transform=ax2.transAxes)
-        title = fig.suptitle("")
+        title = fig.suptitle("", x=0.57)
         fig.align_labels()
 
         ax = (ax1, ax2)
@@ -358,7 +358,7 @@ def _update_figure(time, spots, ax, title, projection=None):
         y1 = new_flux - 0.01
         ax2.set_ylim(y1, y2)
     circle_y = (new_flux - y1) / (y2 - y1)
-    circle, = ax2.artists
+    circle, = ax2.patches
     circle.set_center((0.5, circle_y))
 
     t1, t2 = ax2.get_xlim()
