@@ -227,7 +227,7 @@ def regions(butterfly=True, activityrate=1.0, cyclelength=1.0,
 
             # Compute emergence probabilities
             
-            # Emergence rate of laragest uncorrelated regions (number per day,
+            # Emergence rate of largest uncorrelated regions (number per day,
             # both hemispheres), from Shrijver and Harvey (1994)
             ru0_tot = atm*np.sin(np.pi*phase)**2 * dcon/amax
             # Uncorrelated emergence rate per lat/lon bin, as function of lat
