@@ -183,11 +183,10 @@ def regions(butterfly=True, activityrate=1.0, cyclelength=1.0,
     delt=0.5  # delta ln(A)
     amax=100  # orig. area of largest bipoles (deg^2)
     dcon = np.exp(0.5*delt)- np.exp(-0.5*delt)
-    deviation = (maxlat-minlat) / 7
     atm = 10*activityrate
     ncycle = 365 * cyclelength
     nclen = 365 * (cyclelength + cycleoverlap)
-    latrmsd = deviation
+
     fact = np.exp(delt*np.arange(nbin)) # array of area reduction factors
     ftot = fact.sum()                   # sum of reduction factors
     bsiz = np.sqrt(amax/fact)           # array of bipole separations (deg)
