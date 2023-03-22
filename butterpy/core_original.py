@@ -4,6 +4,7 @@ import astropy.units as u
 from astropy.table import Table
 
 from .utils.activelat import random, linear, quadratic
+from .utils.diffrot import sin2
 
 D2S = 1*u.day.to(u.s)
 
@@ -11,14 +12,10 @@ PROT_SUN = 27.0
 OMEGA_SUN = 2 * np.pi / (27.0 * D2S)
 
 
-def diffrot_sin2(omega_0, delta_omega, lat):
-    return omega_0 - delta_omega * np.sin(lat)**2
-
-
 class spots():
     """Holds parameters for spots on a given star"""
     def __init__(self,spot_properties,  dur = None, alpha_med = 0.0001, incl = None, \
-                 omega = 2.0, delta_omega = 0.3, diffrot_func = diffrot_sin2, \
+                 omega = 2.0, delta_omega = 0.3, diffrot_func = sin2, \
                  tau_evol = 5.0, threshold = 0.1):
         '''Generate initial parameter set for spots (emergence times
         and initial locations are read from regions file)'''
