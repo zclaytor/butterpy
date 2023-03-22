@@ -9,7 +9,7 @@ from .utils.diffrot import sin2
 D2S = 1*u.day.to(u.s)
 
 PROT_SUN = 27.0
-OMEGA_SUN = 2 * np.pi / (27.0 * D2S)
+OMEGA_SUN = 2 * np.pi / (PROT_SUN * D2S)
 
 
 class spots():
