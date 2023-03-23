@@ -88,7 +88,7 @@ class Spots(object):
         else:
             self.dur = dur
 
-        keep = (time < self.dur) & (peak_magnetic_flux > threshold)
+        keep = (time <= self.dur) & (peak_magnetic_flux > threshold)
         self.nspot = keep.sum()
         self.t0 = time[keep]
         self.latitude = latitude[keep]
