@@ -310,9 +310,8 @@ def add_region(nc, lon, lat, k, bsize):
     ang (float): Joy's law bipole angle
     """
     ic = 1. - 2.*(nc % 2) # +1 for even, -1 for odd cycle
-    w_org = 0.4*bsize
-    width = 4.0
-    bmax = 250*(w_org / width)**2
+    width = 4.0 # this is no longer needed... remove?
+    bmax = 2.5*bsize**2 # original was bmax = 250*(0.4*bsize / width)**2, this is equivalent
 
     z = np.random.uniform()
     if z > 0.14:
@@ -325,14 +324,14 @@ def add_region(nc, lon, lat, k, bsize):
     # Convert angles to radians
     ang *= np.pi/180
     lat *= np.pi/180
-    phcen = np.pi*lon/180.
+    phcen = lon*np.pi/180.
     bsize *= np.pi/180
-    width *= np.pi / 180
+    width *= np.pi/180
 
     # Compute bipole positions
     dph = ic*0.5*bsize*np.cos(ang)/np.cos(lat)
     dth = ic*0.5*bsize*np.sin(ang)
-    thcen = 0.5*np.pi - lat + 2*k*lat
+    thcen = 0.5*np.pi - lat + 2*k*lat # k determines hemisphere
     phpos = phcen + dph
     phneg = phcen - dph
     thpos = thcen + dth
