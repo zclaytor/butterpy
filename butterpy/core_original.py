@@ -49,7 +49,7 @@ class spots():
             self.dur = t0.max()
         else:
             self.dur = dur
-        l = (t0 < self.dur) * (Bem > threshold)
+        l = (t0 <= self.dur) * (Bem > threshold)
         self.nspot = l.sum()
         self.t0 = t0[l]
         self.lat = lat[l]
