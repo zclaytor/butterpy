@@ -265,10 +265,26 @@ def regions(butterfly=True, activityrate=1.0, cyclelength=1.0,
                             tau[i, j, k] = 0
     return spots
 
+
+def _symtruncnorm(v):
+    """
+    Symmetric truncated normal random variable. Returns a value drawn
+    from a normal distribution truncated between +/- v.
+
+    Note that scipy.stats.truncnorm exists for this, but as of 
+    my current version of scipy (1.9.3), this implementation is almost
+    100 times faster on a single draw.
+    """
+    while True:
+        x = np.random.normal()
+        if np.abs(x) < v:
+            return x
+        
+
 def add_region(nc, lon, lat, k, bsize):
     """
     Add one active region of a particular size at a particular location.
-    
+
     Joy's law tilt angle is computed here as well. 
     For tilt angles, see 
         Wang and Sheeley, Sol. Phys. 124, 81 (1989)
@@ -296,31 +312,26 @@ def add_region(nc, lon, lat, k, bsize):
     ic = 1. - 2.*(nc % 2) # +1 for even, -1 for odd cycle
     w_org = 0.4*bsize
     width = 4.0
-    bmax = 250.*(w_org / width)**2.
-    bsizr = np.pi * bsize / 180.
-    width *= np.pi / 180.
-    while True:
-        x = np.random.normal()
-        if np.abs(x) < 1.6:
-            break
-    while True:
-        y = np.random.normal()
-        if np.abs(y) < 1.8:
-            break
+    bmax = 250*(w_org / width)**2
+
     z = np.random.uniform()
     if z > 0.14:
-        ang = (0.5*lat + 2.0) + 27.*x*y
+        x = _symtruncnorm(1.6)
+        y = _symtruncnorm(1.8)
+        ang = (0.5*lat + 2.0) + 27*x*y
     else:
-        while True:
-            z = np.random.normal()
-            if np.abs(z) < 0.5:
-                break
-        ang = z*np.pi/180.
-    lat = np.pi * lat / 180.
-    ang *= np.pi/180.
-    dph = ic*0.5*bsizr*np.cos(ang)/np.cos(lat)
-    dth = ic*0.5*bsizr*np.sin(ang)
+        ang = _symtruncnorm(0.5)
+    
+    # Convert angles to radians
+    ang *= np.pi/180
+    lat *= np.pi/180
     phcen = np.pi*lon/180.
+    bsize *= np.pi/180
+    width *= np.pi / 180
+
+    # Compute bipole positions
+    dph = ic*0.5*bsize*np.cos(ang)/np.cos(lat)
+    dth = ic*0.5*bsize*np.sin(ang)
     thcen = 0.5*np.pi - lat + 2*k*lat
     phpos = phcen + dph
     phneg = phcen - dph
