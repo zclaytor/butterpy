@@ -80,7 +80,7 @@ class Spots(object):
         time = spot_properties["nday"].values.astype(float)
         latitude = spot_properties["lat"].values / RAD2DEG
         longitude = spot_properties["lon"].values / RAD2DEG
-        peak_magnetic_flux = spot_properties["bmax"]
+        peak_magnetic_flux = spot_properties["bmax"].values
 
         # keep only spots emerging within specified timespan and with peak B-field > threshold
         if dur is None:
