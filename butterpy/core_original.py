@@ -268,6 +268,12 @@ def regions(butterfly=True, activityrate=1.0, cyclelength=1.0,
 def add_region(nc, lon, lat, k, bsize):
     """
     Add one active region of a particular size at a particular location.
+    
+    Joy's law tilt angle is computed here as well. 
+    For tilt angles, see 
+        Wang and Sheeley, Sol. Phys. 124, 81 (1989)
+        Wang and Sheeley, ApJ. 375, 761 (1991)
+        Howard, Sol. Phys. 137, 205 (1992)
 
     Parameters
     ----------
