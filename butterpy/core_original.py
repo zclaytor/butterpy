@@ -5,6 +5,7 @@ from astropy.table import Table
 
 from .utils.activelat import random, linear, quadratic
 from .utils.diffrot import sin2
+from .utils.joyslaw import tilt
 
 D2S = 1*u.day.to(u.s)
 
@@ -266,21 +267,6 @@ def regions(butterfly=True, activityrate=1.0, cyclelength=1.0,
     return spots
 
 
-def _symtruncnorm(v):
-    """
-    Symmetric truncated normal random variable. Returns a value drawn
-    from a normal distribution truncated between +/- v.
-
-    Note that scipy.stats.truncnorm exists for this, but as of 
-    my current version of scipy (1.9.3), this implementation is almost
-    100 times faster on a single draw.
-    """
-    while True:
-        x = np.random.normal()
-        if np.abs(x) < v:
-            return x
-        
-
 def add_region(nc, lon, lat, k, bsize):
     """
     Add one active region of a particular size at a particular location.
@@ -312,14 +298,7 @@ def add_region(nc, lon, lat, k, bsize):
     ic = 1. - 2.*(nc % 2) # +1 for even, -1 for odd cycle
     width = 4.0 # this is no longer needed... remove?
     bmax = 2.5*bsize**2 # original was bmax = 250*(0.4*bsize / width)**2, this is equivalent
-
-    z = np.random.uniform()
-    if z > 0.14:
-        x = _symtruncnorm(1.6)
-        y = _symtruncnorm(1.8)
-        ang = (0.5*lat + 2.0) + 27*x*y
-    else:
-        ang = _symtruncnorm(0.5)
+    ang = tilt(lat)
     
     # Convert angles to radians
     ang *= np.pi/180
