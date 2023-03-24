@@ -190,7 +190,7 @@ def regions(butterfly=True, activityrate=1.0, cyclelength=1.0,
     bsiz = np.sqrt(amax/fact)           # array of bipole separations (deg)
     tau1 = 5                            # first and last times (in days) for
     tau2 = 15                           #   emergence of an active region
-    prob = 0.0001                       # total probability for "correlation"
+    prob = 0.001                        # total probability for "correlation"
     nlon = 36                           # number of longitude bins
     nlat = 16                           # number of latitude bins
     tau = np.zeros((nlon, nlat, 2), dtype=int) + tau2
