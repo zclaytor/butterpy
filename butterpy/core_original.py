@@ -15,7 +15,7 @@ OMEGA_SUN = 2 * np.pi / (PROT_SUN * D2S)
 
 class spots():
     """Holds parameters for spots on a given star"""
-    def __init__(self,spot_properties,  dur = None, alpha_med = 0.0001, incl = None, \
+    def __init__(self,spot_properties,  dur = None, alpha_med = 0.0001, incl = np.pi/2, \
                  omega = 2.0, delta_omega = 0.3, diffrot_func = sin2, \
                  tau_evol = 5.0, threshold = 0.1):
         '''Generate initial parameter set for spots (emergence times
@@ -23,10 +23,7 @@ class spots():
         # set global stellar parameters which are the same for all spots
         # inclination
         self.spot_properties = spot_properties
-        if incl == None:
-            self.incl = np.arcsin(np.random.uniform())
-        else:
-            self.incl = incl
+        self.incl = incl
         # rotation and differential rotation (supplied in solar units)
         self.omega = omega * OMEGA_SUN # in radians
         self.delta_omega = delta_omega * OMEGA_SUN
