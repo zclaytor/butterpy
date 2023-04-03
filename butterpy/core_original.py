@@ -13,13 +13,52 @@ PROT_SUN = 27.0
 OMEGA_SUN = 2 * np.pi / (PROT_SUN * D2S)
 
 
-class spots():
-    """Holds parameters for spots on a given star"""
-    def __init__(self,spot_properties,  dur = None, alpha_med = 0.0001, incl = np.pi/2, \
-                 omega = 2.0, delta_omega = 0.3, diffrot_func = sin2, \
-                 tau_evol = 5.0, threshold = 0.1):
-        '''Generate initial parameter set for spots (emergence times
-        and initial locations are read from regions file)'''
+class spots(object):
+    """Holds parameters for spots on a given star."""
+    def __init__(self, spot_properties, dur=None, alpha_med=0.0001, 
+        incl=np.pi/2, omega=2.0, delta_omega=0.3, diffrot_func=sin2,
+        tau_evol=5.0, threshold=0.1):
+        """
+        Generate initial parameter set for spots. Emergence times
+        and initial locations are read from the user-provided 
+        `spot_properties` table.
+
+        Parameters:
+        ----------
+        spot_properties (astropy Table): 
+            DataFrame containing spot properties such as emergence time, 
+            latitude, longitude, and peak magnetic flux.
+
+        dur (float, optional):
+            Duration of time to consider for spot emergence and decay.
+            Default is the maximum emergence time in `spot_properties`.
+
+        alpha_med (float, optional, default=0.0001):
+            Median value of an individual spot filling factor.
+
+        incl (float, optional, default=pi/2):
+            Inclination angle of the star in radians, where inclination is
+            the angle between the pole and the line of sight.
+
+        omega (float, optional, default=2.0):
+            Rotation rate of the star in solar units.
+
+        delta_omega (float, optional, default=0.3):
+            Differential rotation rate of the star in solar units.
+
+        diffrot_func (function, optional, default=`utils.diffrot.sin2`):
+            Differential rotation function. Default is sin^2 (latitude).
+
+        tau_evol (float, optional, default=5.0):
+            Spot decay timescale in units of the equatorial rotation period.
+
+        threshold (float, optional, default=0.1):
+            Minimum peak magnetic flux for a spot to be considered.
+
+
+        Returns None.
+        """
+        
         # set global stellar parameters which are the same for all spots
         # inclination
         self.spot_properties = spot_properties
@@ -117,26 +156,33 @@ def regions(butterfly=True, activityrate=1.0, cyclelength=1.0,
 
     Parameters
     ----------
-    butterfly (bool, True): have spots decrease from maxlat to minlat (True)
+    butterfly (bool, optional, default=True): 
+        Have spots decrease from maxlat to minlat (True)
         or be randomly located in latitude (False)
 
-    activityrate (float, 1.0): Number of magnetic bipoles, normalized such that 
+    activityrate (float, optional, default=1.0): 
+        Number of magnetic bipoles, normalized such that 
         for the Sun, activityrate = 1.
 
-    cyclelength (float, 1.0): interval (years) between cycle starts (Sun is 11)
+    cyclelength (float, optional, default=1.0): 
+        Interval (years) between cycle starts (Sun is 11)
 
-    cycleoverlap (float, 0.0): overlap of cycles in years
+    cycleoverlap (float, optional, default=1.0): 
+        Overlap of cycles in years.
 
-    maxlat (float, 40) = maximum latitude of spot emergence (deg)
+    maxlat (float, optional, default=40):
+        Maximum latitude of spot emergence in degrees.
 
-    minlat (float, 5) = minimum latitutde of emergence (deg)
+    minlat (float, optional, default=5):
+        Minimum latitutde of spot emergence in degrees.
 
-    ndays (int, 1200) = how many days to emerge spots for
+    ndays (int, optional, default=1200):
+        Number of days to emerge spots. 
 
     Returns
     -------
-    spots (astropy Table): Each row is an active region 
-        with the following parameters:
+    spots (astropy Table): 
+        Each row is an active region with the following parameters:
 
         nday  = day of emergence
         thpos = theta of positive pole (radians)
