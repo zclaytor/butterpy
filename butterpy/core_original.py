@@ -79,7 +79,7 @@ class spots(object):
         l = lat < 0
         lat[l] *= -1
         lon = 0.5*(spot_properties['phpos'] + spot_properties['phneg'])
-        Bem = spot_properties['ang']
+        Bem = spot_properties['bmax']
 
         # keep only spots emerging within specified time-span, with peak B-field > threshold
         if dur == None:
@@ -92,7 +92,7 @@ class spots(object):
         self.lat = lat[l]
         self.lon = lon[l]
         self.amax = Bem[l] \
-            * alpha_med #/ np.median(Bem[l]) # scale to achieve desired median alpha, # where alpha = spot contrast * spot area
+            * alpha_med / np.median(Bem[l]) # scale to achieve desired median alpha, # where alpha = spot contrast * spot area
 
     def calci(self, time, i):
         '''Evolve one spot and calculate its impact on the stellar flux'''
@@ -238,8 +238,12 @@ def regions(butterfly=True, activityrate=1.0, cyclelength=1.0,
     nlat = 16                           # number of latitude bins
     tau = np.zeros((nlon, nlat, 2), dtype=int) + tau2
     dlon = 360 / nlon
-    dlat = (maxlat-minlat)/nlat
-    ncnt = 0
+    if butterfly:                       # Really we want spots to emerge in a
+        l1 = max(minlat-7, 0)           # range around the average active lat,
+        l2 = min(maxlat+7, 90)          # so we bump the boundaries a bit.
+    else:                               
+        l1, l2 = minlat, maxlat
+    dlat = (l2-l1)/nlat                 
     ncur = 0
     spots = Table(names=('nday', 'thpos', 'phpos','thneg','phneg', 'width', 'bmax', 'ang'),
         dtype=(int, float, float, float, float, float, float, float))
@@ -273,7 +277,7 @@ def regions(butterfly=True, activityrate=1.0, cyclelength=1.0,
             ru0_tot = atm*np.sin(np.pi*phase)**2 * dcon/amax
             # Uncorrelated emergence rate per lat/lon bin, as function of lat
             jlat = np.arange(nlat, dtype=int)
-            p = np.exp(-((minlat+dlat*(0.5+jlat)-latavg)/latrms)**2)
+            p = np.exp(-((l1 + dlat*(0.5+jlat) - latavg)/latrms)**2)
             ru0 = ru0_tot*p/(p.sum()*nlon*2)
 
             for k in [0, 1]: # loop over hemisphere and latitude
@@ -298,12 +302,11 @@ def regions(butterfly=True, activityrate=1.0, cyclelength=1.0,
                             i += 1
                             sumb += r0[i]*fact[nb]
                         lon = dlon*(np.random.uniform() + i)
-                        lat = minlat+dlat*(np.random.uniform() + j)
+                        lat = l1 + dlat*(np.random.uniform() + j)
 
                         new_region = add_region(nc, lon, lat, k, bsize)
                         spots.add_row([nday, *new_region])
 
-                        ncnt += 1
                         if nb == 0:
                             tau[i, j, k] = 0
     return spots
