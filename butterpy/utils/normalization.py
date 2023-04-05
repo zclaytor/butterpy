@@ -20,7 +20,7 @@ According to Hathaway (2015), LRSP 12: 4, Figure 2, the peak monthly
 
 import numpy as np
 import matplotlib.pyplot as plt
-from butterpy.core_original import regions
+from butterpy.core import regions
 from plots import monthly_spot_number
 
 

@@ -1,6 +1,6 @@
 import timeit
 import numpy as np
-from butterpy.core_original import regions
+from butterpy.core import regions
 
 def default_regions():
     return regions(activityrate=1, minlat=5, maxlat=35, 
