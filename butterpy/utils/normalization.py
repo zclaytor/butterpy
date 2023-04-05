@@ -16,6 +16,14 @@ According to Hathaway (2015), LRSP 12: 4, Figure 2, the peak monthly
     sunspot number varies from cycle to cycle, with peaks as low as 
     50 spots/month (1818, Cycle 6) and as high as 200 (1960, Cycle 19).
     The Solar normalization should return an amplitude somewhere in this range.
+
+NOTE
+----
+This currently computes the normalization based on *newly* emerged spots,
+    which is different from daily sunspot counts, which can include spots
+    that were previously counted. To do the normalization right, we need
+    to run the regions through the `spots` code and count the spots that
+    are visible on a given day.
 """
 
 import numpy as np
