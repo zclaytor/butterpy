@@ -107,7 +107,7 @@ def regions(
     nclen = (cycle_length + cycle_overlap) * YEAR2DAY
 
     # tau is time since last emergence in each lat/lon bin
-    tau = np.ones((nlon, nlat, 2), dtype=np.long) * tau2
+    tau = np.ones((nlon, nlat, 2), dtype=int) * tau2
 
     # width of latitude and longitude bins
     # Let latitude evolution for butterfly diagram go some amount
