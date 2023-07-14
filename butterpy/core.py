@@ -67,7 +67,6 @@ class spots(object):
         self.omega = omega * OMEGA_SUN # in radians
         self.delta_omega = delta_omega * OMEGA_SUN
         self.per_eq = 2 * np.pi / self.omega / D2S # in days
-        self.per_pole = 2 * np.pi / (self.omega - self.delta_omega) / D2S
         self.diffrot_func = diffrot_func
         # spot emergence and decay timescales
         self.tau_em = min(2.0, self.per_eq * tau_evol / 10.0)
@@ -119,10 +118,10 @@ class spots(object):
         '''Calculations for all spots'''
         N = len(time)
         M = self.nspot
-        area = np.zeros((M, N))
-        ome = np.zeros(M)
-        beta = np.zeros((M, N))
-        dF = np.zeros((M, N))
+        area = np.zeros((M, N), dtype="float32")
+        ome = np.zeros(M, dtype="float32")
+        beta = np.zeros((M, N), dtype="float32")
+        dF = np.zeros((M, N), dtype="float32")
         for i in np.arange(M):
             area_i, omega_i, beta_i, dF_i = self.calci(time, i)
             area[i,:] = area_i
@@ -341,7 +340,7 @@ def add_region(nc, lon, lat, k, bsize):
     ang (float): Joy's law bipole angle
     """
     ic = 1. - 2.*(nc % 2) # +1 for even, -1 for odd cycle
-    width = 4.0 # this is no longer needed... remove?
+    width = 4.0 # this is not actually used... remove?
     bmax = 2.5*bsize**2 # original was bmax = 250*(0.4*bsize / width)**2, this is equivalent
     ang = tilt(lat)
     
