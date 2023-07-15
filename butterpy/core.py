@@ -15,9 +15,18 @@ OMEGA_SUN = 2 * np.pi / (PROT_SUN * D2S)
 
 class spots(object):
     """Holds parameters for spots on a given star."""
-    def __init__(self, spot_properties, dur=None, alpha_med=0.0001, 
-        incl=np.pi/2, omega=2.0, delta_omega=0.3, diffrot_func=sin2,
-        tau_evol=5.0, threshold=0.1):
+    def __init__(
+            self, 
+            spot_properties, 
+            dur=None, 
+            alpha_med=0.0001,
+            incl=np.pi/2, 
+            #omega=2.0, 
+            period=PROT_SUN,
+            delta_omega=0.3, 
+            diffrot_func=sin2,
+            tau_evol=5.0, 
+            threshold=0.1):
         """
         Generate initial parameter set for spots. Emergence times
         and initial locations are read from the user-provided 
@@ -40,11 +49,12 @@ class spots(object):
             Inclination angle of the star in radians, where inclination is
             the angle between the pole and the line of sight.
 
-        omega (float, optional, default=2.0):
-            Rotation rate of the star in solar units.
+        period (float, optional, default=PROT_SUN):
+            Rotation period of the star in days.
 
         delta_omega (float, optional, default=0.3):
-            Differential rotation rate of the star in solar units.
+            Differential rotation rate of the star in units of equatorial
+            rotation velocity.
 
         diffrot_func (function, optional, default=`utils.diffrot.sin2`):
             Differential rotation function. Default is sin^2 (latitude).
@@ -63,18 +73,18 @@ class spots(object):
         # inclination
         self.spot_properties = spot_properties
         self.incl = incl
-        # rotation and differential rotation (supplied in solar units)
-        self.omega = omega * OMEGA_SUN # in radians
-        self.delta_omega = delta_omega * OMEGA_SUN
-        self.per_eq = 2 * np.pi / self.omega / D2S # in days
+        # rotation and differential rotation
+        self.per_eq = period # in days
+        self.omega = 2*np.pi/(self.per_eq * D2S) # in radians/s
+        self.delta_omega = delta_omega * self.omega # in radians/s
         self.diffrot_func = diffrot_func
         # spot emergence and decay timescales
-        self.tau_em = min(2.0, self.per_eq * tau_evol / 10.0)
+        self.tau_em = min(2, self.per_eq * tau_evol / 10)
         self.tau_decay = self.per_eq * tau_evol
         # Convert spot properties
         t0 = spot_properties['nday']
         lat = 0.5*(spot_properties['thpos'] + spot_properties['thneg'])
-        lat = np.pi/2. - lat
+        lat = np.pi/2 - lat
         l = lat < 0
         lat[l] *= -1
         lon = 0.5*(spot_properties['phpos'] + spot_properties['phneg'])
