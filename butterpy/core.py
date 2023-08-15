@@ -3,7 +3,7 @@ import matplotlib.pylab as plt
 import astropy.units as u
 from astropy.table import Table
 
-from .utils.activelat import random, exponential
+from .utils.activelat import random_latitudes, exponential_latitudes
 from .utils.diffrot import sin2
 from .utils.joyslaw import tilt
 
@@ -295,9 +295,9 @@ def regions(butterfly=True, activityrate=1.0, cyclelength=1.0,
 
             # Determine active latitude bins
             if butterfly:
-                latavg, latrms = exponential(minlat, maxlat, phase)
+                latavg, latrms = exponential_latitudes(minlat, maxlat, phase)
             else:
-                latavg, latrms = random(minlat, maxlat)
+                latavg, latrms = random_latitudes(minlat, maxlat)
 
             # Compute emergence probabilities
             

@@ -1,11 +1,11 @@
 import numpy as np
 
-def random(minlat, maxlat):
+def random_latitudes(minlat, maxlat):
     latavg = (maxlat + minlat) / 2.
     latrms = (maxlat - minlat)
     return latavg, latrms
 
-def exponential(minlat, maxlat, phase):
+def exponential_latitudes(minlat, maxlat, phase):
     # Based on Hathaway 2015, LRSP 12: 4
     latavg = maxlat * (minlat/maxlat)**phase
     # See Hathaway 2010, p. 37 for a discussion of the width
