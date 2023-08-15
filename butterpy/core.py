@@ -4,6 +4,7 @@ import astropy.units as u
 from astropy.table import Table
 
 from .utils.activelat import random_latitudes, exponential_latitudes
+from .utils.spotevol import gaussian_spots
 from .utils.diffrot import sin2
 from .utils.joyslaw import tilt
 
@@ -23,6 +24,7 @@ class spots(object):
             period=PROT_SUN,
             delta_omega=0.3, 
             diffrot_func=sin2,
+            spot_evol=gaussian_spots,
             tau_evol=5.0, 
             threshold=0.1):
         """
@@ -53,6 +55,9 @@ class spots(object):
         diffrot_func (function, optional, default=`utils.diffrot.sin2`):
             Differential rotation function. Default is sin^2 (latitude).
 
+        spot_evol (function, optional, default=`utils.spotevol.gaussian_spots`):
+            Spot evolution function. Default is double-sided gaussian with time.
+
         tau_evol (float, optional, default=5.0):
             Spot decay timescale in units of the equatorial rotation period.
 
@@ -72,7 +77,8 @@ class spots(object):
         self.omega = 2*np.pi/(self.per_eq * D2S) # in radians/s
         self.delta_omega = delta_omega * self.omega # in radians/s
         self.diffrot_func = diffrot_func
-        # spot emergence and decay timescales
+        # spot emergence and decay
+        self.spot_evol = spot_evol
         self.tau_em = min(2, self.per_eq * tau_evol / 10)
         self.tau_decay = self.per_eq * tau_evol
         # Convert spot properties
@@ -118,12 +124,8 @@ class spots(object):
             the time-varying flux modulation from spot `i`.
         """
         # Spot area
-        area = np.ones(len(time)) * self.amax[i]
         tt = time - self.tmax[i]
-        l = tt < 0
-        area[l] *= np.exp(-tt[l]**2 / 2. / self.tau_em**2) # emergence
-        l = tt > 0
-        area[l] *= np.exp(-tt[l]**2 / 2. / self.tau_decay**2) # decay
+        area = self.amax[i] * self.spot_evol(tt, self.tau_em, self.tau_decay)
         # Rotation rate
         ome = self.diffrot_func(self.omega, self.delta_omega, self.lat[i])
         # Foreshortening
