@@ -66,7 +66,7 @@ class spots(object):
         # set global stellar parameters which are the same for all spots
         # inclination
         self.spot_properties = spot_properties
-        self.incl = incl * D2S
+        self.incl = incl * np.pi/180 # in radians
         # rotation and differential rotation
         self.per_eq = period # in days
         self.omega = 2*np.pi/(self.per_eq * D2S) # in radians/s
@@ -120,9 +120,9 @@ class spots(object):
         # Spot area
         area = np.ones(len(time)) * self.amax[i]
         tt = time - self.tmax[i]
-        l = tt<0
+        l = tt < 0
         area[l] *= np.exp(-tt[l]**2 / 2. / self.tau_em**2) # emergence
-        l = tt>0
+        l = tt > 0
         area[l] *= np.exp(-tt[l]**2 / 2. / self.tau_decay**2) # decay
         # Rotation rate
         ome = self.diffrot_func(self.omega, self.delta_omega, self.lat[i])
