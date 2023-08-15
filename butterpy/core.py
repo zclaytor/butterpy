@@ -18,7 +18,6 @@ class spots(object):
     def __init__(
             self, 
             spot_properties, 
-            dur=None, 
             alpha_med=0.0001,
             incl=np.pi/2, 
             #omega=2.0, 
@@ -37,10 +36,6 @@ class spots(object):
         spot_properties (astropy Table): 
             DataFrame containing spot properties such as emergence time, 
             latitude, longitude, and peak magnetic flux.
-
-        dur (float, optional):
-            Duration of time to consider for spot emergence and decay.
-            Default is the maximum emergence time in `spot_properties`.
 
         alpha_med (float, optional, default=0.0001):
             Median value of an individual spot filling factor.
@@ -90,12 +85,8 @@ class spots(object):
         lon = 0.5*(spot_properties['phpos'] + spot_properties['phneg'])
         Bem = spot_properties['bmax']
 
-        # keep only spots emerging within specified time-span, with peak B-field > threshold
-        if dur == None:
-            self.dur = t0.max()
-        else:
-            self.dur = dur
-        l = (t0 <= self.dur) * (Bem > threshold)
+        # keep only spots with peak B-field > threshold
+        l = Bem > threshold
         self.nspot = l.sum()
         self.t0 = t0[l]
         self.lat = lat[l]
