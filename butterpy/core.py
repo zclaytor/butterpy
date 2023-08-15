@@ -76,7 +76,7 @@ class spots(object):
         self.tau_em = min(2, self.per_eq * tau_evol / 10)
         self.tau_decay = self.per_eq * tau_evol
         # Convert spot properties
-        t0 = spot_properties['nday']
+        tmax = spot_properties['nday']
         lat = 0.5*(spot_properties['thpos'] + spot_properties['thneg'])
         lat = np.pi/2 - lat
         l = lat < 0
@@ -87,7 +87,7 @@ class spots(object):
         # keep only spots with peak B-field > threshold
         l = Bem > threshold
         self.nspot = l.sum()
-        self.t0 = t0[l]
+        self.tmax = tmax[l]
         self.lat = lat[l]
         self.lon = lon[l]
         self.amax = Bem[l] * alpha_med / np.median(Bem[l]) 
@@ -119,7 +119,7 @@ class spots(object):
         """
         # Spot area
         area = np.ones(len(time)) * self.amax[i]
-        tt = time - self.t0[i]
+        tt = time - self.tmax[i]
         l = tt<0
         area[l] *= np.exp(-tt[l]**2 / 2. / self.tau_em**2) # emergence
         l = tt>0
