@@ -96,7 +96,7 @@ class spots(object):
 
     def calci(self, time, i):
         '''Evolve one spot and calculate its impact on the stellar flux'''
-        '''NB: Currently there is no spot drift or shear'''
+        '''Currently there is no spot drift or shear'''
         # Spot area
         area = np.ones(len(time)) * self.amax[i]
         tt = time - self.t0[i]
@@ -113,23 +113,14 @@ class spots(object):
         # Differential effect on stellar flux
         dF = - area * beta
         dF[beta < 0] = 0
-        return area, ome, beta, dF
+        return dF
 
     def calc(self, time):
-        '''Calculations for all spots'''
-        N = len(time)
-        M = self.nspot
-        area = np.zeros((M, N), dtype="float32")
-        ome = np.zeros(M, dtype="float32")
-        beta = np.zeros((M, N), dtype="float32")
-        dF = np.zeros((M, N), dtype="float32")
-        for i in np.arange(M):
-            area_i, omega_i, beta_i, dF_i = self.calci(time, i)
-            area[i,:] = area_i
-            ome[i] = omega_i
-            beta[i,:] = beta_i
-            dF[i,:] = dF_i
-        return area, ome, beta, dF
+        '''Calculate delta flux for all spots'''
+        dF = np.ones_like(time, dtype="float32")
+        for i in np.arange(self.nspot):
+            dF += self.calci(time, i)
+        return dF
 
     def butterfly(self):
         '''Plot the stellar butterfly pattern '''
