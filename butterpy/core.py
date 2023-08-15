@@ -19,7 +19,7 @@ class spots(object):
             self, 
             spot_properties, 
             alpha_med=0.0001,
-            incl=np.pi/2, 
+            incl=90, 
             period=PROT_SUN,
             delta_omega=0.3, 
             diffrot_func=sin2,
@@ -39,8 +39,8 @@ class spots(object):
         alpha_med (float, optional, default=0.0001):
             Median value of an individual spot filling factor.
 
-        incl (float, optional, default=pi/2):
-            Inclination angle of the star in radians, where inclination is
+        incl (float, optional, default=90):
+            Inclination angle of the star in degrees, where inclination is
             the angle between the pole and the line of sight.
 
         period (float, optional, default=PROT_SUN):
@@ -66,7 +66,7 @@ class spots(object):
         # set global stellar parameters which are the same for all spots
         # inclination
         self.spot_properties = spot_properties
-        self.incl = incl
+        self.incl = incl * D2S
         # rotation and differential rotation
         self.per_eq = period # in days
         self.omega = 2*np.pi/(self.per_eq * D2S) # in radians/s
