@@ -20,7 +20,6 @@ class spots(object):
             spot_properties, 
             alpha_med=0.0001,
             incl=np.pi/2, 
-            #omega=2.0, 
             period=PROT_SUN,
             delta_omega=0.3, 
             diffrot_func=sin2,
@@ -31,7 +30,7 @@ class spots(object):
         and initial locations are read from the user-provided 
         `spot_properties` table.
 
-        Parameters:
+        Parameters
         ----------
         spot_properties (astropy Table): 
             DataFrame containing spot properties such as emergence time, 
@@ -91,12 +90,33 @@ class spots(object):
         self.t0 = t0[l]
         self.lat = lat[l]
         self.lon = lon[l]
-        self.amax = Bem[l] \
-            * alpha_med / np.median(Bem[l]) # scale to achieve desired median alpha, # where alpha = spot contrast * spot area
+        self.amax = Bem[l] * alpha_med / np.median(Bem[l]) 
+        # scale amax to achieve desired median alpha, 
+        # where alpha = spot contrast * spot area
 
     def calci(self, time, i):
-        '''Evolve one spot and calculate its impact on the stellar flux'''
-        '''Currently there is no spot drift or shear'''
+        """
+        Helper function to evolve one spot and calculate its impact on the flux.
+
+        Includes rotation and foreshortening (i.e., spots in the center cause
+        more modulation than spots at the limb, and spots out of view do not
+        contribute flux modulation). Also includes spot emergence and decay.
+
+        Currently there is no spot drift or shear (within an active region).
+
+        Parameters
+        ----------
+        time (numpy array):
+            the array of time values at which to compute the flux modulation.
+
+        i (int):
+            spot index, which can have integer values of [0, self.nspot].
+
+        Returns
+        -------
+        dF_i (numpy array):
+            the time-varying flux modulation from spot `i`.
+        """
         # Spot area
         area = np.ones(len(time)) * self.amax[i]
         tt = time - self.t0[i]
@@ -106,21 +126,39 @@ class spots(object):
         area[l] *= np.exp(-tt[l]**2 / 2. / self.tau_decay**2) # decay
         # Rotation rate
         ome = self.diffrot_func(self.omega, self.delta_omega, self.lat[i])
-        # Fore-shortening
+        # Foreshortening
         phase = ome * time * D2S + self.lon[i]
         beta = np.cos(self.incl) * np.sin(self.lat[i]) + \
             np.sin(self.incl) * np.cos(self.lat[i]) * np.cos(phase)
         # Differential effect on stellar flux
-        dF = - area * beta
-        dF[beta < 0] = 0
-        return dF
+        dF_i = - area * beta
+        dF_i[beta < 0] = 0
+        return dF_i
 
     def calc(self, time):
-        '''Calculate delta flux for all spots'''
-        dF = np.ones_like(time, dtype="float32")
+        """
+        Calculates the flux modulation for all spots.
+
+        Includes rotation and foreshortening (i.e., spots in the center cause
+        more modulation than spots at the limb, and spots out of view do not
+        contribute flux modulation). Also includes spot emergence and decay.
+
+        Currently there is no spot drift or shear (within an active region).
+
+        Parameters
+        ----------
+        time (numpy array):
+            the array of time values at which to compute the flux modulation.
+
+        Returns
+        -------
+        lc (numpy array):
+            the light curve: time-varying flux modulation from all spots.
+        """
+        lc = np.ones_like(time, dtype="float32")
         for i in np.arange(self.nspot):
-            dF += self.calci(time, i)
-        return dF
+            lc += self.calci(time, i)
+        return lc
 
     def butterfly(self):
         '''Plot the stellar butterfly pattern '''
