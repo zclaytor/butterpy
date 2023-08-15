@@ -127,9 +127,9 @@ class spots(object):
         tt = time - self.tmax[i]
         area = self.amax[i] * self.spot_evol(tt, self.tau_em, self.tau_decay)
         # Rotation rate
-        ome = self.diffrot_func(self.omega, self.delta_omega, self.lat[i])
+        omega_lat = self.diffrot_func(self.omega, self.delta_omega, self.lat[i])
         # Foreshortening
-        phase = ome * time * D2S + self.lon[i]
+        phase = omega_lat * time * D2S + self.lon[i]
         beta = np.cos(self.incl) * np.sin(self.lat[i]) + \
             np.sin(self.incl) * np.cos(self.lat[i]) * np.cos(phase)
         # Differential effect on stellar flux
