@@ -1,6 +1,6 @@
 name = 'butterpy'
 
-from .regions import regions
-from .spots import Spots
+from .core import regions
+from .core import spots
 
 from .version import __version__

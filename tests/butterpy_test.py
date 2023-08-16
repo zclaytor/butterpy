@@ -2,7 +2,7 @@ import os
 import pytest
 import numpy as np
 from astropy.table import Table
-from butterpy.core import regions, spots
+from butterpy import regions, spots
 
 
 cwd = os.path.dirname(os.path.abspath(__file__))
