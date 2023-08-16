@@ -2,7 +2,7 @@ import os
 import pytest
 import numpy as np
 from astropy.table import Table
-from butterpy import regions, spots
+from butterpy import regions, spots, Surface
 
 
 cwd = os.path.dirname(os.path.abspath(__file__))
@@ -11,9 +11,9 @@ cwd = os.path.dirname(os.path.abspath(__file__))
 @pytest.fixture
 def default_surface():
     np.random.seed(88)
-    return regions(
-        activityrate=1, minlat=5, maxlat=35, 
-        cyclelength=3, cycleoverlap=1, ndays=3600)
+    return Surface().emerge_regions(
+        activity_level=1, min_lat=5, max_lat=35,
+        cycle_period=3, cycle_overlap=1, ndays=3600)
     
 @pytest.fixture
 def load_test_surface():
