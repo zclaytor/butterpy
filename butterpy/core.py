@@ -210,11 +210,170 @@ class Surface(object):
         self.regions = regions
         return regions
 
-
-    def compute_lightcurve(
+    def evolve_spots(
         self,
+        time,
+        incl=90, 
+        period=PROT_SUN,
+        delta_omega=0.3, 
+        diffrot_func=sin2,
+        spot_evol=gaussian_spots,
+        tau_evol=5.0,
+        alpha_med=0.0001,       
+        threshold=0.1
     ):
-        pass
+        """
+        Generate initial parameter set for spots and compute light curve. 
+        Emergence times and initial locations are read from `self.regions`. 
+
+        Includes rotation and foreshortening (i.e., spots in the center cause
+        more modulation than spots at the limb, and spots out of view do not
+        contribute flux modulation). Also includes spot emergence and decay.
+
+        Currently there is no spot drift or shear (within an active region).
+
+        Parameters
+        ----------
+        time (float array):
+            The array of time values at which to compute the light curve.
+
+        incl (float, optional, default=90):
+            Inclination angle of the star in degrees, where inclination is
+            the angle between the pole and the line of sight.
+
+        period (float, optional, default=PROT_SUN):
+            Rotation period of the star in days.
+
+        delta_omega (float, optional, default=0.3):
+            Differential rotation rate of the star in units of equatorial
+            rotation velocity.
+
+        diffrot_func (function, optional, default=`utils.diffrot.sin2`):
+            Differential rotation function. Default is sin^2 (latitude).
+
+        spot_evol (function, optional, default=`utils.spotevol.gaussian_spots`):
+            Spot evolution function. Default is double-sided gaussian with time.
+
+        tau_evol (float, optional, default=5.0):
+            Spot decay timescale in units of the equatorial rotation period.
+
+        alpha_med (float, optional, default=0.0001):
+            Spot filling factor, equal to spot area * contrast.
+            E.g., a 50%-contrast spot subtending 1% of the stellar disk
+            has alpha_med = 0.01 * 0.5 = 0.005.
+
+        threshold (float, optional, default=0.1):
+            Minimum peak magnetic flux for a spot to be considered.
+
+        Returns
+        -------
+        lc (numpy array):
+            the light curve: time-varying flux modulation from all spots.        
+        """
+        self.assert_regions()
+
+        # set global stellar parameters which are the same for all spots
+        # inclination
+        self.incl = incl * np.pi/180 # in radians
+        # rotation and differential rotation
+        self.period = period # in days
+        self.omega = 2*np.pi/(self.period * D2S) # in radians/s
+        self.delta_omega = delta_omega * self.omega # in radians/s
+        self.diffrot_func = diffrot_func
+        # spot emergence and decay
+        self.spot_evol = spot_evol
+        self.tau_emerge = min(2, self.period * tau_evol / 10)
+        self.tau_decay = self.per_eq * tau_evol
+        # Convert spot properties
+        tmax = self.regions['nday']
+        lat = 0.5*(self.regions['thpos'] + self.regions['thneg'])
+        lat = np.pi/2 - lat
+        l = lat < 0
+        lat[l] *= -1
+        lon = 0.5*(self.regions['phpos'] + self.regions['phneg'])
+        Bem = self.regions['bmax']
+
+        # keep only spots with peak B-field > threshold
+        l = Bem > threshold
+        self.nspot = l.sum()
+        self.tmax = tmax[l]
+        self.lat = lat[l]
+        self.lon = lon[l]
+        self.amax = Bem[l] * alpha_med / np.median(Bem[l]) 
+        # scale amax to achieve desired median alpha, 
+        # where alpha = spot contrast * spot area 
+
+        self.lightcurve = self.compute_lightcurve(time)
+        return self.lightcurve       
+        
+    def compute_lightcurve(self, time):
+        """
+        Calculates the flux modulation for all spots.
+
+        Includes rotation and foreshortening (i.e., spots in the center cause
+        more modulation than spots at the limb, and spots out of view do not
+        contribute flux modulation). Also includes spot emergence and decay.
+
+        Currently there is no spot drift or shear (within an active region).
+
+        Parameters
+        ----------
+        time (numpy array):
+            the array of time values at which to compute the flux modulation.
+
+        Returns
+        -------
+        lc (numpy array):
+            the light curve: time-varying flux modulation from all spots.
+        """
+        self.assert_regions()
+        
+        lc = np.ones_like(time, dtype="float32")
+        for i in np.arange(self.nspot):
+            lc += self.calci(time, i)
+        return lc
+
+    def calci(self, time, i):
+        """
+        Helper function to evolve one spot and calculate its impact on the flux.
+
+        Includes rotation and foreshortening (i.e., spots in the center cause
+        more modulation than spots at the limb, and spots out of view do not
+        contribute flux modulation). Also includes spot emergence and decay.
+
+        Currently there is no spot drift or shear (within an active region).
+
+        Parameters
+        ----------
+        time (numpy array):
+            the array of time values at which to compute the flux modulation.
+
+        i (int):
+            spot index, which can have integer values of [0, self.nspot].
+
+        Returns
+        -------
+        dF_i (numpy array):
+            the time-varying flux modulation from spot `i`.
+        """
+        # Spot area
+        tt = time - self.tmax[i]
+        area = self.amax[i] * self.spot_evol(tt, self.tau_emerge, self.tau_decay)
+        # Rotation rate
+        omega_lat = self.diffrot_func(self.omega, self.delta_omega, self.lat[i])
+        # Foreshortening
+        phase = omega_lat * time * D2S + self.lon[i]
+        beta = np.cos(self.incl) * np.sin(self.lat[i]) + \
+            np.sin(self.incl) * np.cos(self.lat[i]) * np.cos(phase)
+        # Differential effect on stellar flux
+        dF_i = - area * beta
+        dF_i[beta < 0] = 0
+        return dF_i
+
+    def assert_regions(self):
+        """ If `regions` hasn't been run, raise an error
+        """
+        assert self.regions != None, "Set `regions` first with `Surface.emerge_regions`."
 
 class spots(object):
     """Holds parameters for spots on a given star."""
