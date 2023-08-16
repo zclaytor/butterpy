@@ -143,7 +143,7 @@ class Surface(object):
             l1, l2 = min_lat, max_lat
         dlat = (l2-l1)/self.nlat                 
         ncur = 0
-        regions = Table(names=('nday', 'thpos', 'phpos','thneg','phneg', 'width', 'bmax', 'ang'),
+        self.regions = Table(names=('nday', 'thpos', 'phpos','thneg','phneg', 'width', 'bmax', 'ang'),
             dtype=(int, float, float, float, float, float, float, float))
 
         for nday in np.arange(ndays, dtype=int):
@@ -202,13 +202,63 @@ class Surface(object):
                             lon = dlon*(np.random.uniform() + i)
                             lat = l1 + dlat*(np.random.uniform() + j)
 
-                            new_region = add_region(nc, lon, lat, k, bsize)
-                            regions.add_row([nday, *new_region])
+                            self.add_region(nday, nc, lon, lat, k, bsize)
 
                             if nb == 0:
                                 tau[i, j, k] = 0
-        self.regions = regions
-        return regions
+        return self.regions
+
+    def add_region(self, nday, nc, lon, lat, k, bsize):
+        """
+        Add one active region of a particular size at a particular location.
+
+        Joy's law tilt angle is computed here as well. 
+        For tilt angles, see 
+            Wang and Sheeley, Sol. Phys. 124, 81 (1989)
+            Wang and Sheeley, ApJ. 375, 761 (1991)
+            Howard, Sol. Phys. 137, 205 (1992)
+
+        Parameters
+        ----------
+        nday (int): day index
+        nc (int): cycle index
+        lon (float): longitude
+        lat (float): latitude
+        k (int): hemisphere index (0 for North, 1 for South)
+        bsize (float): the size of the bipole
+
+        Returns
+        -------
+        thpos (float): theta of positive bipole
+        phpos (float): longitude of positive bipole
+        thneg (float): theta of negative bipole
+        phneg (float): longitude of negative bipole
+        width (float): bipole width threshold, always 4...?
+        bmax (float): magnetic field strength of bipole
+        ang (float): Joy's law bipole angle
+        """
+        ic = 1. - 2.*(nc % 2) # +1 for even, -1 for odd cycle
+        width = 4.0 # this is not actually used... remove?
+        bmax = 2.5*bsize**2 # original was bmax = 250*(0.4*bsize / width)**2, this is equivalent
+        ang = tilt(lat)
+        
+        # Convert angles to radians
+        ang *= np.pi/180
+        lat *= np.pi/180
+        phcen = lon*np.pi/180.
+        bsize *= np.pi/180
+        width *= np.pi/180
+
+        # Compute bipole positions
+        dph = ic*0.5*bsize*np.cos(ang)/np.cos(lat)
+        dth = ic*0.5*bsize*np.sin(ang)
+        thcen = 0.5*np.pi - lat + 2*k*lat # k determines hemisphere
+        phpos = phcen + dph
+        phneg = phcen - dph
+        thpos = thcen + dth
+        thneg = thcen - dth
+
+        self.regions.add_row([nday, thpos, phpos, thneg, phneg, width, bmax, ang])
 
     def evolve_spots(
         self,
@@ -327,7 +377,7 @@ class Surface(object):
             the light curve: time-varying flux modulation from all spots.
         """
         self.assert_regions()
-        
+
         lc = np.ones_like(time, dtype="float32")
         for i in np.arange(self.nspot):
             lc += self.calci(time, i)
