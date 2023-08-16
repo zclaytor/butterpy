@@ -35,6 +35,7 @@ class Surface(object):
         self.nlat = nlat
 
         self.regions = None
+        self.nspots = None
         self.lightcurve = None
 
     def emerge_regions(
@@ -237,6 +238,8 @@ class Surface(object):
         bmax (float): magnetic field strength of bipole
         ang (float): Joy's law bipole angle
         """
+        self.assert_regions()
+
         ic = 1. - 2.*(nc % 2) # +1 for even, -1 for odd cycle
         width = 4.0 # this is not actually used... remove?
         bmax = 2.5*bsize**2 # original was bmax = 250*(0.4*bsize / width)**2, this is equivalent
@@ -333,7 +336,7 @@ class Surface(object):
         # spot emergence and decay
         self.spot_evol = spot_evol
         self.tau_emerge = min(2, self.period * tau_evol / 10)
-        self.tau_decay = self.per_eq * tau_evol
+        self.tau_decay = self.period * tau_evol
         # Convert spot properties
         tmax = self.regions['nday']
         lat = 0.5*(self.regions['thpos'] + self.regions['thneg'])
@@ -345,7 +348,7 @@ class Surface(object):
 
         # keep only spots with peak B-field > threshold
         l = Bem > threshold
-        self.nspot = l.sum()
+        self.nspots = l.sum()
         self.tmax = tmax[l]
         self.lat = lat[l]
         self.lon = lon[l]
@@ -377,9 +380,11 @@ class Surface(object):
             the light curve: time-varying flux modulation from all spots.
         """
         self.assert_regions()
+        # Assert that `evolve_spots` has been run by checking the value of nspots
+        assert self.nspots is not None, "Run `evolve_spots` first to initialize spot parameters."
 
         lc = np.ones_like(time, dtype="float32")
-        for i in np.arange(self.nspot):
+        for i in np.arange(self.nspots):
             lc += self.calci(time, i)
         return lc
 
@@ -423,7 +428,7 @@ class Surface(object):
     def assert_regions(self):
         """ If `regions` hasn't been run, raise an error
         """
-        assert self.regions != None, "Set `regions` first with `Surface.emerge_regions`."
+        assert self.regions is not None, "Set `regions` first with `Surface.emerge_regions`."
 
 class spots(object):
     """Holds parameters for spots on a given star."""
@@ -484,14 +489,14 @@ class spots(object):
         self.spot_properties = spot_properties
         self.incl = incl * np.pi/180 # in radians
         # rotation and differential rotation
-        self.per_eq = period # in days
-        self.omega = 2*np.pi/(self.per_eq * D2S) # in radians/s
+        self.period = period # in days
+        self.omega = 2*np.pi/(self.period * D2S) # in radians/s
         self.delta_omega = delta_omega * self.omega # in radians/s
         self.diffrot_func = diffrot_func
         # spot emergence and decay
         self.spot_evol = spot_evol
-        self.tau_em = min(2, self.per_eq * tau_evol / 10)
-        self.tau_decay = self.per_eq * tau_evol
+        self.tau_em = min(2, self.period * tau_evol / 10)
+        self.tau_decay = self.period * tau_evol
         # Convert spot properties
         tmax = spot_properties['nday']
         lat = 0.5*(spot_properties['thpos'] + spot_properties['thneg'])
