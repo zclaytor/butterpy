@@ -2,7 +2,7 @@ import os
 import pytest
 import numpy as np
 from astropy.table import Table
-from butterpy.core import regions, spots
+from butterpy import regions, spots
 
 
 cwd = os.path.dirname(os.path.abspath(__file__))
@@ -30,7 +30,8 @@ def test_regions(default_surface):
 def test_regions_output(default_surface, load_test_surface):
     surface = default_surface
     expected = load_test_surface
-    assert surface == pytest.approx(expected), "Calculated surface does not match expectation."
+    for i, j in zip(surface.iterrows(), expected.iterrows()):
+        assert i == pytest.approx(j), "Rows from calculated surface do not match expectation."
 
 def test_flux(default_surface, load_test_flux):
     s = spots(default_surface)
