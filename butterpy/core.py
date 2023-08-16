@@ -35,7 +35,7 @@ class spots(object):
         Parameters
         ----------
         spot_properties (astropy Table): 
-            DataFrame containing spot properties such as emergence time, 
+            Table containing spot properties such as emergence time, 
             latitude, longitude, and peak magnetic flux.
 
         alpha_med (float, optional, default=0.0001):
