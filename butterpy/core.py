@@ -14,6 +14,43 @@ PROT_SUN = 27.0
 OMEGA_SUN = 2 * np.pi / (PROT_SUN * D2S)
 
 
+class Surface(object):
+    def __init__(
+        self,
+        nbins=5,
+        delta_lnA=0.5,
+        max_area=100,
+        tau1=5,
+        tau2=15,
+        nlon=36,
+        nlat=16,
+    ):     
+        self.areas = max_area / np.exp(delta_lnA * np.arange(nbins))
+        self.tau1 = tau1
+        self.tau2 = tau2
+        self.nlon = nlon
+        self.nlat = nlat
+
+        self.regions = None
+        self.lightcurve = None
+
+    def emerge_spots(
+        self,
+        activity_level=1,
+        butterfly=True,
+        cycle_period=11,
+        cycle_overlap=2,
+        max_lat=28,
+        min_lat=7,
+        prob=0.001,
+    ):
+        pass
+
+    def compute_lightcurve(
+        self,
+    ):
+        pass
+
 class spots(object):
     """Holds parameters for spots on a given star."""
     def __init__(
@@ -183,7 +220,7 @@ def regions(butterfly=True, activityrate=1.0, cyclelength=1.0,
     cycleoverlap=0.0, maxlat=40.0, minlat=5.0, ndays=1200):
     """     
     Simulates the emergence and evolution of starspots. 
-    Output is a list of active regions.
+    Output is a Table of active regions.
 
     Parameters
     ----------
@@ -243,9 +280,9 @@ def regions(butterfly=True, activityrate=1.0, cyclelength=1.0,
     The bipole area is the area within the 25-Gauss contour in the
     "initial" state, i.e. time of maximum development of the active region.
     The assumed peak flux density in the initial state is 1100 G, and
-    width = 0.4*bsiz (see disp_region). The parameters are corrected for 
-    further diffusion and correspond to the time when width = 4 deg, the 
-    smallest width that can be resolved with lmax=63.
+    width = 0.4*bsiz. The parameters are corrected for further diffusion and 
+    correspond to the time when width = 4 deg, the smallest width that can be 
+    resolved with lmax=63.
 
     In our simulation we use a lower value of a(t) to account for "correlated"
     regions.
