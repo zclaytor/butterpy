@@ -380,8 +380,7 @@ class Surface(object):
             the light curve: time-varying flux modulation from all spots.
         """
         self.assert_regions()
-        # Assert that `evolve_spots` has been run by checking the value of nspots
-        assert self.nspots is not None, "Run `evolve_spots` first to initialize spot parameters."
+        self.assert_spots()
 
         lc = np.ones_like(time, dtype="float32")
         for i in np.arange(self.nspots):
@@ -429,6 +428,32 @@ class Surface(object):
         """ If `regions` hasn't been run, raise an error
         """
         assert self.regions is not None, "Set `regions` first with `Surface.emerge_regions`."
+
+    def assert_spots(self):
+        """Assert that `evolve_spots` has been run by checking the value of nspots
+        """
+        assert self.nspots is not None, "Run `evolve_spots` first to initialize spot parameters."
+
+    def plot_butterfly(self):
+        """Plot the stellar butterfly pattern.
+        """
+        self.assert_regions()
+
+        lat = 0.5*(self.regions['thpos'] + self.regions['thneg'])
+        lat = (np.pi/2 - lat)*u.rad.to(u.deg)
+
+        fig, ax = plt.subplots()
+        ax.scatter(self.regions['nday'], lat,
+            s=self.regions['bmax']/np.median(self.regions['bmax'])*10,
+            alpha=0.5, c='#996699', lw=0.5)
+        ax.set_xlim(0, self.regions['nday'].max())
+        ax.set_ylim(-90, 90)
+        ax.set_yticks((-90, -45, 0, 45, 90))
+        ax.set_xlabel('Time (days)')
+        ax.set_ylabel('Latitude (deg)')
+        fig.tight_layout()
+
+        return fig, ax
 
 class spots(object):
     """Holds parameters for spots on a given star."""
