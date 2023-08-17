@@ -1,18 +1,18 @@
 import timeit
 import numpy as np
-from butterpy.core import regions
+from butterpy.core import Surface
 
 def default_regions():
-    return regions(activityrate=1, minlat=5, maxlat=35, 
-        cyclelength=3, cycleoverlap=1, ndays=3600)
+    return Surface().emerge_regions(activity_level=1, min_lat=5, max_lat=35, 
+        cycle_period=3, cycle_overlap=1, ndays=3600)
 
 def high_activity_regions():
-    return regions(activityrate=5, minlat=5, maxlat=35, 
-        cyclelength=3, cycleoverlap=1, ndays=3600)
+    return Surface().emerge_regions(activity_level=5, min_lat=5, max_lat=35, 
+        cycle_period=3, cycle_overlap=1, ndays=3600)
 
 def low_activity_regions():
-    return regions(activityrate=0.3, minlat=5, maxlat=35, 
-        cyclelength=3, cycleoverlap=1, ndays=3600)
+    return Surface().emerge_regions(activity_level=0.3, min_lat=5, max_lat=35, 
+        cycle_period=3, cycle_overlap=1, ndays=3600)
 
 def time(func, repeat=10, number=1):
     print(f"timing {str(func)}...")
