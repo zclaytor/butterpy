@@ -9,39 +9,49 @@ from astropy.table import Table
 float_dtype = 'float32'
 wt_dtype = 'uint8'
 
-path = sys.argv[1]
-task = int(sys.argv[2])
-chunksize = 1000
 
-data_path = os.path.join('/mnt/lts/nfs_fs02/ifastars_group/zclaytor', path)
+def to_fits(surface, filename, is_smarts=False, smarts_kw=None, **kw):
+    """
+    Parameters
+    ----------
 
-"""
-if mode == 'noiseless':
-    wavelet_path = os.path.join(data_path, 'wavelet_arrays')
-    lc_path = os.path.join(data_path, 'trimmed_lightcurves')
-else:
-    wavelet_path = os.path.join(data_path, f'{mode}_wavelet_arrays')
-    lc_path = os.path.join(data_path, f'{mode}_lightcurves')
-"""
-mode = "noisy"
-wavelet_path = os.path.join(data_path, f'{mode}_wavelet_arrays')
-lc_path = os.path.join(data_path, f'{mode}_lightcurves')
+    Returns None.
+    """
+    if is_smarts:
+        p = set_smarts_keywords(p, smarts_kw)
 
-def get_lightcurve(i):
-    target = os.path.join(lc_path, f'{i//1000:03.0f}', f'{i:06.0f}lc.npy')
-    flux = np.load(target).astype(float_dtype)
-    time = np.arange(len(flux), dtype=float_dtype) / 48
-    return time, flux
+    p.header["PERIOD"] = surface.period, "equatorial rotation period in days"
+    p.header["ACTIVITY"] = surface.activity_level, "solar-normalized activity level"
+    p.header["CYCLE"] = surface.cycle_period, "magnetic cycle length in years"
+    p.header["OVERLAP"] = surface.cycle_overlap, "magnetic cycle overlap in years"
+    p.header["INCL"] = surface.incl, "inclination of equator to line of sight in rad"
+    p.header["MINLAT"] = surface.min_lat, "minimum latitude of spot emergence in deg"
+    p.header["MAXLAT"] = surface.max_lat, "maximum latitude of spot emergence in deg"
+    p.header["DIFFROT"] = surface.shear, "lat. rotation shear, normalized to equator"
+    p.header["TSPOT"] = surface.tau_decay, "spot decay time normalized by period"
+    p.header["BFLY"] = surface.butterfly, "spots emerge like butterfly (T) or random (F)"
 
-def get_wavelet(i):
-    target = os.path.join(wavelet_path, f'{i//1000:03.0f}', f'{i:06.0f}wt.npy')
-    return np.load(target).astype(wt_dtype)
+    time, flux = get_lightcurve(i)
+    l = fits.BinTableHDU(
+        data=Table([time, flux], names=["time", "flux"]),
+        name="lightcurve",
+    )
+    l.header["BUNIT"] = "relative", "brightness or flux unit"
+    l.header["FILTER"] = "TESS", "name of filter used"
 
-def to_fits(i, sim, out_path, j=None):
-    if j is None:
-        # Don't re-number simulations unless j is set
-        j = i
+    wt = get_wavelet(i)
+    w = fits.ImageHDU(wt, name="wavelet")
+    w.header["PMIN"] = 0.1, "minimum period bin edge in days"
+    w.header["PMAX"] = 180, "maximum period bin edge in days"
 
+    hdul = fits.HDUList([p, l, w])
+    with open(filename, "wb") as f:
+        hdul.writeto(f, **kw)
+
+
+def set_smarts_keywords(p, smarts_kw):
+    j = smarts_kw.pop("j")
+    
     p = fits.PrimaryHDU()
     p.header["DATE-BEG"] = "2018-07-25T19:29:42.708Z", "ISO-8601 formatted DateTime for obs start"
     p.header["DATE-END"] = "2019-07-17T20:29:29.973Z", "ISO-8601 formatted DateTime for obs end"
@@ -62,34 +72,6 @@ def to_fits(i, sim, out_path, j=None):
     p.header["XPOSURE"] = 1800, "[s] exposure time"
     p.header["SIMULATD"] = True, "simulated, T (true) or F (false)"
 
-    p.header["PERIOD"] = sim["Period"], "equatorial rotation period in days"
-    p.header["ACTIVITY"] = sim["Activity Rate"], "solar-normalized activity level"
-    p.header["CYCLE"] = sim["Cycle Length"], "magnetic cycle length in years"
-    p.header["OVERLAP"] = sim["Cycle Overlap"], "magnetic cycle overlap in years"
-    p.header["INCL"] = sim["Inclination"], "inclination of equator to line of sight in rad"
-    p.header["MINLAT"] = sim["Spot Min"], "minimum latitude of spot emergence in deg"
-    p.header["MAXLAT"] = sim["Spot Max"], "maximum latitude of spot emergence in deg"
-    p.header["DIFFROT"] = sim["Shear"], "lat. rotation shear, normalized to equator"
-    p.header["TSPOT"] = sim["Decay Time"], "spot decay time normalized by period"
-    p.header["BFLY"] = sim["Butterfly"], "spots emerge like butterfly (T) or random (F)"
-
-    time, flux = get_lightcurve(i)
-    l = fits.BinTableHDU(
-        data=Table([time, flux], names=["time", "flux"]),
-        name="lightcurve",
-    )
-    l.header["BUNIT"] = "relative", "brightness or flux unit"
-    l.header["FILTER"] = "TESS", "name of filter used"
-
-    wt = get_wavelet(i)
-    w = fits.ImageHDU(wt, name="wavelet")
-    w.header["PMIN"] = 0.1, "minimum period bin edge in days"
-    w.header["PMAX"] = 180, "maximum period bin edge in days"
-
-    hdul = fits.HDUList([p, l, w])
-    filepath = os.path.join(out_path, f"smarts-tess-v1.0-{j:06.0f}.fits")
-    with open(filepath, "wb") as f:
-        hdul.writeto(f, overwrite=True)
 
 if __name__ == '__main__':
     sims = pd.read_csv(
