@@ -10,6 +10,9 @@ from .utils.spotevol import gaussian_spots
 from .utils.diffrot import sin2
 from .utils.joyslaw import tilt
 
+from .io.pkl import pickle, unpickle
+
+
 D2S = 1*u.day.to(u.s)
 
 PROT_SUN = 27.0
@@ -467,22 +470,4 @@ class Surface(object):
 
         Returns None.
         """
-        with open(filename, "wb") as f:
-            pickle.dump(self, f)
-
-def unpickle(filename):
-    """
-    Read Surface object from pickle file.
-
-    Parameters
-    ----------
-    filename (str): file path to be read.
-
-    Returns
-    -------
-    surface (butterpy.Surface): the Surface object read from file.
-    """
-    with open(filename, "rb") as f:
-        surface = pickle.load(f)
-    
-    return surface
+        pickle(self, filename)
