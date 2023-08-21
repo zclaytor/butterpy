@@ -1,3 +1,5 @@
+import pickle
+
 import numpy as np
 import matplotlib.pylab as plt
 import astropy.units as u
@@ -454,3 +456,33 @@ class Surface(object):
         fig.tight_layout()
 
         return fig, ax
+    
+    def pickle(self, filename):
+        """
+        Write Surface object to pickle file.
+
+        Parameters
+        ----------
+        filename (str): output file path.
+
+        Returns None.
+        """
+        with open(filename, "wb") as f:
+            pickle.dump(self, f)
+
+def unpickle(filename):
+    """
+    Read Surface object from pickle file.
+
+    Parameters
+    ----------
+    filename (str): file path to be read.
+
+    Returns
+    -------
+    surface (butterpy.Surface): the Surface object read from file.
+    """
+    with open(filename, "rb") as f:
+        surface = pickle.load(f)
+    
+    return surface
