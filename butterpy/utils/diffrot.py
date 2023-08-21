@@ -1,6 +1,6 @@
 import numpy as np
 
-def sin2(omega_0, delta_omega, lat):
+def sin2(omega_0, shear, lat):
     """
     Sine squared differential rotation profile
 
@@ -8,9 +8,10 @@ def sin2(omega_0, delta_omega, lat):
     ----------
     omega_0 (float): the equatorial rotation rate.
 
-    delta_omega (float): the difference in angular velocity
-        between the pole and equator. Note that what Butterpy
-        calls the "shear" is delta_omega/omega.
+    shear (float): the differential rotation shear, given by the
+        difference in angular velocity between the pole and equator,
+        divided by the equatorial velocity.
+        I.e., `shear` is alpha = delta_omega / omega.
 
     lat (float or array of floats): the latitudes at which to
         evaluate the angular velocity.
@@ -19,7 +20,7 @@ def sin2(omega_0, delta_omega, lat):
     -------
     omega (same type as lat): angular velocity as function of latitude.
     """
-    return omega_0 - delta_omega * np.sin(lat)**2
+    return omega_0 * (1 - shear*np.sin(lat)**2)
 
 def solar(lat):
     """

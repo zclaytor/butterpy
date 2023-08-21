@@ -129,6 +129,16 @@ class Surface(object):
         regions.
 
         """
+        # set attributes
+        self.duration = ndays
+        self.activity_level = activity_level
+        self.butterfly = butterfly
+        self.cycle_period = cycle_period
+        self.cycle_overlap = cycle_overlap
+        self.max_lat = max_lat
+        self.min_lat = min_lat
+        self.prob_corr = prob_corr
+
         # factor from integration over bin size (I think)
         dcon = np.exp(0.5*self.delta_lnA)- np.exp(-0.5*self.delta_lnA)
 
@@ -273,7 +283,7 @@ class Surface(object):
         time,
         incl=90, 
         period=PROT_SUN,
-        delta_omega=0.3, 
+        shear=0.3, 
         diffrot_func=sin2,
         spot_evol=gaussian_spots,
         tau_evol=5.0,
@@ -302,9 +312,9 @@ class Surface(object):
         period (float, optional, default=PROT_SUN):
             Rotation period of the star in days.
 
-        delta_omega (float, optional, default=0.3):
+        shear (float, optional, default=0.3):
             Differential rotation rate of the star in units of equatorial
-            rotation velocity.
+            rotation velocity. I.e., `shear` is alpha = delta_omega / omega.
 
         diffrot_func (function, optional, default=`utils.diffrot.sin2`):
             Differential rotation function. Default is sin^2 (latitude).
@@ -336,7 +346,7 @@ class Surface(object):
         # rotation and differential rotation
         self.period = period # in days
         self.omega = 2*np.pi/(self.period * D2S) # in radians/s
-        self.delta_omega = delta_omega * self.omega # in radians/s
+        self.shear = shear # in radians/s
         self.diffrot_func = diffrot_func
         # spot emergence and decay
         self.spot_evol = spot_evol
@@ -419,7 +429,7 @@ class Surface(object):
         tt = time - self.tmax[i]
         area = self.amax[i] * self.spot_evol(tt, self.tau_emerge, self.tau_decay)
         # Rotation rate
-        omega_lat = self.diffrot_func(self.omega, self.delta_omega, self.lat[i])
+        omega_lat = self.diffrot_func(self.omega, self.shear, self.lat[i])
         # Foreshortening
         phase = omega_lat * time * D2S + self.lon[i]
         beta = np.cos(self.incl) * np.sin(self.lat[i]) + \
