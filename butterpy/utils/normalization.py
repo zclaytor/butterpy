@@ -28,13 +28,13 @@ This currently computes the normalization based on *newly* emerged spots,
 
 import numpy as np
 import matplotlib.pyplot as plt
-from butterpy.core import regions
+from butterpy.core import Surface
 from plots import monthly_spot_number
 
 
 def solar_regions():
     """
-    Runs the `regions` function with Solar inputs:
+    Runs the `regions` code with Solar inputs:
 
     activityrate = 1,
     minlat = 7,
@@ -43,8 +43,9 @@ def solar_regions():
     cycleoverlap = 1,
     ndays = 100 years
     """
-    return regions(activityrate=1, minlat=7, maxlat=35, 
-        cyclelength=11, cycleoverlap=1, ndays=365*100)
+    sun = Surface()
+    return sun.emerge_regions(activity_level=1, min_lat=7, max_lat=35, 
+        cycle_period=11, cycle_overlap=1, ndays=365*100)
 
 
 def fit_spot_counts(spots, make_plot=True):
@@ -96,5 +97,5 @@ def fit_spot_counts(spots, make_plot=True):
 if __name__ == "__main__":
     np.random.seed(88)
     sun = solar_regions()
-    A = fit_spot_counts(sun, make_plot=False)
+    A = fit_spot_counts(sun, make_plot=True)
     print(f"amplitude: {A} spots/month")
