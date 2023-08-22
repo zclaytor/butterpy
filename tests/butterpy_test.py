@@ -42,7 +42,7 @@ def test_regions_output(default_surface_regions, load_test_surface):
         assert i == pytest.approx(j), "Rows from calculated surface do not match expectation."
 
 def test_flux(default_surface, load_test_flux):
-    f_calc = default_surface.lightcurve
+    f_calc = default_surface.lightcurve.flux
     f_expected = load_test_flux
     assert f_calc == pytest.approx(f_expected), "Calculated flux does not match expectation."
 
@@ -55,4 +55,4 @@ def test_pickle(default_surface, tmp_path):
     for i, j in zip(s.regions.iterrows(), sprime.regions.iterrows()):
         assert i == pytest.approx(j), "Rows from unpickled surface do not match original."
 
-    assert s.lightcurve == pytest.approx(sprime.lightcurve), "Unpickled flux does not match original."
+    assert s.lightcurve.flux == pytest.approx(sprime.lightcurve.flux), "Unpickled flux does not match original."

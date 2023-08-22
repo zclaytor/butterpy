@@ -21,6 +21,8 @@ OMEGA_SUN = 2 * np.pi / (PROT_SUN * D2S)
 
 
 class Surface(object):
+    """ Write docs!
+    """
     def __init__(
         self,
         nbins=5,
@@ -462,6 +464,7 @@ class Surface(object):
     def plot_lightcurve(self, *args, **kw):
         """Wrapper for `self.lightcurve.plot`.
         """
+        self.assert_lightcurve()
         return self.lightcurve.plot(*args, **kw)
 
     def assert_regions(self):
@@ -470,9 +473,14 @@ class Surface(object):
         assert self.regions is not None, "Set `regions` first with `Surface.emerge_regions`."
 
     def assert_spots(self):
-        """Assert that `evolve_spots` has been run by checking the value of nspots
+        """Assert that `evolve_spots` has been run by checking the value of `self.nspots`.
         """
         assert self.nspots is not None, "Run `evolve_spots` first to initialize spot parameters."
+
+    def assert_lightcurve(self):
+        """Assert that `compute_lightcurve` has been run by checking the value of `self.lightcurve`.
+        """
+        assert self.lightcurve is not None, "The light curve has not been set."
 
     def plot_butterfly(self):
         """Plot the stellar butterfly pattern.
