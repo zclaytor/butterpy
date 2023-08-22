@@ -35,9 +35,9 @@ class Surface(object):
         nlat=16,
     ):     
         #self.areas = max_area / np.exp(delta_lnA * np.arange(nbins))
-        self.nbins=nbins # number of area bins
-        self.delta_lnA=delta_lnA  # delta ln(A)
-        self.max_area=max_area  # orig. area of largest bipoles (deg^2)
+        self.nbins = nbins # number of area bins
+        self.delta_lnA = delta_lnA  # delta ln(A)
+        self.max_area = max_area  # orig. area of largest bipoles (deg^2)
         self.tau1 = tau1
         self.tau2 = tau2
         self.nlon = nlon
@@ -47,6 +47,22 @@ class Surface(object):
         self.nspots = None
         self.lightcurve = None
         self.wavelet_power = None
+
+    def __repr__(self):
+        repr = f"butterpy Surface from {type(self)} with:"
+
+        repr += f"\n    {self.nlat} latitude bins by {self.nlon} longitude bins"
+
+        if self.regions is not None:
+            repr += f"\n    N regions = {len(self.regions)}"
+
+        if self.lightcurve is not None:
+            repr += f"\n    lightcurve length = {len(self.time)}, duration = {self.time.max() - self.time.min()}"
+
+        if self.wavelet_power is not None:
+            repr += f"\n    wavelet_power shape = {self.wavelet_power.shape}"
+        
+        return repr
 
     def emerge_regions(
         self,
