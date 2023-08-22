@@ -1,3 +1,4 @@
+import warnings
 import pickle
 
 import numpy as np
@@ -280,7 +281,7 @@ class Surface(object):
 
     def evolve_spots(
         self,
-        time,
+        time=None,
         incl=90, 
         period=PROT_SUN,
         shear=0.3, 
@@ -302,8 +303,10 @@ class Surface(object):
 
         Parameters
         ----------
-        time (float array):
+        time (float array, default=None):
             The array of time values at which to compute the light curve.
+            If no time is supplied, defaults to 0.1-day cadence and duration
+            of `self.duration`: `np.arange(0, self.duration, 0.1)`.
 
         incl (float, optional, default=90):
             Inclination angle of the star in degrees, where inclination is
@@ -388,6 +391,8 @@ class Surface(object):
         ----------
         time (numpy array):
             the array of time values at which to compute the flux modulation.
+            If `None` is passed, defaults to 0.1-day cadence and duration
+            of `self.duration`: `np.arange(0, self.duration, 0.1)`.
 
         Returns
         -------
@@ -396,6 +401,19 @@ class Surface(object):
         """
         self.assert_regions()
         self.assert_spots()
+
+        if time is None:
+            time = np.arange(0, self.duration, 0.1, dtype="float32")
+        else:
+            # ensure time values are floats
+            time = time.astype("float32")
+            
+            if time.max() > self.duration:
+                # warn if time array exceeds spot emergence duration
+                warnings.warn("`time` array exceeds duration of regions computation.\n"
+                              "No new spots will emerge after this time, and the "
+                              "light curve will relax back to unity.", 
+                              UserWarning)
 
         lc = np.ones_like(time, dtype="float32")
         for i in np.arange(self.nspots):
