@@ -49,6 +49,8 @@ class Surface(object):
         self.wavelet_power = None
 
     def __repr__(self):
+        """Representation method for Surface.
+        """
         repr = f"butterpy Surface from {type(self)} with:"
 
         repr += f"\n    {self.nlat} latitude bins by {self.nlon} longitude bins"
@@ -613,6 +615,8 @@ class LightCurve(object):
         self.flux = flux
 
     def __repr__(self):
+        """Representation method for LightCurve.
+        """
         return repr(Table(data=[self.time, self.flux], names=["time", "flux"]))
 
     def plot(self, time_unit=None, flux_unit=None, **kw):
