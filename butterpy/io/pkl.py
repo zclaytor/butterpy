@@ -4,7 +4,7 @@
 import pickle as pk
 
 
-def pickle(surface, filename):
+def to_pickle(surface, filename):
     """
     Write Surface object to pickle file.
 
@@ -20,7 +20,7 @@ def pickle(surface, filename):
         pk.dump(surface, f)
 
 
-def unpickle(filename):
+def read_pickle(filename):
     """
     Read Surface object from pickle file.
 

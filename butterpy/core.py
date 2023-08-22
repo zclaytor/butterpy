@@ -5,13 +5,14 @@ import numpy as np
 import matplotlib.pylab as plt
 import astropy.units as u
 from astropy.table import Table
+from astropy.io import fits
 
 from .utils.activelat import random_latitudes, exponential_latitudes
 from .utils.spotevol import gaussian_spots
 from .utils.diffrot import sin2
 from .utils.joyslaw import tilt
-
-from .io.pkl import pickle, unpickle
+from .io.pkl import to_pickle, read_pickle
+from .io.fits import to_fits
 
 
 D2S = 1*u.day.to(u.s)
@@ -508,7 +509,7 @@ class Surface(object):
         """Assert that `compute_wavelet_power` has been run.
         """
         assert self.wavelet_power is not None, "The wavelet power spectrum has not been computed."
-        
+
     def plot_butterfly(self):
         """Plot the stellar butterfly pattern.
         """
@@ -530,7 +531,7 @@ class Surface(object):
 
         return fig, ax
     
-    def pickle(self, filename):
+    def to_pickle(self, filename):
         """
         Write Surface object to pickle file.
 
@@ -540,8 +541,42 @@ class Surface(object):
 
         Returns None.
         """
-        pickle(self, filename)
+        to_pickle(self, filename)
 
+    def to_fits(self, filename):
+        """
+        Write Surface object to fits file.
+
+        Parameters
+        ----------
+        filename (str): output file path.
+
+        Returns None.
+        """
+        to_fits(self, filename)
+
+def read_fits(filename):
+    """Docstring
+    """
+    with fits.open(filename) as hdul:   
+        s = Surface()
+
+        s.period = hdul[0].header["PERIOD"]
+        s.activity_level = hdul[0].header["ACTIVITY"]
+        s.cycle_period = hdul[0].header["CYCLE"]
+        s.cycle_overlap = hdul[0].header["OVERLAP"]
+        s.incl = hdul[0].header["INCL"]
+        s.min_lat = hdul[0].header["MINLAT"]
+        s.max_lat = hdul[0].header["MAXLAT"]
+        s.shear = hdul[0].header["DIFFROT"]
+        s.tau_decay = hdul[0].header["TSPOT"]
+        s.butterfly = hdul[0].header["BFLY"]
+
+        s.regions = Table(hdul[1].data)
+
+        s.lightcurve = LightCurve(hdul[2].data["time"], hdul[2].data["flux"])
+
+    return s
 
 class LightCurve(object):
     """

@@ -1,8 +1,3 @@
-import os
-import sys
-import pandas as pd
-import numpy as np
-
 from astropy.io import fits
 from astropy.table import Table
 
@@ -18,9 +13,10 @@ def to_fits(surface, filename, **kw):
     surface.assert_lightcurve()
 
     p = set_sim_keywords(surface)
+    s = fits.table_to_hdu(surface.regions)
     l = set_lightcurve_keywords(surface)
 
-    hdul = fits.HDUList([p, l])
+    hdul = fits.HDUList([p, s, l])
     with open(filename, "wb") as f:
         hdul.writeto(f, **kw)
 
