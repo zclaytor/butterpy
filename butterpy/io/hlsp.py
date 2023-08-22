@@ -25,13 +25,7 @@ def to_fits(surface, filename, is_smarts=False, smarts_kw=None, **kw):
 
     p = set_sim_keywords(p, surface)
 
-    time, flux = get_lightcurve(i)
-    l = fits.BinTableHDU(
-        data=Table([time, flux], names=["time", "flux"]),
-        name="lightcurve",
-    )
-    l.header["BUNIT"] = "relative", "brightness or flux unit"
-    l.header["FILTER"] = "TESS", "name of filter used"
+    l = set_lightcurve_keywords(surface)
 
     wt = get_wavelet(i)
     w = fits.ImageHDU(wt, name="wavelet")
@@ -77,6 +71,16 @@ def set_sim_keywords(hdu, surface):
     hdu.header["DIFFROT"] = surface.shear, "lat. rotation shear, normalized to equator"
     hdu.header["TSPOT"] = surface.tau_decay, "spot decay time normalized by period"
     hdu.header["BFLY"] = surface.butterfly, "spots emerge like butterfly (T) or random (F)"
+    return hdu
+
+def set_lightcurve_keywords(surface, filter="TESS"):
+    time, flux = surface.time, surface.flux
+    hdu = fits.BinTableHDU(
+        data=Table([time, flux], names=["time", "flux"]),
+        name="lightcurve",
+    )
+    hdu.header["BUNIT"] = "relative", "brightness or flux unit"
+    hdu.header["FILTER"] = filter, "name of filter used"
     return hdu
 
 if __name__ == '__main__':
