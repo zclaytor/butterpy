@@ -461,6 +461,20 @@ class Surface(object):
         dF_i[beta < 0] = 0
         return dF_i
 
+    @property
+    def time(self):
+        """Return the light curve time array.
+        """
+        self.assert_lightcurve()
+        return self.lightcurve.time
+
+    @property
+    def flux(self):
+        """Return the light curve flux array.
+        """
+        self.assert_lightcurve()
+        return self.lightcurve.flux
+
     def plot_lightcurve(self, *args, **kw):
         """Wrapper for `self.lightcurve.plot`.
         """

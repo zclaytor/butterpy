@@ -46,6 +46,14 @@ def test_flux(default_surface, load_test_flux):
     f_expected = load_test_flux
     assert f_calc == pytest.approx(f_expected), "Calculated flux does not match expectation."
 
+def test_lightcurve(default_surface):
+    s = default_surface
+    assert isinstance(s.time, np.ndarray), "`Surface.lightcurve.time` does not appear to be correctly set."
+    assert isinstance(s.flux, np.ndarray), "`Surface.lightcurve.flux` does not appear to be correctly set."
+
+def test_plots():
+    assert 0, "tests not yet implemented."
+
 def test_pickle(default_surface, tmp_path):
     s = default_surface
     fname = tmp_path / "test-surface.pkl"
