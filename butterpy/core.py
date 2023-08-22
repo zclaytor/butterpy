@@ -158,7 +158,7 @@ class Surface(object):
         else:                               
             l1, l2 = min_lat, max_lat
         dlat = (l2-l1)/self.nlat                 
-        ncur = 0
+
         self.regions = Table(names=('nday', 'thpos', 'phpos','thneg','phneg', 'width', 'bmax', 'ang'),
             dtype=(int, float, float, float, float, float, float, float))
 
