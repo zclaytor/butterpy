@@ -45,6 +45,7 @@ class Surface(object):
         self.regions = None
         self.nspots = None
         self.lightcurve = None
+        self.wavelet_power = None
 
     def emerge_regions(
         self,
@@ -461,6 +462,13 @@ class Surface(object):
         dF_i[beta < 0] = 0
         return dF_i
 
+    def compute_wps(self, bin_size=None):
+        """
+        Computes the (optionally binned) Morlet wavelet power spectrum.
+        Not yet implemented!
+        """
+        raise NotImplementedError("Method is not yet implemented.")
+    
     @property
     def time(self):
         """Return the light curve time array.
@@ -496,6 +504,11 @@ class Surface(object):
         """
         assert self.lightcurve is not None, "The light curve has not been set."
 
+    def assert_wavelet(self):
+        """Assert that `compute_wavelet_power` has been run.
+        """
+        assert self.wavelet_power is not None, "The wavelet power spectrum has not been computed."
+        
     def plot_butterfly(self):
         """Plot the stellar butterfly pattern.
         """
