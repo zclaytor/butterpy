@@ -459,6 +459,11 @@ class Surface(object):
         dF_i[beta < 0] = 0
         return dF_i
 
+    def plot_lightcurve(self, *args, **kw):
+        """Wrapper for `self.lightcurve.plot`.
+        """
+        return self.lightcurve.plot(*args, **kw)
+
     def assert_regions(self):
         """ If `regions` hasn't been run, raise an error
         """
