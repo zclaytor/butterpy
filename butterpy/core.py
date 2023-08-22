@@ -415,9 +415,11 @@ class Surface(object):
                               "light curve will relax back to unity.", 
                               UserWarning)
 
-        lc = np.ones_like(time, dtype="float32")
+        flux = np.ones_like(time, dtype="float32")
         for i in np.arange(self.nspots):
-            lc += self.calci(time, i)
+            flux += self.calci(time, i)
+
+        lc = LightCurve(time, flux)
         return lc
 
     def calci(self, time, i):
@@ -499,3 +501,56 @@ class Surface(object):
         Returns None.
         """
         pickle(self, filename)
+
+
+class LightCurve(object):
+    """
+    Most basic light curve class with time and flux attributes.
+    For more mature features, use Lightkurve.
+    """
+    def __init__(self, time, flux):
+        """
+        Initialize the light curve.
+
+        Parameters
+        ----------
+        time (numpy array): array of time values corresponding to flux measurements.
+
+        flux (numpy array): array of flux measurements.
+        """
+        self.time = time
+        self.flux = flux
+
+    def plot(self, time_unit=None, flux_unit=None, **kw):
+        """
+        Plot flux versus time.
+
+        Parameters
+        ----------
+        time_unit (str, None): time unit for plot label.
+
+        flux_unit (str, None): flux unit for plot label.
+
+        **kw: kwargs for `Axes.plot`.
+
+        Returns
+        -------
+        fig: Matplotlib figure object.
+
+        ax: Matplotlib axes object.
+        """
+        fig, ax = plt.subplots()
+
+        ax.plot(self.time, self.flux, **kw)
+        
+        xlabel = "Time"
+        if time_unit is not None:
+            xlabel += f" ({time_unit})"
+
+        ylabel = "Flux"
+        if flux_unit is not None:
+            ylabel += f" ({flux_unit})"
+
+        ax.set(xlabel=xlabel, ylabel=ylabel)
+
+        return fig, ax
