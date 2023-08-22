@@ -612,6 +612,9 @@ class LightCurve(object):
         self.time = time
         self.flux = flux
 
+    def __repr__(self):
+        return repr(Table(data=[self.time, self.flux], names=["time", "flux"]))
+
     def plot(self, time_unit=None, flux_unit=None, **kw):
         """
         Plot flux versus time.
