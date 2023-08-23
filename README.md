@@ -24,7 +24,7 @@ conda install -c conda-forge cartopy
 
 ## Butterpy usage
 
-See `butterpy/simulate_lightcurves.py` or `notebooks/surface_fig.ipynb` for general usage, but here's a quick guide to simulating a Solar-like star.
+See `notebooks/surface_fig.ipynb` for general usage, but here's a quick guide to simulating a Solar-like star.
 
 ```python
 import butterpy as bp
