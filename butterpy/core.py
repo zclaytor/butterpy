@@ -1,5 +1,4 @@
 import warnings
-import pickle
 
 import numpy as np
 import matplotlib.pylab as plt
@@ -381,8 +380,7 @@ class Surface(object):
         tmax = self.regions['nday']
         lat = 0.5*(self.regions['thpos'] + self.regions['thneg'])
         lat = np.pi/2 - lat
-        l = lat < 0
-        lat[l] *= -1
+
         lon = 0.5*(self.regions['phpos'] + self.regions['phneg'])
         Bem = self.regions['bmax']
 
@@ -481,7 +479,7 @@ class Surface(object):
         dF_i[beta < 0] = 0
         return dF_i
     
-    def _calc_t(self, t):
+    def _calc_t(self, t, animate=False):
         """
         Helper function to calculate flux modulation for all spots at a single
         time step. This is much slower than `calc_i`, so use is only recommended
@@ -498,6 +496,11 @@ class Surface(object):
         ----------
         t (float):
             the time value at which to compute the flux modulation.
+
+        animate (bool, False):
+            whether the function is being called for animation purposes.
+            If True, returns current latitude, longitude, area, and flux
+            for each spot. If False, returns only the flux.
 
         Returns
         -------
@@ -516,6 +519,9 @@ class Surface(object):
         # Differential effect on stellar flux
         dF_t = -area*beta
         dF_t[beta < 0] = 0
+
+        if animate:
+            return self.lat, phase, area, dF_t, 
         return dF_t
 
     def compute_wps(self, bin_size=None):
@@ -570,8 +576,7 @@ class Surface(object):
         """
         self.assert_regions()
 
-        lat = 0.5*(self.regions['thpos'] + self.regions['thneg'])
-        lat = (np.pi/2 - lat)*u.rad.to(u.deg)
+        lat = self.lat * 180/np.pi
 
         fig, ax = plt.subplots()
         ax.scatter(self.regions['nday'], lat,
