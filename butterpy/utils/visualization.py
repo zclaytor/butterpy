@@ -3,7 +3,13 @@ import matplotlib.pyplot as plt
 from matplotlib import animation, gridspec, patches
 
 
-def ortho_animation(surface, time, window_size=50, fig_kw={"figsize": (5, 6)}, **kw):
+def animate_spots(surface, time, projection="ortho", window_size=50, fig_kw=None, **kw):
+    if projection in ["ortho", "orthographic"]:
+        return ortho_animation(surface, time, window_size, fig_kw, **kw)
+    elif projection in ["cart", "cartesian"]:
+        return cart_animation(surface, time, window_size, fig_kw, **kw)
+
+def ortho_animation(surface, time, window_size=50, fig_kw=None, **kw):
     try:
         import cartopy.crs as ccrs
     except:
@@ -14,7 +20,10 @@ def ortho_animation(surface, time, window_size=50, fig_kw={"figsize": (5, 6)}, *
             "https://scitools.org.uk/cartopy/docs/latest/installing.html for details."
         )
 
-    fig = plt.figure(**fig_kw)
+    if fig_kw is None:
+        fig = plt.figure(figsize=(5, 6))
+    else:
+        fig = plt.figure(**fig_kw)
 
     gs = gridspec.GridSpec(2, 1, figure=fig, height_ratios=(1, 0.5))
     ax1 = fig.add_subplot(gs[0], 
@@ -64,7 +73,7 @@ def ortho_animation(surface, time, window_size=50, fig_kw={"figsize": (5, 6)}, *
     )
     return ani
 
-def cart_animation(surface, time, window_size=50, **kw):
+def cart_animation(surface, time, window_size=50, fig_kw=None, **kw):
     nlat = surface.nlat
     nlon = surface.nlon
     dlon = 360 / nlon
@@ -73,7 +82,11 @@ def cart_animation(surface, time, window_size=50, **kw):
     lat_min = max(surface.min_lat - lat_width, 0)
     lat_max = surface.max_lat + lat_width
 
-    fig = plt.figure(figsize=(5, 6), constrained_layout=False)
+    if fig_kw is None:
+        fig = plt.figure(figsize=(5, 6))
+    else:
+        fig = plt.figure(**fig_kw)
+    
     fig.subplots_adjust(
         top=0.95, bottom=0.08, left=0.16, right=0.95, hspace=0.3, wspace=0.2
     )
@@ -198,6 +211,5 @@ if __name__ == "__main__":
     s.evolve_spots(period=10, incl=45)
 
     s.plot_butterfly()
-    anim = ortho_animation(s, np.arange(100, 200, 0.5))
-    #anim = cart_animation(s, np.arange(100, 200, 0.5))
+    anim = animate_spots(s, np.arange(100, 200, 0.5), projection="ortho")
     plt.show()
