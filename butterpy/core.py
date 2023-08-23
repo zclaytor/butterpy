@@ -480,6 +480,16 @@ class Surface(object):
         dF_i = - area * beta
         dF_i[beta < 0] = 0
         return dF_i
+    
+    def calc_t(self, t):
+        tt = t - self.tmax
+        area = self.amax * self.spot_evol(tt, self.tau_emerge, self.tau_decay) # array length N_spot
+        omega_lat = self.diffrot_func(self.omega, self.shear, self.lat) # array length N_spot
+        phase = omega_lat * t * D2S + self.lon
+        beta = np.cos(self.incl) * np.sin(self.lat) + np.sin(self.incl) * np.cos(self.lat)*np.cos(phase) # length N_spot
+        dF_t = -area*beta
+        dF_t[beta < 0] = 0
+        return dF_t
 
     def compute_wps(self, bin_size=None):
         """
