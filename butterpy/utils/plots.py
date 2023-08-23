@@ -2,20 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def butterfly(r):
-    """Plot the butterfly diagram of a regions table.
-    """
-    thcen = 90*(1 - (r["thpos"] + r["thneg"])/np.pi)
-    ndays = r["nday"]
-
-    plt.figure()
-    plt.scatter(ndays/365, thcen, c="k", alpha=0.5)
-    plt.xlabel("Time (years)")
-    plt.ylabel("Latitude (deg)")
-    plt.title(f"{len(r)} spots")
-    plt.show()
-
-
 def monthly_spot_number(spots, make_plot=True):
     """
     Compute and plot the monthly spot number.
