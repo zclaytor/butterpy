@@ -83,28 +83,28 @@ class Surface(object):
 
         Parameters
         ----------
+        ndays (int, optional, default=1200):
+            Number of days to emerge spots.
+
+        activity_level (float, optional, default=1): 
+            Number of magnetic bipoles, normalized such that 
+            for the Sun, activity_level = 1.
+
         butterfly (bool, optional, default=True): 
             Have spots decrease from maxlat to minlat (True)
             or be randomly located in latitude (False)
 
-        activity_level (float, optional, default=1.0): 
-            Number of magnetic bipoles, normalized such that 
-            for the Sun, activityrate = 1.
-
-        cycle_period (float, optional, default=1.0): 
+        cycle_period (float, optional, default=11): 
             Interval (years) between cycle starts (Sun is 11)
 
-        cycle_overlap (float, optional, default=1.0): 
+        cycle_overlap (float, optional, default=2): 
             Overlap of cycles in years.
 
-        max_lat (float, optional, default=40):
+        max_lat (float, optional, default=28):
             Maximum latitude of spot emergence in degrees.
 
-        min_lat (float, optional, default=5):
-            Minimum latitutde of spot emergence in degrees.
-
-        ndays (int, optional, default=1200):
-            Number of days to emerge spots. 
+        min_lat (float, optional, default=7):
+            Minimum latitutde of spot emergence in degrees. 
 
         prob_corr (float, optional, default=0.001):
             The probability of correlated active region emergence
