@@ -241,15 +241,16 @@ class Surface(object):
                             lon = dlon*(np.random.uniform() + i)
                             lat = l1 + dlat*(np.random.uniform() + j)
 
-                            self.add_region(nday, nc, lon, lat, k, bsize)
+                            self._add_region_cycle(nday, nc, lat, lon, k, bsize)
 
                             if nb == 0:
                                 tau[i, j, k] = 0
         return self.regions
 
-    def add_region(self, nday, nc, lon, lat, k, bsize):
+    def _add_region_cycle(self, nday, nc, lat, lon, k, bsize):
         """
-        Add one active region of a particular size at a particular location.
+        Add one active region of a particular size at a particular location,
+        caring about the cycle (for tilt angles).
 
         Joy's law tilt angle is computed here as well. 
         For tilt angles, see 
@@ -261,20 +262,23 @@ class Surface(object):
         ----------
         nday (int): day index
         nc (int): cycle index
-        lon (float): longitude
         lat (float): latitude
+        lon (float): longitude
         k (int): hemisphere index (0 for North, 1 for South)
         bsize (float): the size of the bipole
 
-        Returns
-        -------
+        Adds a row with the following values to `self.regions`:
+        
+        nday (int): day index
         thpos (float): theta of positive bipole
         phpos (float): longitude of positive bipole
         thneg (float): theta of negative bipole
         phneg (float): longitude of negative bipole
         width (float): bipole width threshold, always 4...?
         bmax (float): magnetic field strength of bipole
-        ang (float): Joy's law bipole angle
+        ang (float): Joy's law bipole angle (from equator)
+
+        Returns None.
         """
         self.assert_regions()
 
@@ -300,6 +304,51 @@ class Surface(object):
         thneg = thcen - dth
 
         self.regions.add_row([nday, thpos, phpos, thneg, phneg, width, bmax, ang])
+
+    def add_region(self, nday, lat, lon, bmax):
+        """
+        Add one active region of a particular size at a particular location,
+        ignoring Joy's law tilt and cycle.
+
+        This is meant to be a user-facing function.
+
+        Parameters
+        ----------
+        nday (int): day index
+        lat (float): latitude
+        lon (float): longitude
+        bmax (float): magnetic field strength of bipole
+
+        Adds a row with the following values to `self.regions`:
+        
+        nday (int): day index
+        thpos (float): theta of positive bipole
+        phpos (float): longitude of positive bipole
+        thneg (float): theta of negative bipole
+        phneg (float): longitude of negative bipole
+        bmax (float): magnetic field strength of bipole
+
+        Returns None.
+        """
+        if self.regions is None:
+            self.regions = Table(names=('nday', 'thpos', 'phpos','thneg','phneg', 'bmax'),
+                dtype=(int, float, float, float, float, float))
+            
+        # Convert angles to radians
+        lat *= np.pi/180
+        phcen = lon*np.pi/180.
+        bsize = np.sqrt(bmax/2.5) * np.pi/180
+
+        # Compute bipole positions
+        dph = 0
+        dth = 0.5*bsize
+        thcen = 0.5*np.pi - lat # k determines hemisphere
+        phpos = phcen + dph
+        phneg = phcen - dph
+        thpos = thcen + dth
+        thneg = thcen - dth
+
+        self.regions.add_row([nday, thpos, phpos, thneg, phneg, bmax])
 
     def evolve_spots(
         self,
