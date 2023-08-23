@@ -646,6 +646,7 @@ class Surface(object):
         """
         to_fits(self, filename)
 
+
 def read_fits(filename):
     """Docstring
     """
@@ -668,6 +669,7 @@ def read_fits(filename):
         s.lightcurve = LightCurve(hdul[2].data["time"], hdul[2].data["flux"])
 
     return s
+
 
 class LightCurve(object):
     """
