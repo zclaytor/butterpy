@@ -74,4 +74,10 @@ def test_fits(default_surface, tmp_path):
     for i, j in zip(s.regions.iterrows(), sprime.regions.iterrows()):
         assert i == pytest.approx(j), "Rows from read surface do not match original."
 
-    assert s.flux == pytest.approx(sprime.flux), "Read flux does not match original."    
+    assert s.flux == pytest.approx(sprime.flux), "Read flux does not match original." 
+
+def test_calc_t(default_surface):
+    s = default_surface
+    for t, f in zip(s.time[::100], s.flux[::100]):
+        new_f = 1 + s.calc_t(t).sum()
+        assert f == pytest.approx(new_f), "`calc_t` flux does not match expectation."
