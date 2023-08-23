@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def monthly_spot_number(spots, make_plot=True):
+def spot_counts(spots, bin_size=30, make_plot=True):
     """
     Compute and plot the monthly spot number.
 
@@ -11,45 +11,50 @@ def monthly_spot_number(spots, make_plot=True):
     sliding 13-month window, centered on each month. This corresponds to 
     the "International Sunspot Number" (see section 3.1).
 
+    This function generalizes the spot count window size, but keeps 
+    the month window by default.
+
     Parameters
     ----------
     spots (astropy Table):
         The output of `regions` containing the table of star spots.
+
+    bin_size (float, 30):
+        The window length in days for the spot count.
 
     make_plot (bool, optional, default=True):
         Whether to make and display the plot.
 
     Returns
     -------
-    T (list):
-        The list of times corresponding to each spot count.
+    T (array):
+        The times corresponding to each spot count.
 
-    N (list):
-        The list of spot counts.
+    N (array):
+        The monthly spot counts.
     """
     days = spots["nday"]
-    bin_days = 30 
 
     # first bin spot counts by month
-    d = bin_days/2
+    d = bin_size/2
     time = []
     nspots = []
     while d < days.max():
         time.append(d)
-        nspots.append(sum((d-bin_days/2 < days) & (days <= d+bin_days/2)))
-        d += bin_days
+        nspots.append(sum((d-bin_size/2 < days) & (days <= d+bin_size/2)))
+        d += bin_size
     
     # smooth monthly spot counts
     time = np.array(time)
     nspots = np.array(nspots)
-    bin_days = 30*13
-    d = bin_days/2 
+    bin_size *= 13
+    d = bin_size/2 
     T = []
     N = []
     while d < days.max():
         T.append(d/365)
-        N.append(np.mean(nspots[((d-bin_days/2) < time) & (time <= (d+bin_days/2))]))
-        d += bin_days/13
+        N.append(np.mean(nspots[((d-bin_size/2) < time) & (time <= (d+bin_size/2))]))
+        d += bin_size/13
 
     if make_plot:
         plt.figure()
@@ -60,4 +65,4 @@ def monthly_spot_number(spots, make_plot=True):
         plt.legend()
         plt.show()
 
-    return T, N
+    return np.array(T), np.array(N)

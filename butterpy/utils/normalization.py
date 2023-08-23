@@ -29,7 +29,7 @@ This currently computes the normalization based on *newly* emerged spots,
 import numpy as np
 import matplotlib.pyplot as plt
 from butterpy.core import Surface
-from plots import monthly_spot_number
+from plots import spot_counts
 
 
 def solar_regions():
@@ -71,7 +71,7 @@ def fit_spot_counts(spots, make_plot=True):
     A (float):
         The spot count amplitude with units of spots/month
     """
-    time, nspots = monthly_spot_number(spots, make_plot=False)
+    time, nspots = spot_counts(spots, bin_size=30, make_plot=False)
 
     # Fit Asin^2(pi*t/P + phi), based on emergence rate definition.
     from scipy.optimize import curve_fit
