@@ -16,12 +16,6 @@ You can install `butterpy` using pip:
 pip install butterpy
 ```
 
-But note that using the animation tools requires `cartopy`, which is easiest to install in an Anaconda environment using conda:
-
-```bash
-conda install -c conda-forge cartopy
-```
-
 ## Butterpy usage
 
 See `notebooks/surface_fig.ipynb` for general usage, but here's a quick guide to simulating a Solar-like star.
