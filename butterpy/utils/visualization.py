@@ -56,6 +56,8 @@ def ortho_animation(surface, time, window_size=50, fig_kw=None, **kw):
         fig = plt.figure(**fig_kw)
 
     gs = gridspec.GridSpec(2, 1, figure=fig, height_ratios=(1, 0.5))
+    fig.subplots_adjust(
+        top=0.93, bottom=0.12, left=0.21, right=0.95, hspace=0.05)
     ax1 = fig.add_subplot(gs[0], 
         projection=ccrs.Orthographic(0, 90 - surface.incl*180/np.pi))
     ax2 = fig.add_subplot(gs[1])
@@ -88,7 +90,7 @@ def ortho_animation(surface, time, window_size=50, fig_kw=None, **kw):
     ax2.set_xlabel("Time (days)")
     ax2.set_ylabel("Relative Flux")
     ax2.vlines(0.5, color="r", ymin=0, ymax=1, transform=ax2.transAxes)
-    title = fig.suptitle("")
+    title = fig.suptitle("", x=0.57)
     fig.align_labels()
 
     ax = (ax1, ax2)
