@@ -79,5 +79,5 @@ def test_fits(default_surface, tmp_path):
 def test_calc_t(default_surface):
     s = default_surface
     for t, f in zip(s.time[::100], s.flux[::100]):
-        new_f = 1 + s.calc_t(t).sum()
+        new_f = 1 + s._calc_t(t).sum()
         assert f == pytest.approx(new_f), "`calc_t` flux does not match expectation."

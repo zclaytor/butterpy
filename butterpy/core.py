@@ -311,7 +311,7 @@ class Surface(object):
         spot_evol=gaussian_spots,
         tau_evol=5.0,
         alpha_med=0.0001,       
-        threshold=0.1
+        threshold=0.1,
     ):
         """
         Generate initial parameter set for spots and compute light curve. 
@@ -357,7 +357,7 @@ class Surface(object):
 
         threshold (float, optional, default=0.1):
             Minimum peak magnetic flux for a spot to be considered.
-
+        
         Returns
         -------
         lc (numpy array):
@@ -395,7 +395,7 @@ class Surface(object):
         self.amax = Bem[l] * alpha_med / np.median(Bem[l]) 
         # scale amax to achieve desired median alpha, 
         # where alpha = spot contrast * spot area 
-
+                
         self.lightcurve = self.compute_lightcurve(time)
         return self.lightcurve       
         
@@ -412,7 +412,7 @@ class Surface(object):
         Parameters
         ----------
         time (numpy array):
-            the array of time values at which to compute the flux modulation.
+            The array of time values at which to compute the flux modulation.
             If `None` is passed, defaults to 0.1-day cadence and duration
             of `self.duration`: `np.arange(0, self.duration, 0.1)`.
 
@@ -477,14 +477,16 @@ class Surface(object):
         beta = np.cos(self.incl) * np.sin(self.lat[i]) + \
             np.sin(self.incl) * np.cos(self.lat[i]) * np.cos(phase)
         # Differential effect on stellar flux
-        dF_i = - area * beta
+        dF_i = -area*beta
         dF_i[beta < 0] = 0
         return dF_i
     
-    def calc_t(self, t):
+    def _calc_t(self, t):
         """
         Helper function to calculate flux modulation for all spots at a single
-        time step.
+        time step. This is much slower than `calc_i`, so use is only recommended
+        for illustrative purposes such as in visualization tools that need to
+        compute on time steps.
 
         Includes rotation and foreshortening (i.e., spots in the center cause
         more modulation than spots at the limb, and spots out of view do not
@@ -509,7 +511,8 @@ class Surface(object):
         omega_lat = self.diffrot_func(self.omega, self.shear, self.lat)
         phase = omega_lat * t * D2S + self.lon
         # Foreshortening
-        beta = np.cos(self.incl) * np.sin(self.lat) + np.sin(self.incl) * np.cos(self.lat)*np.cos(phase) # length N_spot
+        beta = np.cos(self.incl) * np.sin(self.lat) + \
+            np.sin(self.incl) * np.cos(self.lat)*np.cos(phase)
         # Differential effect on stellar flux
         dF_t = -area*beta
         dF_t[beta < 0] = 0
