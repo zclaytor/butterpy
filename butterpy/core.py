@@ -439,12 +439,12 @@ class Surface(object):
 
         flux = np.ones_like(time, dtype="float32")
         for i in np.arange(self.nspots):
-            flux += self.calci(time, i)
+            flux += self.calc_i(time, i)
 
         lc = LightCurve(time, flux)
         return lc
 
-    def calci(self, time, i):
+    def calc_i(self, time, i):
         """
         Helper function to evolve one spot and calculate its impact on the flux.
 
@@ -467,13 +467,13 @@ class Surface(object):
         dF_i (numpy array):
             the time-varying flux modulation from spot `i`.
         """
-        # Spot area
         tt = time - self.tmax[i]
+        # Spot area
         area = self.amax[i] * self.spot_evol(tt, self.tau_emerge, self.tau_decay)
         # Rotation rate
         omega_lat = self.diffrot_func(self.omega, self.shear, self.lat[i])
-        # Foreshortening
         phase = omega_lat * time * D2S + self.lon[i]
+        # Foreshortening
         beta = np.cos(self.incl) * np.sin(self.lat[i]) + \
             np.sin(self.incl) * np.cos(self.lat[i]) * np.cos(phase)
         # Differential effect on stellar flux
@@ -482,11 +482,35 @@ class Surface(object):
         return dF_i
     
     def calc_t(self, t):
+        """
+        Helper function to calculate flux modulation for all spots at a single
+        time step.
+
+        Includes rotation and foreshortening (i.e., spots in the center cause
+        more modulation than spots at the limb, and spots out of view do not
+        contribute flux modulation). Also includes spot emergence and decay.
+
+        Currently there is no spot drift or shear (within an active region).
+
+        Parameters
+        ----------
+        t (float):
+            the time value at which to compute the flux modulation.
+
+        Returns
+        -------
+        dF_t (numpy array):
+            the single-epoch flux modulation from all spots.
+        """
         tt = t - self.tmax
-        area = self.amax * self.spot_evol(tt, self.tau_emerge, self.tau_decay) # array length N_spot
-        omega_lat = self.diffrot_func(self.omega, self.shear, self.lat) # array length N_spot
+        # Spot area
+        area = self.amax * self.spot_evol(tt, self.tau_emerge, self.tau_decay)
+        # Rotation rate
+        omega_lat = self.diffrot_func(self.omega, self.shear, self.lat)
         phase = omega_lat * t * D2S + self.lon
+        # Foreshortening
         beta = np.cos(self.incl) * np.sin(self.lat) + np.sin(self.incl) * np.cos(self.lat)*np.cos(phase) # length N_spot
+        # Differential effect on stellar flux
         dF_t = -area*beta
         dF_t[beta < 0] = 0
         return dF_t
