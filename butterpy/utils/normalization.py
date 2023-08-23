@@ -28,6 +28,7 @@ This currently computes the normalization based on *newly* emerged spots,
 
 import numpy as np
 import matplotlib.pyplot as plt
+
 from butterpy.core import Surface
 from plots import spot_counts
 
