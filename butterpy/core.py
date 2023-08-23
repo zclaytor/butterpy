@@ -10,7 +10,7 @@ from .utils.activelat import random_latitudes, exponential_latitudes
 from .utils.spotevol import gaussian_spots
 from .utils.diffrot import sin2
 from .utils.joyslaw import tilt
-from .utils.visualization import animate_spots
+from .utils.animation import animate_spots
 from .io.pkl import to_pickle, read_pickle
 from .io.fits import to_fits
 
