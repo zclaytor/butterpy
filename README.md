@@ -10,10 +10,10 @@ To cite the code, please use the introductory paper by [Claytor et al. (2022)](h
 
 ## Butterpy installation
 
-You can install `butterpy` using pip:
+You can install `butterpy` using pip. I'm hoping to have 1.0.0 on PyPI soon, but for now use this:
 
 ```bash
-pip install butterpy
+pip install git+https://github.com/zclaytor/butterpy
 ```
 
 ## Butterpy usage
