@@ -1,9 +1,20 @@
+"""
+Visualization tools to illustrate the active latitudes and spot emergence as a
+function of time.
+
+Intended for use as a script:
+
+```
+>>> python visualization/visualize_active_latitudes.py
+```
+"""
+
 import numpy as np
 import matplotlib.pyplot as plt
 import astropy.units as u
 from astropy.table import Table
 
-from butterpy.utils.activelat import random, exponential
+from butterpy.utils.activelat import random_latitudes, exponential_latitudes
 
 D2S = 1*u.day.to(u.s)
 
@@ -90,9 +101,9 @@ def regions(butterfly=True, activityrate=1.0, cyclelength=1.0,
 
             # Determine active latitude bins
             if butterfly:
-                latavg, latrms = exponential(minlat, maxlat, phase)
+                latavg, latrms = exponential_latitudes(minlat, maxlat, phase)
             else:
-                latavg, latrms = random(minlat, maxlat)
+                latavg, latrms = random_latitudes(minlat, maxlat)
 
             lats.add_row([nday, nc, latavg, latrms])
 

@@ -1,9 +1,20 @@
+"""
+Visualization tools to illustrate the probability of emergence of correlated
+active regions as a function of time.
+
+Intended for use as a script:
+
+```
+>>> python visualization/animate_regions_tau.py
+```
+"""
+
 import numpy as np
 import matplotlib.pylab as plt
 import astropy.units as u
 from astropy.table import Table
 
-from butterpy.utils.activelat import random, exponential
+from butterpy.utils.activelat import random_latitudes, exponential_latitudes
 
 D2S = 1*u.day.to(u.s)
 
@@ -95,10 +106,10 @@ def regions(butterfly=True, activityrate=1.0, cyclelength=1.0,
 
             # Determine active latitude bins
             if butterfly:
-                latavg, latrms = exponential(minlat, maxlat, phase)
+                latavg, latrms = exponential_latitudes(minlat, maxlat, phase)
                 nlat1, nlat2 = 0, 15
             else:
-                latavg, latrms = random(minlat, maxlat)
+                latavg, latrms = random_latitudes(minlat, maxlat)
 
             # Compute emergence probabilities
             
@@ -157,7 +168,6 @@ def regions(butterfly=True, activityrate=1.0, cyclelength=1.0,
 
 
 def add_region(nc, lon, lat, k, bsize):
-    ic = 1. - 2.*(nc % 2) # +1 for even, -1 for odd cycle
     bmax = 2.5*bsize**2 
     
     # Convert angles to radians
