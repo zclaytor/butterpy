@@ -4,12 +4,42 @@ from matplotlib import animation, gridspec, patches
 
 
 def animate_spots(surface, time, projection="ortho", window_size=50, fig_kw=None, **kw):
+    """
+    Animate a plot of spot and light curve evolution. 
+    Wrapper for `utils.visualization.animate_spots`.
+
+    Parameters
+    ----------
+    time (numpy array):
+        Array of time values to animate. Ideally you should only animate
+        a subset of time steps, otherwise the animation will be too large.
+
+    projection (str, "ortho"):
+        Projection for animation. Can be orthographic ("ortho" or 
+        "orthographic"), which requires cartopy, or cartesian ("cart" or
+        "cartesian").
+
+    window_size (float, 50):
+        Window size, in days, for light curve viewing.
+
+    fig_kw: dict of kwargs to be passed to `matplotlib.figure`.
+    
+    kw: remaining kwargs to be passed to `matplotlib.animation.FuncAnimation`.
+
+    Returns
+    -------
+    ani (matplotlib.animation.FuncAnimation):
+        animated plot of spot and light curve evolution.
+    """
     if projection in ["ortho", "orthographic"]:
         return ortho_animation(surface, time, window_size, fig_kw, **kw)
     elif projection in ["cart", "cartesian"]:
         return cart_animation(surface, time, window_size, fig_kw, **kw)
 
 def ortho_animation(surface, time, window_size=50, fig_kw=None, **kw):
+    surface.assert_regions()
+    surface.assert_lightcurve()
+
     try:
         import cartopy.crs as ccrs
     except:
@@ -74,6 +104,9 @@ def ortho_animation(surface, time, window_size=50, fig_kw=None, **kw):
     return ani
 
 def cart_animation(surface, time, window_size=50, fig_kw=None, **kw):
+    surface.assert_regions()
+    surface.assert_lightcurve()
+
     nlat = surface.nlat
     nlon = surface.nlon
     dlon = 360 / nlon

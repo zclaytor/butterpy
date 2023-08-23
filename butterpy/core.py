@@ -10,6 +10,7 @@ from .utils.activelat import random_latitudes, exponential_latitudes
 from .utils.spotevol import gaussian_spots
 from .utils.diffrot import sin2
 from .utils.joyslaw import tilt
+from .utils.visualization import animate_spots
 from .io.pkl import to_pickle, read_pickle
 from .io.fits import to_fits
 
@@ -590,6 +591,36 @@ class Surface(object):
         fig.tight_layout()
 
         return fig, ax
+    
+    def animate_spots(self, *args, **kw):
+        """
+        Animate a plot of spot and light curve evolution. 
+        Wrapper for `utils.visualization.animate_spots`.
+
+        Parameters
+        ----------
+        time (numpy array):
+            Array of time values to animate. Ideally you should only animate
+            a subset of time steps, otherwise the animation will be too large.
+
+        projection (str, "ortho"):
+            Projection for animation. Can be orthographic ("ortho" or 
+            "orthographic"), which requires cartopy, or cartesian ("cart" or
+            "cartesian").
+
+        window_size (float, 50):
+            Window size, in days, for light curve viewing.
+
+        fig_kw: dict of kwargs to be passed to `matplotlib.figure`.
+        
+        kw: remaining kwargs to be passed to `matplotlib.animation.FuncAnimation`.
+
+        Returns
+        -------
+        ani (matplotlib.animation.FuncAnimation):
+            animated plot of spot and light curve evolution.
+        """
+        return animate_spots(self, *args, **kw)
     
     def to_pickle(self, filename):
         """
