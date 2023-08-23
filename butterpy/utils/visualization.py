@@ -64,7 +64,7 @@ def ortho_animation(surface, time, window_size=50, fig_kw={"figsize": (5, 6)}, *
     )
     return ani
 
-def animate_evolution(surface, time, window_size=50, **kw):
+def cart_animation(surface, time, window_size=50, **kw):
     nlat = surface.nlat
     nlon = surface.nlon
     dlon = 360 / nlon
@@ -199,5 +199,5 @@ if __name__ == "__main__":
 
     s.plot_butterfly()
     anim = ortho_animation(s, np.arange(100, 200, 0.5))
-    #anim = animate_evolution(s, np.arange(100, 200, 0.5))
+    #anim = cart_animation(s, np.arange(100, 200, 0.5))
     plt.show()
