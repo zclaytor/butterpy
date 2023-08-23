@@ -2,40 +2,77 @@
 
 Simulate starspot evolution and the corresponding lightcurves.
 
-**Primary author: [Zachary Claytor](https://github.com/zclaytor)**
+**Primary author of Python implementation: [Zachary Claytor](https://github.com/zclaytor)**
 
 The code is written in both Python and Julia. See the Butterfly.jl section for the Julia documentation. The Python code can be found under the `butterpy` directory.
 
-To cite the code, please use the Zenodo DOI [10.5281/zenodo.4722052](https://zenodo.org/record/4722052) and the introductory paper by [Claytor et al. (2022)](https://ui.adsabs.harvard.edu/abs/2022ApJ...927..219C/abstract).
+To cite the code, please use the introductory paper by [Claytor et al. (2022)](https://ui.adsabs.harvard.edu/abs/2022ApJ...927..219C/abstract) and the Zenodo DOI [10.5281/zenodo.4722052](https://zenodo.org/record/4722052).
 
-
-## Installation
+## Butterpy installation
 
 You can install `butterpy` using pip:
+
+```bash
+pip install butterpy
 ```
-$ pip install butterpy
-```
+
 But note that using the animation tools requires `cartopy`, which is easiest to install in an Anaconda environment using conda:
+
+```bash
+conda install -c conda-forge cartopy
 ```
-$ conda install -c conda-forge cartopy
+
+## Butterpy usage
+
+See `notebooks/surface_fig.ipynb` for general usage, but here's a quick guide to simulating a Solar-like star.
+
+```python
+import butterpy as bp
+import matplotlib.pyplot as plt
+
+# Initialize surface. You almost never need to supply arguments.
+s = bp.Surface()
+
+# Emerge active regions
+regions = s.emerge_regions(
+  ndays=1000,
+  activity_level=1, 
+  cycle_period=11,
+  cycle_overlap=2,
+  )
+
+# From active regions, compute spot evolution and light curve
+lightcurve = s.evolve_spots(
+  incl=80,
+  period=24.5,
+  shear=0.2,
+)
+
+# Plot butterfly diagram and light curve
+s.plot_butterfly()
+plt.tight_layout()
+
+s.plot_lightcurve()
+plt.tight_layout()
 ```
 
-## Usage
+![Butterfly diagram of a Sun-like star.](misc/butterfly.png)
+![Rotational light curve of a Sun-like star.](misc/lightcurve.png)
 
-See `butterpy/simulate_lightcurves.py` or `notebooks/surface_fig.ipynb` for general usage.
+You can also make animations using `Surface.animate_spots`. Check the documentation for more!
 
-# Butterfly.jl
+## Butterfly.jl
 
-**Primary author: [Miles Lucas](https://github.com/mileslucas)**
+**Primary author of Julia implementation: [Miles Lucas](https://github.com/mileslucas)**
 
 The Julia implementation is derived from the python work but applies Julian best practices. The Julia code can be found under the `src` directory. This requires Julia 1.2 or greater, and greatly benefits from the stability in multithreading found in Julia 1.3. Visit the [Julia website](https://julialang.org) for information on how to get Julia set up.
 
-## Installation
+## Butterfly.jl installation
 
 Once you have Julia set up, enter the REPL
 
-```
-$ julia
+```bash
+julia
 ```
 
 and set up the environment
@@ -50,7 +87,7 @@ julia> ]
 julia> using Butterfly
 ```
 
-## Usage
+## Butterfly.jl usage
 
 The main workflow is similar to the python implementation
 
@@ -154,7 +191,6 @@ SpotDynamics{Float64}
   τ_emergence: 24.5
   τ_decay: 122.5
 ```
-
 
 ```julia
 help?> SpotDynamics
@@ -282,6 +318,6 @@ search: generate_simdata
   Generate n simulation datasets returned in a DataFrame.
 ```
 
-# Benchmarks
+## Benchmarks
 
 In the directory `bench` there are some benchmarks comparing Python performance to Julia. In general, Julia is ~2x faster than Python when using multithreading.

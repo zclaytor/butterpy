@@ -1,6 +1,5 @@
 import numpy as np
 from pandas import DataFrame, concat 
-from scipy.stats import truncnorm
 from .constants import RAD2DEG, YEAR2DAY, FLUX_SCALE
 
 
@@ -22,8 +21,7 @@ fact = np.exp(
     delta_lnA * np.arange(n_bins)
 )  # array of area reduction factors, = [1, 1.64, 2.71, 4.48, 7.39]
 ftot = fact.sum()  # sum of reduction factors
-areas = max_area / fact
-bipole_widths = np.sqrt(areas)  # array of bipole widths (deg)
+areas = max_area / fact # bipole areas (deg^2)
 
 
 def active_latitudes(min_ave_lat, max_ave_lat, phase, butterfly=True):
@@ -56,8 +54,6 @@ def regions(
     cycle_overlap=2,
     max_ave_lat=35,
     min_ave_lat=7,
-    decay_time=120,
-    alpha_med=FLUX_SCALE,
     tsim=3650,
     tstart=0,
 ):
@@ -118,14 +114,6 @@ def regions(
     dlat = (lat_max - lat_min) / nlat
     dlon = 360 / nlon
 
-    # The fractional area taken up by the active latitude bands is
-    # 2 * 2pi * delta_lat / 4pi = delta_lat
-    # If we treat that entire area as a spot with a given contrast,
-    # we find a floor for the flux modulation. If we hit that floor,
-    # we suppress the formation of spots.  
-    frac_area = np.sin(lat_max/RAD2DEG) - np.sin(lat_min/RAD2DEG)
-    threshold_flux = spot_contrast*frac_area
-
     spots = DataFrame(columns=['nday', 'lat', 'lon', 'bmax'])
 
     Nday, Icycle = np.mgrid[0:tsim, 0:2].reshape(2, 2 * tsim)
@@ -154,15 +142,6 @@ def regions(
             continue
             
         tau += 1
-
-        # Check if we're close to the threshold flux. 
-        earliest = max(nday - 0.5*decay_time, 0)
-        # flux removed corresponds to calculation of dF in spots.py.
-        # field strength is normalized by median strength, 55.8 gauss
-        total_flux_removed = alpha_med * spots.query(f'nday > {earliest}').bmax.sum()/ 55.8
-
-        if total_flux_removed > threshold_flux: 
-            continue
 
         # Emergence rate of correlated active regions
         rc0 = np.zeros((nlon, nlat, 2))

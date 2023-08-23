@@ -16,9 +16,8 @@ setup(
     long_description_content_type="text/markdown",
     url="https://github.com/zclaytor/butterpy",
     license="MIT",
-    python_requires="==3.*,>=3.6.0",
+    python_requires="==3.*",
     packages=find_packages(),
-    install_requires=["astropy", "numpy", "scipy", "matplotlib", "tqdm", "pandas"],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",

@@ -141,3 +141,6 @@ Manifest.toml
 .venv
 Pipfile.lock
 vscode
+
+# Jupyter cache
+notebooks/.ipynb_checkpoints                                                                                                                              

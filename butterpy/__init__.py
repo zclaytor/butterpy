@@ -1,6 +1,4 @@
 name = 'butterpy'
 
-from .regions import regions
-from .spots import Spots
-
+from .core import Surface, read_pickle, read_fits
 from .version import __version__
