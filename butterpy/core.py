@@ -113,75 +113,62 @@ class Surface(object):
         Simulates the emergence and evolution of starspots. 
         Output is a Table of active regions.
 
-        Parameters
-        ----------
-        ndays (int, optional, default=1200):
-            Number of days to emerge spots.
+        Args:
+            ndays (int, optional, default=1200): Number of days to emerge spots.
+            activity_level (float, optional, default=1): Number of magnetic 
+                bipoles, normalized such that for the Sun, activity_level = 1.
+            butterfly (bool, optional, default=True): Have spots decrease 
+                from maxlat to minlat (True) or be randomly located in 
+                latitude (False).
+            cycle_period (float, optional, default=11): Interval (years) 
+                between cycle starts (Sun is 11).
+            cycle_overlap (float, optional, default=2): Overlap of cycles in 
+                years.
+            max_lat (float, optional, default=28): Maximum latitude of spot 
+                emergence in degrees.
+            min_lat (float, optional, default=7): Minimum latitutde of spot 
+                emergence in degrees. 
+            prob_corr (float, optional, default=0.001): The probability of 
+                correlated active region emergence (relative to uncorrelated 
+                emergence).
 
-        activity_level (float, optional, default=1): 
-            Number of magnetic bipoles, normalized such that 
-            for the Sun, activity_level = 1.
+        Returns:
+            regions: astropy Table where each row is an active region with 
+                the following parameters:
 
-        butterfly (bool, optional, default=True): 
-            Have spots decrease from maxlat to minlat (True)
-            or be randomly located in latitude (False)
+                nday  = day of emergence
+                thpos = theta of positive pole (radians)
+                phpos = phi   of positive pole (radians)
+                thneg = theta of negative pole (radians)
+                phneg = phi   of negative pole (radians)
+                width = width of each pole (radians)
+                bmax  = maximum flux density (Gauss)
 
-        cycle_period (float, optional, default=11): 
-            Interval (years) between cycle starts (Sun is 11)
+        Notes:
+            Based on Section 4 of van Ballegooijen 1998, ApJ 501: 866
+            and Schrijver and Harvey 1994, SoPh 150: 1S.
 
-        cycle_overlap (float, optional, default=2): 
-            Overlap of cycles in years.
+            Written by Joe Llama (joe.llama@lowell.edu) V 11/1/16
+            Converted to Python 3 9/5/2017
 
-        max_lat (float, optional, default=28):
-            Maximum latitude of spot emergence in degrees.
+            According to Schrijver and Harvey (1994), the number of active regions
+            emerging with areas in the range [A,A+dA] in a time dt is given by 
 
-        min_lat (float, optional, default=7):
-            Minimum latitutde of spot emergence in degrees. 
+                n(A,t) dA dt = a(t) A^(-2) dA dt ,
 
-        prob_corr (float, optional, default=0.001):
-            The probability of correlated active region emergence
-            (relative to uncorrelated emergence).
+            where A is the "initial" area of a bipole in square degrees, and t is
+            the time in days; a(t) varies from 1.23 at cycle minimum to 10 at cycle
+            maximum.
 
+            The bipole area is the area within the 25-Gauss contour in the
+            "initial" state, i.e. time of maximum development of the active region.
+            The assumed peak flux density in the initial state is 1100 G, and
+            width = 0.4*bsiz. The parameters are corrected for further diffusion and 
+            correspond to the time when width = 4 deg, the smallest width that can be 
+            resolved with lmax=63.
 
-        Returns
-        -------
-        regions (astropy Table): 
-            Each row is an active region with the following parameters:
-
-            nday  = day of emergence
-            thpos = theta of positive pole (radians)
-            phpos = phi   of positive pole (radians)
-            thneg = theta of negative pole (radians)
-            phneg = phi   of negative pole (radians)
-            width = width of each pole (radians)
-            bmax  = maximum flux density (Gauss)
-
-        Notes
-        -----
-        Based on Section 4 of van Ballegooijen 1998, ApJ 501: 866
-        and Schrijver and Harvey 1994, SoPh 150: 1S.
-
-        Written by Joe Llama (joe.llama@lowell.edu) V 11/1/16
-        Converted to Python 3 9/5/2017
-
-        According to Schrijver and Harvey (1994), the number of active regions
-        emerging with areas in the range [A,A+dA] in a time dt is given by 
-
-            n(A,t) dA dt = a(t) A^(-2) dA dt ,
-
-        where A is the "initial" area of a bipole in square degrees, and t is
-        the time in days; a(t) varies from 1.23 at cycle minimum to 10 at cycle
-        maximum.
-
-        The bipole area is the area within the 25-Gauss contour in the
-        "initial" state, i.e. time of maximum development of the active region.
-        The assumed peak flux density in the initial state is 1100 G, and
-        width = 0.4*bsiz. The parameters are corrected for further diffusion and 
-        correspond to the time when width = 4 deg, the smallest width that can be 
-        resolved with lmax=63.
-
-        In our simulation we use a lower value of a(t) to account for "correlated"
-        regions.
+            In our simulation we use a lower value of a(t) to account for 
+                "correlated" regions.
 
         """
         # set attributes
