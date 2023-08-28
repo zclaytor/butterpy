@@ -22,7 +22,7 @@ copyright = '2023, Zachary R. Claytor'
 author = 'Zachary R. Claytor'
 
 # The full version, including alpha/beta/rc tags
-release = '1.0.0.dev'
+release = '1.0.0-b.1'
 
 
 # -- General configuration ---------------------------------------------------
