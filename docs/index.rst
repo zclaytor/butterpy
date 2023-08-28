@@ -7,9 +7,10 @@ Welcome to butterpy's documentation!
 ====================================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 22
    :caption: Contents:
 
+   butterpy.rst
 
 
 Indices and tables
