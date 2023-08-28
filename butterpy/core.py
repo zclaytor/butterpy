@@ -22,8 +22,24 @@ OMEGA_SUN = 2 * np.pi / (PROT_SUN * D2S)
 
 
 class Surface(object):
-    """ Write docs!
+    """Create a blank surface to emerge active regions and evolve star spots.
+
+    The `Surface` consists of a grid of `nlat` latitude bins by `nlon`
+    longitude bins, over which emergence probabilities are to be computed.
+
+    Active region areas are drawn from a log-uniform distribution consisting
+    of `nbins` values, starting at area `max_area` and spacing `delta_lnA`.
+
+    Active regions can be "uncorrelated" or "correlated" to other regions.
+    "Correlated" regions can only emerge near regions with the largest area
+    (`max_area`) between `tau1` and `tau2` days after the preexisting region's
+    emergence.
+
+    Attributes:
+        *list attributes*
+
     """
+
     def __init__(
         self,
         nbins=5,
@@ -34,6 +50,22 @@ class Surface(object):
         nlon=36,
         nlat=16,
     ):     
+        """
+        Note:
+            You usually don't need to change the defaults for `Surface`.
+
+        Args:
+            nbins (int): the number of discrete active region areas.
+            delta_lnA (float): logarithmic spacing of area values.
+            max_area (float): maximum active region area in square degrees.
+            tau1 (int): first allowable day of "correlated" emergence, after
+                preexisting region's emergence.
+            tau2 (int): last allowable day of "correlated" emergence, after
+                preexisting region's emergence.
+            nlon (int): number of longitude bins in the Surface grid.
+            nlat (int): number of latitude bins in the Surface grid.
+            
+        """
         #self.areas = max_area / np.exp(delta_lnA * np.arange(nbins))
         self.nbins = nbins # number of area bins
         self.delta_lnA = delta_lnA  # delta ln(A)
