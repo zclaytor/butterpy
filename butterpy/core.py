@@ -19,6 +19,7 @@ D2S = 1*u.day.to(u.s)
 
 PROT_SUN = 27.0
 
+
 class Surface(object):
     """Create a blank surface to emerge active regions and evolve star spots.
 
@@ -192,9 +193,6 @@ class Surface(object):
         Notes:
             Based on Section 4 of van Ballegooijen 1998, ApJ 501: 866
             and Schrijver and Harvey 1994, SoPh 150: 1S.
-
-            Written by Joe Llama (joe.llama@lowell.edu) V 11/1/16
-            Converted to Python 3 9/5/2017
 
             According to Schrijver and Harvey (1994), the number of active regions
             emerging with areas in the range [A,A+dA] in a time dt is given by 
