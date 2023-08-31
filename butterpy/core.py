@@ -167,8 +167,7 @@ class Surface(object):
             correspond to the time when width = 4 deg, the smallest width that can be 
             resolved with lmax=63.
 
-            In our simulation we use a lower value of a(t) to account for 
-                "correlated" regions.
+            We use a lower value of a(t) to account for "correlated" regions.
 
         """
         # set attributes
@@ -277,25 +276,24 @@ class Surface(object):
             Wang and Sheeley, ApJ. 375, 761 (1991)
             Howard, Sol. Phys. 137, 205 (1992)
 
-        Parameters
-        ----------
-        nday (int): day index
-        nc (int): cycle index
-        lat (float): latitude
-        lon (float): longitude
-        k (int): hemisphere index (0 for North, 1 for South)
-        bsize (float): the size of the bipole
+        Args:
+            nday (int): day index
+            nc (int): cycle index
+            lat (float): latitude
+            lon (float): longitude
+            k (int): hemisphere index (0 for North, 1 for South)
+            bsize (float): the size of the bipole
 
         Adds a row with the following values to `self.regions`:
         
-        nday (int): day index
-        thpos (float): theta of positive bipole
-        phpos (float): longitude of positive bipole
-        thneg (float): theta of negative bipole
-        phneg (float): longitude of negative bipole
-        width (float): bipole width threshold, always 4...?
-        bmax (float): magnetic field strength of bipole
-        ang (float): Joy's law bipole angle (from equator)
+            nday (int): day index
+            thpos (float): theta of positive bipole
+            phpos (float): longitude of positive bipole
+            thneg (float): theta of negative bipole
+            phneg (float): longitude of negative bipole
+            width (float): bipole width threshold, always 4...?
+            bmax (float): magnetic field strength of bipole
+            ang (float): Joy's law bipole angle (from equator)
 
         Returns None.
         """
@@ -331,21 +329,20 @@ class Surface(object):
 
         This is meant to be a user-facing function.
 
-        Parameters
-        ----------
-        nday (int): day index
-        lat (float): latitude
-        lon (float): longitude
-        bmax (float): magnetic field strength of bipole
+        Args:
+            nday (int): day index
+            lat (float): latitude
+            lon (float): longitude
+            bmax (float): magnetic field strength of bipole
 
         Adds a row with the following values to `self.regions`:
         
-        nday (int): day index
-        thpos (float): theta of positive bipole
-        phpos (float): longitude of positive bipole
-        thneg (float): theta of negative bipole
-        phneg (float): longitude of negative bipole
-        bmax (float): magnetic field strength of bipole
+            nday (int): day index
+            thpos (float): theta of positive bipole
+            phpos (float): longitude of positive bipole
+            thneg (float): theta of negative bipole
+            phneg (float): longitude of negative bipole
+            bmax (float): magnetic field strength of bipole
 
         Returns None.
         """
@@ -391,45 +388,34 @@ class Surface(object):
 
         Currently there is no spot drift or shear (within an active region).
 
-        Parameters
-        ----------
-        time (float array, default=None):
-            The array of time values at which to compute the light curve.
-            If no time is supplied, defaults to 0.1-day cadence and duration
-            of `self.duration`: `np.arange(0, self.duration, 0.1)`.
-
-        incl (float, optional, default=90):
-            Inclination angle of the star in degrees, where inclination is
-            the angle between the pole and the line of sight.
-
-        period (float, optional, default=PROT_SUN):
-            Rotation period of the star in days.
-
-        shear (float, optional, default=0.3):
-            Differential rotation rate of the star in units of equatorial
-            rotation velocity. I.e., `shear` is alpha = delta_omega / omega.
-
-        diffrot_func (function, optional, default=`utils.diffrot.sin2`):
-            Differential rotation function. Default is sin^2 (latitude).
-
-        spot_func (function, optional, default=`utils.spotevol.gaussian_spots`):
-            Spot evolution function. Default is double-sided gaussian with time.
-
-        tau_evol (float, optional, default=5.0):
-            Spot decay timescale in units of the equatorial rotation period.
-
-        alpha_med (float, optional, default=0.0001):
-            Spot filling factor, equal to spot area * contrast.
-            E.g., a 50%-contrast spot subtending 1% of the stellar disk
-            has alpha_med = 0.01 * 0.5 = 0.005.
-
-        threshold (float, optional, default=0.1):
-            Minimum peak magnetic flux for a spot to be considered.
-        
-        Returns
-        -------
-        lc (numpy array):
-            the light curve: time-varying flux modulation from all spots.        
+        Args:
+            time (float array, default=None):
+                The array of time values at which to compute the light curve.
+                If no time is supplied, defaults to 0.1-day cadence and duration
+                of `self.duration`: `np.arange(0, self.duration, 0.1)`.
+            incl (float, optional, default=90):
+                Inclination angle of the star in degrees, where inclination is
+                the angle between the pole and the line of sight.
+            period (float, optional, default=PROT_SUN):
+                Rotation period of the star in days.
+            shear (float, optional, default=0.3):
+                Differential rotation rate of the star in units of equatorial
+                rotation velocity. I.e., `shear` is alpha = delta_omega / omega.
+            diffrot_func (function, optional, default=`utils.diffrot.sin2`):
+                Differential rotation function. Default is sin^2 (latitude).
+            spot_func (function, optional, default=`utils.spotevol.gaussian_spots`):
+                Spot evolution function. Default is double-sided gaussian with time.
+            tau_evol (float, optional, default=5.0):
+                Spot decay timescale in units of the equatorial rotation period.
+            alpha_med (float, optional, default=0.0001):
+                Spot filling factor, equal to spot area * contrast.
+                E.g., a 50%-contrast spot subtending 1% of the stellar disk
+                has alpha_med = 0.01 * 0.5 = 0.005.
+            threshold (float, optional, default=0.1):
+                Minimum peak magnetic flux for a spot to be considered.
+            
+        Returns:
+            lc (LightCurve): observation times and flux modulation for all spots.        
         """
         self.assert_regions()
 
@@ -476,17 +462,14 @@ class Surface(object):
 
         Currently there is no spot drift or shear (within an active region).
 
-        Parameters
-        ----------
-        time (numpy array):
-            The array of time values at which to compute the flux modulation.
-            If `None` is passed, defaults to 0.1-day cadence and duration
-            of `self.duration`: `np.arange(0, self.duration, 0.1)`.
+        Args:
+            time (numpy array):
+                The array of time values at which to compute the flux modulation.
+                If `None` is passed, defaults to 0.1-day cadence and duration
+                of `self.duration`: `np.arange(0, self.duration, 0.1)`.
 
-        Returns
-        -------
-        lc (numpy array):
-            the light curve: time-varying flux modulation from all spots.
+        Returns:
+            lc (LightCurve): observation times and flux modulation for all spots.        
         """
         self.assert_regions()
         self.assert_spots()
@@ -521,18 +504,12 @@ class Surface(object):
 
         Currently there is no spot drift or shear (within an active region).
 
-        Parameters
-        ----------
-        time (numpy array):
-            the array of time values at which to compute the flux modulation.
+        Args:   
+            time (numpy array): array of time values at which to compute the flux modulation.
+            i (int): spot index, which can have integer values of [0, self.nspot].
 
-        i (int):
-            spot index, which can have integer values of [0, self.nspot].
-
-        Returns
-        -------
-        dF_i (numpy array):
-            the time-varying flux modulation from spot `i`.
+        Returns:
+            dF_i (numpy array): time-varying flux modulation from spot `i`.
         """
         tt = time - self.tmax[i]
         # Spot area
@@ -561,20 +538,15 @@ class Surface(object):
 
         Currently there is no spot drift or shear (within an active region).
 
-        Parameters
-        ----------
-        t (float):
-            the time value at which to compute the flux modulation.
+        Args:
+            t (float): the time value at which to compute the flux modulation.
+            animate (bool, False): whether the function is being called for 
+                animation purposes. If True, returns current latitude, longitude,
+                area, and flux for each spot. If False, returns only the flux.
 
-        animate (bool, False):
-            whether the function is being called for animation purposes.
-            If True, returns current latitude, longitude, area, and flux
-            for each spot. If False, returns only the flux.
+        Returns:
+            dF_t (numpy array): single-epoch flux modulation from all spots.
 
-        Returns
-        -------
-        dF_t (numpy array):
-            the single-epoch flux modulation from all spots.
         """
         tt = t - self.tmax
         # Spot area
@@ -665,28 +637,22 @@ class Surface(object):
         Animate a plot of spot and light curve evolution. 
         Wrapper for `utils.visualization.animate_spots`.
 
-        Parameters
-        ----------
-        time (numpy array):
-            Array of time values to animate. Ideally you should only animate
-            a subset of time steps, otherwise the animation will be too large.
+        Args:
+            time (numpy array):
+                Array of time values to animate. Ideally you should only animate
+                a subset of time steps, otherwise the animation will be too large.
+            projection (str, "ortho"):
+                Projection for animation. Can be orthographic ("ortho" or 
+                "orthographic"), which requires cartopy, or cartesian ("cart" or
+                "cartesian").
+            window_size (float, 50):
+                Window size, in days, for light curve viewing.
+            fig_kw: dict of kwargs to be passed to `matplotlib.figure`.
+            kw: remaining kwargs to be passed to `matplotlib.animation.FuncAnimation`.
 
-        projection (str, "ortho"):
-            Projection for animation. Can be orthographic ("ortho" or 
-            "orthographic"), which requires cartopy, or cartesian ("cart" or
-            "cartesian").
-
-        window_size (float, 50):
-            Window size, in days, for light curve viewing.
-
-        fig_kw: dict of kwargs to be passed to `matplotlib.figure`.
-        
-        kw: remaining kwargs to be passed to `matplotlib.animation.FuncAnimation`.
-
-        Returns
-        -------
-        ani (matplotlib.animation.FuncAnimation):
-            animated plot of spot and light curve evolution.
+        Returns:
+            ani (matplotlib.animation.FuncAnimation):
+                animated plot of spot and light curve evolution.
         """
         return animate_spots(self, *args, **kw)
     
@@ -694,9 +660,8 @@ class Surface(object):
         """
         Write Surface object to pickle file.
 
-        Parameters
-        ----------
-        filename (str): output file path.
+        Args:
+            filename (str): output file path.
 
         Returns None.
         """
@@ -706,9 +671,8 @@ class Surface(object):
         """
         Write Surface object to fits file.
 
-        Parameters
-        ----------
-        filename (str): output file path.
+        Args:
+            filename (str): output file path.
 
         Returns None.
         """
@@ -716,7 +680,15 @@ class Surface(object):
 
 
 def read_fits(filename):
-    """Docstring
+    """
+    Reads a butterpy Surface from fits file.
+
+    Args:
+        filename (str): the path to the fits file.
+
+    Returns:
+        s (Surface): the read-in Surface.
+
     """
     with fits.open(filename) as hdul:   
         s = Surface()
@@ -748,11 +720,9 @@ class LightCurve(object):
         """
         Initialize the light curve.
 
-        Parameters
-        ----------
-        time (numpy array): array of time values corresponding to flux measurements.
-
-        flux (numpy array): array of flux measurements.
+        Args:
+            time (numpy array): array of time values corresponding to flux measurements.
+            flux (numpy array): array of flux measurements.
         """
         self.time = time
         self.flux = flux
@@ -766,19 +736,15 @@ class LightCurve(object):
         """
         Plot flux versus time.
 
-        Parameters
-        ----------
-        time_unit (str, None): time unit for plot label.
+        Args:
+            time_unit (str, None): time unit for plot label.
+            flux_unit (str, None): flux unit for plot label.
+            **kw: kwargs for `Axes.plot`.
 
-        flux_unit (str, None): flux unit for plot label.
-
-        **kw: kwargs for `Axes.plot`.
-
-        Returns
-        -------
-        fig: Matplotlib figure object.
-
-        ax: Matplotlib axes object.
+        Returns:
+            fig: Matplotlib figure object.
+            ax: Matplotlib axes object.
+            
         """
         fig, ax = plt.subplots()
 
