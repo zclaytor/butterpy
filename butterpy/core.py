@@ -18,8 +18,6 @@ from .io.fits import to_fits
 D2S = 1*u.day.to(u.s)
 
 PROT_SUN = 27.0
-OMEGA_SUN = 2 * np.pi / (PROT_SUN * D2S)
-
 
 class Surface(object):
     """Create a blank surface to emerge active regions and evolve star spots.
@@ -36,7 +34,54 @@ class Surface(object):
     emergence.
 
     Attributes:
-        *list attributes*
+        nbins (int): the number of discrete active region areas.
+        delta_lnA (float): logarithmic spacing of area values.
+        max_area (float): maximum active region area in square degrees.
+        tau1 (int): first allowable day of "correlated" emergence, after
+            preexisting region's emergence.
+        tau2 (int): last allowable day of "correlated" emergence, after
+            preexisting region's emergence.
+        nlon (int): number of longitude bins in the Surface grid.
+        nlat (int): number of latitude bins in the Surface grid.
+
+        duration (int): number of days to emerge regions.
+        activity_level (float): Number of magnetic bipoles, normalized such 
+            that for the Sun, activity_level = 1.
+        butterfly (bool): Have spots decrease from maxlat to minlat (True) or 
+            be randomly located in latitude (False).
+        cycle_period (float): Interval (years) between cycle starts (Sun is 11).
+        cycle_overlap (float): Overlap of cycles in years.
+        max_lat (float): Maximum latitude of spot emergence in degrees.
+        min_lat (float): Minimum latitutde of spot emergence in degrees. 
+        prob_corr (float): The probability of correlated active region 
+            emergence (relative to uncorrelated emergence).      
+        
+        regions (astropy Table): list of active regions with timestamp,
+            asterographic coordinates of positive and negative bipoles,
+            magnetic field strength, and bipole tilt relative to equator.
+
+        incl (float): Inclination angle of the star in radians, where 
+            inclination is the angle between the pole and the line of sight.
+        period (float): Equatorial rotation period of the star in days.
+        omega (float): Equatorial angular velocity in rad/s, equal to 2*pi/period.
+        shear (float): Differential rotation rate of the star in units of 
+            equatorial rotation velocity. I.e., `shear` is alpha = delta_omega / omega.
+        diffrot_func (function): Differential rotation function. 
+            Default is sin^2 (latitude).
+        spot_func (function): Spot evolution function. 
+            Default is double-sided gaussian with time.
+        tau_emerge (float): Spot emergence timescale in days.
+        tau_decay (float): Spot decay timescale in days.
+        nspots (int): total number of star spots.
+        tmax (numpy array): time of maximum area for each spot.
+        lat (numpy array): latitude of each spot.
+        lon (numpy array): longitude of each spot.
+        amax (numpy array): maximum area of each spot in millionths of 
+            solar hemisphere.
+
+        lightcurve (LightCurve): time and flux modulation for all spots.
+
+        wavelet_power (numpy array): the wavelet transform of the lightcurve.
 
     """
 
@@ -744,7 +789,7 @@ class LightCurve(object):
         Returns:
             fig: Matplotlib figure object.
             ax: Matplotlib axes object.
-            
+
         """
         fig, ax = plt.subplots()
 
