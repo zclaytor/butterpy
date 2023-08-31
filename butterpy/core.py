@@ -376,7 +376,7 @@ class Surface(object):
         period=PROT_SUN,
         shear=0.3, 
         diffrot_func=sin2,
-        spot_evol=gaussian_spots,
+        spot_func=gaussian_spots,
         tau_evol=5.0,
         alpha_med=0.0001,       
         threshold=0.1,
@@ -412,7 +412,7 @@ class Surface(object):
         diffrot_func (function, optional, default=`utils.diffrot.sin2`):
             Differential rotation function. Default is sin^2 (latitude).
 
-        spot_evol (function, optional, default=`utils.spotevol.gaussian_spots`):
+        spot_func (function, optional, default=`utils.spotevol.gaussian_spots`):
             Spot evolution function. Default is double-sided gaussian with time.
 
         tau_evol (float, optional, default=5.0):
@@ -442,7 +442,7 @@ class Surface(object):
         self.shear = shear # in radians/s
         self.diffrot_func = diffrot_func
         # spot emergence and decay
-        self.spot_evol = spot_evol
+        self.spot_func = spot_func
         self.tau_emerge = min(2, self.period * tau_evol / 10)
         self.tau_decay = self.period * tau_evol
         # Convert spot properties
@@ -536,7 +536,7 @@ class Surface(object):
         """
         tt = time - self.tmax[i]
         # Spot area
-        area = self.amax[i] * self.spot_evol(tt, self.tau_emerge, self.tau_decay)
+        area = self.amax[i] * self.spot_func(tt, self.tau_emerge, self.tau_decay)
         # Rotation rate
         omega_lat = self.diffrot_func(self.omega, self.shear, self.lat[i])
         phase = omega_lat * time * D2S + self.lon[i]
@@ -578,7 +578,7 @@ class Surface(object):
         """
         tt = t - self.tmax
         # Spot area
-        area = self.amax * self.spot_evol(tt, self.tau_emerge, self.tau_decay)
+        area = self.amax * self.spot_func(tt, self.tau_emerge, self.tau_decay)
         # Rotation rate
         omega_lat = self.diffrot_func(self.omega, self.shear, self.lat)
         phase = omega_lat * t * D2S + self.lon
