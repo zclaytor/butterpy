@@ -29,7 +29,7 @@ def load_test_surface():
 
 @pytest.fixture(scope="session")
 def load_test_flux():
-    return np.load(os.path.join(cwd, "data/default_spots.npy"))
+    return np.load(os.path.join(cwd, "data/default_flux.npy"))
 
 def test_regions(default_surface_regions):
     regions = default_surface_regions.regions

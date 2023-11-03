@@ -17,7 +17,7 @@ from .io.fits import to_fits
 
 D2S = 1*u.day.to(u.s)
 
-PROT_SUN = 27.0
+PROT_SUN = 24.5
 
 
 class Surface(object):
