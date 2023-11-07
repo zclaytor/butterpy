@@ -204,3 +204,22 @@ class Composite(Distribution):
                              f"{size} samples requested; {len(samples)} returned.")
 
         return samples
+    
+
+class Boolean(Distribution):
+    """docs
+    """
+    def __init__(self, p=0.5):
+        """docs
+        """
+        assert 0 <= p <= 1, "`p` must be between 0 and 1."
+        self.p = p
+
+    def __repr__(self):
+        """docs
+        """
+        return f"Boolean distribution with p(True) = {self.p}"
+    
+    def sample(self, size=None):
+        return np.random.choice(
+            [1, 0], p=[self.p, 1-self.p], size=size)
