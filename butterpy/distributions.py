@@ -94,21 +94,3 @@ class Composite(Distribution):
                              f"{size} samples requested; {len(samples)} returned.")
 
         return samples
-
-
-if __name__ == "__main__":
-    np.random.seed(88)
-
-    d1 = Distribution(1, 10, "weird")
-    d2 = Uniform()
-    d3 = LogUniform()
-    d4 = SineSquared()
-
-    print(d1, d2, d3)
-    print(d3.sample(10))
-    print(d4.sample(10))
-
-    dcomp = Composite([Uniform(-1, 0), Uniform(0, 1)], [0.25, 0.75])
-    print(dcomp)
-    s = dcomp.sample(12)
-    print(s)
