@@ -804,22 +804,3 @@ class LightCurve(object):
         ax.set(xlabel=xlabel, ylabel=ylabel)
 
         return fig, ax
-    
-
-class Flutter(object):
-    """Sets the environment for a group of Butterpy Surface simulations.
-    """
-    def __init__(self):
-        """DOCSTRING
-        """
-        pass
-
-    def make_plots(self):
-        """DOCSTRING
-        """
-        pass
-
-    def to_csv(self):
-        """DOCSTRING
-        """
-        pass
