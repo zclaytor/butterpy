@@ -59,11 +59,19 @@ class LogUniform(Distribution):
 
     This is accomplished using inverse transform sampling:
         log10(x) ~ U(log10(min), log10(max)).
+
+    Negative values are supported, but note that it simply mirrors the
+    positive distribution about zero.
     """
     def __init__(self, min=1, max=10):
         """Creates a LogUniform distribution with range [min, max).
-        """        
+        """
+        assert min != 0, "Minimum must be non-zero."
+        assert max != 0, "Maximum must be non-zero."
+        assert (max > 0 and min > 0) or (max < 0 and min < 0), "Range cannot include zero."
         super().__init__(min, max, shape="LogUniform")
+
+        self._sign = int(max/abs(max))
 
     def sample(self, size=None):
         """Sample the distribution, with optional `size` argument. 
@@ -78,8 +86,8 @@ class LogUniform(Distribution):
         Returns:
             sample (float or numpy.ndarray): The samples from the distribution.
         """
-        return 10**np.random.uniform(
-            low=np.log10(self.min), high=np.log10(self.max), size=size)
+        return self._sign * 10**np.random.uniform(
+            low=np.log10(self._sign*self.min), high=np.log10(self._sign*self.max), size=size)
     
 
 class SineSquared(Distribution):
