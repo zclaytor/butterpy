@@ -18,6 +18,9 @@ def test_loguniform():
 def test_sinesquared():
     basic_test_helper(dist.SineSquared())
 
+def test_boolean():
+    basic_test_helper(dist.Boolean())
+    
 def test_composite():
     d = dist.Composite(
         [dist.Uniform(0, 1), dist.LogUniform(1, 10)],
