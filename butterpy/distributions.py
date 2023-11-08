@@ -66,12 +66,14 @@ class LogUniform(Distribution):
     def __init__(self, min=1, max=10):
         """Creates a LogUniform distribution with range [min, max).
         """
-        assert min != 0, "Minimum must be non-zero."
-        assert max != 0, "Maximum must be non-zero."
-        assert (max > 0 and min > 0) or (max < 0 and min < 0), "Range cannot include zero."
+        assert np.all(min != 0), "Minimum must be non-zero."
+        assert np.all(max != 0), "Maximum must be non-zero."
+        assert (np.all(max > 0) and np.all(min > 0)) or \
+            (np.all(max < 0) and np.all(min < 0)), \
+            "Range cannot include zero."
         super().__init__(min, max, shape="LogUniform")
 
-        self._sign = int(max/abs(max))
+        self._sign = int(np.median(max/abs(max)))
 
     def sample(self, size=None):
         """Sample the distribution, with optional `size` argument. 
