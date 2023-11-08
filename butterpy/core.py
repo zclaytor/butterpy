@@ -61,7 +61,7 @@ class Surface(object):
             asterographic coordinates of positive and negative bipoles,
             magnetic field strength, and bipole tilt relative to equator.
 
-        incl (float): Inclination angle of the star in radians, where 
+        inclination (float): Inclination angle of the star in radians, where 
             inclination is the angle between the pole and the line of sight.
         period (float): Equatorial rotation period of the star in days.
         omega (float): Equatorial angular velocity in rad/s, equal to 2*pi/period.
@@ -412,7 +412,7 @@ class Surface(object):
     def evolve_spots(
         self,
         time=None,
-        incl=90, 
+        inclination=90, 
         period=PROT_SUN,
         shear=0.3, 
         diffrot_func=sin2,
@@ -436,7 +436,7 @@ class Surface(object):
                 The array of time values at which to compute the light curve.
                 If no time is supplied, defaults to 0.1-day cadence and duration
                 of `self.duration`: `np.arange(0, self.duration, 0.1)`.
-            incl (float, optional, default=90):
+            inclination (float, optional, default=90):
                 Inclination angle of the star in degrees, where inclination is
                 the angle between the pole and the line of sight.
             period (float, optional, default=PROT_SUN):
@@ -464,7 +464,7 @@ class Surface(object):
 
         # set global stellar parameters which are the same for all spots
         # inclination
-        self.incl = incl * np.pi/180 # in radians
+        self.inclination = inclination * np.pi/180 # in radians
         # rotation and differential rotation
         self.period = period # in days
         self.omega = 2*np.pi/(self.period * D2S) # in radians/s
@@ -561,8 +561,8 @@ class Surface(object):
         omega_lat = self.diffrot_func(self.omega, self.shear, self.lat[i])
         phase = omega_lat * time * D2S + self.lon[i]
         # Foreshortening
-        beta = np.cos(self.incl) * np.sin(self.lat[i]) + \
-            np.sin(self.incl) * np.cos(self.lat[i]) * np.cos(phase)
+        beta = np.cos(self.inclination) * np.sin(self.lat[i]) + \
+            np.sin(self.inclination) * np.cos(self.lat[i]) * np.cos(phase)
         # Differential effect on stellar flux
         dF_i = -area*beta
         dF_i[beta < 0] = 0
@@ -598,8 +598,8 @@ class Surface(object):
         omega_lat = self.diffrot_func(self.omega, self.shear, self.lat)
         phase = omega_lat * t * D2S + self.lon
         # Foreshortening
-        beta = np.cos(self.incl) * np.sin(self.lat) + \
-            np.sin(self.incl) * np.cos(self.lat)*np.cos(phase)
+        beta = np.cos(self.inclination) * np.sin(self.lat) + \
+            np.sin(self.inclination) * np.cos(self.lat)*np.cos(phase)
         # Differential effect on stellar flux
         dF_t = -area*beta
         dF_t[beta < 0] = 0
@@ -740,7 +740,7 @@ def read_fits(filename):
         s.activity_level = hdul[0].header["ACTIVITY"]
         s.cycle_period = hdul[0].header["CYCLE"]
         s.cycle_overlap = hdul[0].header["OVERLAP"]
-        s.incl = hdul[0].header["INCL"]
+        s.inclination = hdul[0].header["INCL"]
         s.min_lat = hdul[0].header["MINLAT"]
         s.max_lat = hdul[0].header["MAXLAT"]
         s.shear = hdul[0].header["DIFFROT"]
