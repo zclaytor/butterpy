@@ -98,10 +98,13 @@ class SineSquared(Distribution):
 
     This is accomplished using inverse transform sampling:
         sin^2 (x) ~ U(sin^2 (min), sin^2 (max)).
+
+    Only values in the range [0, π/2] are allowed.
     """
-    def __init__(self, min=0, max=1):
+    def __init__(self, min=0, max=np.pi/2):
         """Creates a SineSqaured distribution with range [min, max).
-        """        
+        """
+        assert min >= 0 and max <= np.pi/2, "Only values in the range [0, π/2] are allowed." 
         super().__init__(min, max, shape="SineSquared")
 
     def sample(self, size=None):
