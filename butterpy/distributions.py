@@ -223,3 +223,22 @@ class Boolean(Distribution):
     def sample(self, size=None):
         return np.random.choice(
             [1, 0], p=[self.p, 1-self.p], size=size)
+    
+
+class Fixed(Distribution):
+    """docs
+    """
+    def __init__(self, v=0):
+        """docs
+        """
+        self.v = v
+
+    def __repr__(self):
+        """docs
+        """
+        return f"Fixed distribution at {self.v}"
+    
+    def sample(self, size=None):
+        if size is None:
+            return self.v
+        return np.full(size, self.v)
