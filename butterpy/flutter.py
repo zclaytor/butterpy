@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 
 from .distributions import Uniform, LogUniform, SineSquared, Boolean, Composite, Fixed
 
@@ -72,12 +73,49 @@ class Flutter(object):
     def make_plots(self):
         """DOCSTRING
         """
-        pass
+    
+        plt.figure(figsize=(12, 7))
+        plt.subplot2grid((2, 3), (0, 0))
+        plt.hist("period", 20, color="C0", data=self.DataFrame)
+        plt.xlabel("Rotation Period (days)")
+        plt.ylabel("N")
+        plt.subplot2grid((2, 3), (0, 1))
+        plt.hist("tau_evol", 20, color="C1", data=self.DataFrame)
+        plt.xlabel("Spot lifetime (Prot)")
+        plt.ylabel("N")
+        plt.subplot2grid((2, 3), (0, 2))
+        plt.hist(self.DataFrame.eval("inclination * 180/3.14"), 20, color="C3")
+        plt.xlabel("Stellar inclincation (deg)")
+        plt.ylabel("N")
+        plt.subplot2grid((2, 3), (1, 0))
+        plt.hist("activity_level", 20, color="C4", data=self.DataFrame)
+        plt.xlabel("Stellar activity rate (x Solar)")
+        plt.ylabel("N")
+        plt.subplot2grid((2, 3), (1, 1))
+        plt.hist("shear", 20, color="C5", data=self.DataFrame)
+        plt.xlabel(r"Differential Rotation Shear $\Delta \Omega / \Omega$")
+        plt.ylabel("N")
+        plt.subplot2grid((2, 3), (1, 2))
+        plt.hist(self.DataFrame.eval("max_lat - min_lat"), 20, color="C6")
+        plt.xlabel("Spot latitude range")
+        plt.ylabel("N")
+        plt.tight_layout()
+        ax = plt.gca()
+        return ax
 
     def to_csv(self, path, **kw):
-        """DOCSTRING
         """
-        self.DataFrame.to_csv(path, **kw)        
+        Outputs sampled distributions to CSV using `pandas.DataFrame.to_csv`.
+
+        Args:
+            path (str): The relative path, including filename, to save the data.
+            **kw: keyword arguments for `pandas.DataFrame.to_csv`.
+
+        Returns: 
+            None or str: If path_or_buf is None, returns the resulting csv 
+            format as a string. Otherwise returns None.
+        """
+        return self.DataFrame.to_csv(path, **kw)
 
     def __repr__(self):
         """Gonna need a repr to print out what distros are set.
