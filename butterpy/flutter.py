@@ -19,7 +19,9 @@ class Flutter(object):
         max_lat=None,
         inclination=SineSquared(0, np.pi/2),
         period=Uniform(0.1, 180),
-        shear=None,
+        shear=Composite(
+            [LogUniform(-1, -0.1), LogUniform(0.1, 1), Fixed(0)],
+            weights=[0.25, 0.5, 0.25]),
         tau_evol=LogUniform(1, 10)):
         """DOCSTRING
         """
@@ -30,33 +32,34 @@ class Flutter(object):
         self.activity_level = activity_level
         self.butterfly = butterfly
         self.cycle_period = cycle_period
-        if cycle_overlap is None:
-            cycle_overlap = LogUniform(0.1, self.cycle_period)
         self.cycle_overlap = cycle_overlap
         self.min_lat = min_lat
-        if max_lat is None:
-            max_lat = Uniform(self.min_lat+5, 85)
         self.max_lat = max_lat
 
         self.inclination = inclination
         self.period = period
-        if shear is None:
-            shear = Composite(
-                [LogUniform(-1, 0), LogUniform(0, 1), Fixed(0)],
-                weights=[0.25, 0.5, 0.25])
         self.shear = shear
         self.tau_evol = tau_evol
 
-        self.DataFrame = None
-
-    def sample(self):
         self.DataFrame = pd.DataFrame([])
-        
+
+    def sample(self):      
         self.DataFrame["activity_level"] = self.activity_level.sample(self.n_sims)
-        self.DataFrame["cycle_period"] = self.cycle_period.sample(self.n_sims)
+        cycle_period = self.cycle_period.sample(self.n_sims) # may be used by cycle_overlap
+        self.DataFrame["cycle_period"] = cycle_period
+        if self.cycle_overlap is None:
+            # By default, cycle overlap should never be longer than cycle period
+            # On second thought, the way cycle period is defined should make that fine.
+            # Cycle period is the interval between cycle starts. The cycle can start every
+            # year, and last for 4 years, giving 3 years overlap. I'll fix that later.
+            self.cycle_overlap = LogUniform(0.1, cycle_period)
         self.DataFrame["cycle_overlap"] = self.cycle_overlap.sample(self.n_sims)
         self.DataFrame["inclination"] = self.inclination.sample(self.n_sims)
-        self.DataFrame["min_lat"] = self.min_lat.sample(self.n_sims)
+        min_lat = self.min_lat.sample(self.n_sims) # may be used by max_lat
+        self.DataFrame["min_lat"] = min_lat
+        if self.max_lat is None:
+            # If max_lat is too close to min_lat, no spots get emerged.
+            self.max_lat = Uniform(min_lat+5, 85)
         self.DataFrame["max_lat"] = self.max_lat.sample(self.n_sims)
         self.DataFrame["period"] = self.period.sample(self.n_sims)
         self.DataFrame["shear"] = self.shear.sample(self.n_sims)
@@ -64,7 +67,7 @@ class Flutter(object):
         self.DataFrame["butterfly"] = self.butterfly.sample(self.n_sims)
 
         self.DataFrame.index.name = "simulation_number"
-
+        return self.DataFrame
 
     def make_plots(self):
         """DOCSTRING
