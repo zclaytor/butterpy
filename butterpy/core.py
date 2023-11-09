@@ -160,7 +160,7 @@ class Surface(object):
         Output is a Table of active regions.
 
         Args:
-            ndays (int, optional, default=1200): Number of days to emerge spots.
+            ndays (int, optional, default=1000): Number of days to emerge spots.
             activity_level (float, optional, default=1): Number of magnetic 
                 bipoles, normalized such that for the Sun, activity_level = 1.
             butterfly (bool, optional, default=True): Have spots decrease 
