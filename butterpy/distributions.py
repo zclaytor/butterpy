@@ -136,15 +136,17 @@ class Composite(Distribution):
     `c.sample(100)` will return 25 values uniformly sampled from [0, 1)
     and 75 values logarithmically sampled from [1, 10).
     """
-    def __init__(self, distributions, weights):
+    def __init__(self, distributions, weights=None):
         """Initialize Composite distribution.
 
         Args:
             distributions (list-like): List of initialized Distributions.
             weights (list-like): List of relative weights corresponding to
-                each distribution.
+                each distribution. Defaults to equal weighting.
         """
         self.distributions = distributions
+        if weights is None:
+            weights = np.ones(len(self.distributions))
         self.weights = np.asarray(weights)/sum(weights)
 
     def __repr__(self):
