@@ -660,7 +660,7 @@ class Surface(object):
         """
         self.assert_regions()
 
-        lat = self.lat * 180/np.pi
+        lat = 90*(1 - (self.regions["thpos"] + self.regions["thneg"])/np.pi)
 
         fig, ax = plt.subplots()
         ax.scatter(self.regions['nday'], lat,
