@@ -3,6 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 from .distributions import Uniform, LogUniform, SineSquared, Boolean, Composite, Fixed
+from .core import Surface
 
 class Flutter(object):
     """Sets the environment for a group of Butterpy Surface simulations.
@@ -42,9 +43,11 @@ class Flutter(object):
         self.shear = shear
         self.tau_evol = tau_evol
 
+        self.DataFrame = None
+
+    def sample(self):  
         self.DataFrame = pd.DataFrame([])
 
-    def sample(self):      
         self.DataFrame["activity_level"] = self.activity_level.sample(self.n_sims)
         cycle_period = self.cycle_period.sample(self.n_sims) # may be used by cycle_overlap
         self.DataFrame["cycle_period"] = cycle_period
@@ -55,7 +58,7 @@ class Flutter(object):
             # year, and last for 4 years, giving 3 years overlap. I'll fix that later.
             self.cycle_overlap = LogUniform(0.1, cycle_period)
         self.DataFrame["cycle_overlap"] = self.cycle_overlap.sample(self.n_sims)
-        self.DataFrame["inclination"] = self.inclination.sample(self.n_sims)
+        self.DataFrame["inclination"] = self.inclination.sample(self.n_sims) * 180/np.pi
         min_lat = self.min_lat.sample(self.n_sims) # may be used by max_lat
         self.DataFrame["min_lat"] = min_lat
         if self.max_lat is None:
@@ -70,10 +73,14 @@ class Flutter(object):
         self.DataFrame.index.name = "simulation_number"
         return self.DataFrame
 
+    def _assert_dataframe(self):
+        assert self.DataFrame is not None, "Flutter.DataFrame is not set."
+
     def make_plots(self):
         """DOCSTRING
         """
-    
+        self._assert_dataframe()
+
         plt.figure(figsize=(12, 7))
         plt.subplot2grid((2, 3), (0, 0))
         plt.hist("period", 20, color="C0", data=self.DataFrame)
@@ -84,7 +91,7 @@ class Flutter(object):
         plt.xlabel("Spot lifetime (Prot)")
         plt.ylabel("N")
         plt.subplot2grid((2, 3), (0, 2))
-        plt.hist(self.DataFrame.eval("inclination * 180/3.14"), 20, color="C3")
+        plt.hist("inclination", 20, color="C3", data=self.DataFrame)
         plt.xlabel("Stellar inclincation (deg)")
         plt.ylabel("N")
         plt.subplot2grid((2, 3), (1, 0))
@@ -115,8 +122,51 @@ class Flutter(object):
             None or str: If path_or_buf is None, returns the resulting csv 
             format as a string. Otherwise returns None.
         """
+        self._assert_dataframe()
         return self.DataFrame.to_csv(path, **kw)
 
     def __repr__(self):
         """Gonna need a repr to print out what distros are set.
         """
+
+    def run(self):
+        """Run the butterpy simulations with given input
+        """
+        self._assert_dataframe()
+        for i, row in self.DataFrame.iterrows():
+            s = Surface()
+
+            r = s.emerge_regions(
+                ndays=self.duration,
+                activity_level=row["activity_level"],
+                butterfly=row["butterfly"],
+                cycle_period=row["cycle_period"],
+                cycle_overlap=row["cycle_overlap"],
+                max_lat=row["max_lat"],
+                min_lat=row["min_lat"])
+
+            time = np.arange(0, self.duration, self.cadence) + self.cadence
+
+            l = s.evolve_spots(
+                time=time,
+                inclination=row["inclination"], 
+                period=row["period"],
+                shear=row["shear"], 
+                tau_evol=row["tau_evol"])
+            
+            s.plot_butterfly()
+            plt.savefig(f"butterfly{i}.png")
+
+            s.plot_lightcurve()
+            plt.savefig(f"lightcurve{i}.png")
+
+            s.to_fits(f"sim{i}.fits")
+
+    def fly(self):
+        """Alias for `Flutter.run` to fit with the butterfly theme.
+        See docs for `Flutter.run`.
+        """
+        return self.run()
+    
+    def _run_one(self, row, i=None):
+        self.assert_dataframe()
