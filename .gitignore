@@ -143,4 +143,4 @@ Pipfile.lock
 vscode
 
 # Jupyter cache
-notebooks/.ipynb_checkpoints                                                                                                                              
+*.ipynb_checkpoints 
