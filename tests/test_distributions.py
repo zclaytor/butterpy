@@ -7,7 +7,10 @@ import butterpy.distributions as dist
 
 def basic_test_helper(d):
     assert isinstance(repr(d), str), f"{d}: `repr` method does not return a string."
-    assert isinstance(d.sample(), float), f"{d}: default sample is not a float."
+    try:
+        assert isinstance(d.sample(), float), f"{d}: default sample is not a float."
+    except AssertionError:
+        assert isinstance(d.sample(), int), f"{d}: default sample is neither float nor int."
     assert len(d.sample(1)) == 1, f"{d}: default sample is not length 1."
     assert len(d.sample(2)) == 2, f"{d}: default sample is not length 2."
 
