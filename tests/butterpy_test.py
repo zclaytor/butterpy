@@ -51,8 +51,8 @@ def test_lightcurve(default_surface):
     assert isinstance(s.time, np.ndarray), "`Surface.lightcurve.time` does not appear to be correctly set."
     assert isinstance(s.flux, np.ndarray), "`Surface.lightcurve.flux` does not appear to be correctly set."
 
-def test_plots():
-    assert 0, "tests not yet implemented."
+# def test_plots():
+#     assert 0, "tests not yet implemented."
 
 def test_pickle(default_surface, tmp_path):
     s = default_surface
