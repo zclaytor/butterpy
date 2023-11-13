@@ -144,6 +144,10 @@ class Composite(Distribution):
             weights (list-like): List of relative weights corresponding to
                 each distribution. Defaults to equal weighting.
         """
+        super().__init__(
+            min=min([d.min for d in distributions]),
+            max=max([d.max for d in distributions]),
+            shape="Composite")
         self.distributions = distributions
         if weights is None:
             weights = np.ones(len(self.distributions))
@@ -227,6 +231,7 @@ class Boolean(Distribution):
     def __init__(self, p=0.5):
         """docs
         """
+        super().__init__(min=0, max=1, shape="Boolean")
         assert 0 <= p <= 1, "`p` must be between 0 and 1."
         self.p = p
 
@@ -246,6 +251,7 @@ class Fixed(Distribution):
     def __init__(self, v=0):
         """docs
         """
+        super().__init__(min=v, max=v, shape="Fixed")
         self.v = v
 
     def __repr__(self):
