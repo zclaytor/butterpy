@@ -10,9 +10,9 @@ class Flutter(object):
     """
     def __init__(
         self,
+        n_sims=10,
         duration=365,
         cadence=1/48,
-        n_sims=10,
         activity_level=LogUniform(0.1, 10),
         butterfly=Boolean(p=0.8),
         cycle_period=LogUniform(1, 40),
@@ -43,13 +43,16 @@ class Flutter(object):
         self.shear = shear
         self.tau_evol = tau_evol
 
-        self.DataFrame = None
+        self.sample(self.n_sims)
 
-    def sample(self):  
+    def sample(self, n_sims=None):
+        if n_sims is None:
+            n_sims = self.n_sims
+
         self.DataFrame = pd.DataFrame([])
 
-        self.DataFrame["activity_level"] = self.activity_level.sample(self.n_sims)
-        cycle_period = self.cycle_period.sample(self.n_sims) # may be used by cycle_overlap
+        self.DataFrame["activity_level"] = self.activity_level.sample(n_sims)
+        cycle_period = self.cycle_period.sample(n_sims) # may be used by cycle_overlap
         self.DataFrame["cycle_period"] = cycle_period
         if self.cycle_overlap is None:
             # By default, cycle overlap should never be longer than cycle period
@@ -57,18 +60,18 @@ class Flutter(object):
             # Cycle period is the interval between cycle starts. The cycle can start every
             # year, and last for 4 years, giving 3 years overlap. I'll fix that later.
             self.cycle_overlap = LogUniform(0.1, cycle_period)
-        self.DataFrame["cycle_overlap"] = self.cycle_overlap.sample(self.n_sims)
-        self.DataFrame["inclination"] = self.inclination.sample(self.n_sims) * 180/np.pi
-        min_lat = self.min_lat.sample(self.n_sims) # may be used by max_lat
+        self.DataFrame["cycle_overlap"] = self.cycle_overlap.sample(n_sims)
+        self.DataFrame["inclination"] = self.inclination.sample(n_sims) * 180/np.pi
+        min_lat = self.min_lat.sample(n_sims) # may be used by max_lat
         self.DataFrame["min_lat"] = min_lat
         if self.max_lat is None:
             # If max_lat is too close to min_lat, no spots get emerged.
             self.max_lat = Uniform(min_lat+5, 85)
-        self.DataFrame["max_lat"] = self.max_lat.sample(self.n_sims)
-        self.DataFrame["period"] = self.period.sample(self.n_sims)
-        self.DataFrame["shear"] = self.shear.sample(self.n_sims)
-        self.DataFrame["tau_evol"] = self.tau_evol.sample(self.n_sims)
-        self.DataFrame["butterfly"] = self.butterfly.sample(self.n_sims)
+        self.DataFrame["max_lat"] = self.max_lat.sample(n_sims)
+        self.DataFrame["period"] = self.period.sample(n_sims)
+        self.DataFrame["shear"] = self.shear.sample(n_sims)
+        self.DataFrame["tau_evol"] = self.tau_evol.sample(n_sims)
+        self.DataFrame["butterfly"] = self.butterfly.sample(n_sims)
 
         self.DataFrame.index.name = "simulation_number"
         return self.DataFrame
@@ -76,35 +79,40 @@ class Flutter(object):
     def _assert_dataframe(self):
         assert self.DataFrame is not None, "Flutter.DataFrame is not set."
 
-    def make_plots(self):
+    def plot_histograms(self, nbins=20):
         """DOCSTRING
         """
         self._assert_dataframe()
 
         plt.figure(figsize=(12, 7))
         plt.subplot2grid((2, 3), (0, 0))
-        plt.hist("period", 20, color="C0", data=self.DataFrame)
+        plt.hist("period", nbins, color="C0", data=self.DataFrame, 
+                 range=(self.period.min, self.period.max))
         plt.xlabel("Rotation Period (days)")
         plt.ylabel("N")
         plt.subplot2grid((2, 3), (0, 1))
-        plt.hist("tau_evol", 20, color="C1", data=self.DataFrame)
+        plt.hist("tau_evol", nbins, color="C1", data=self.DataFrame,
+                 range=(self.tau_evol.min, self.tau_evol.max))
         plt.xlabel("Spot lifetime (Prot)")
         plt.ylabel("N")
         plt.subplot2grid((2, 3), (0, 2))
-        plt.hist("inclination", 20, color="C3", data=self.DataFrame)
+        plt.hist("inclination", nbins, color="C3", data=self.DataFrame,
+                 range=(self.inclination.min*180/np.pi, self.inclination.max*180/np.pi))
         plt.xlabel("Stellar inclincation (deg)")
         plt.ylabel("N")
         plt.subplot2grid((2, 3), (1, 0))
-        plt.hist("activity_level", 20, color="C4", data=self.DataFrame)
-        plt.xlabel("Stellar activity rate (x Solar)")
+        plt.hist("activity_level", nbins, color="C4", data=self.DataFrame,
+                 range=(self.activity_level.min, self.activity_level.max))
+        plt.xlabel("Stellar activity rate (Solar units)")
         plt.ylabel("N")
         plt.subplot2grid((2, 3), (1, 1))
-        plt.hist("shear", 20, color="C5", data=self.DataFrame)
+        plt.hist("shear", nbins, color="C5", data=self.DataFrame,
+                 range=(self.shear.min, self.shear.max))
         plt.xlabel(r"Differential Rotation Shear $\Delta \Omega / \Omega$")
         plt.ylabel("N")
         plt.subplot2grid((2, 3), (1, 2))
-        plt.hist(self.DataFrame.eval("max_lat - min_lat"), 20, color="C6")
-        plt.xlabel("Spot latitude range")
+        plt.hist(self.DataFrame.eval("max_lat - min_lat"), nbins, color="C6")
+        plt.xlabel("Spot latitude range (deg)")
         plt.ylabel("N")
         plt.tight_layout()
         ax = plt.gca()
