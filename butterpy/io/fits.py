@@ -17,8 +17,7 @@ def to_fits(surface, filename, filter="NONE", **kw):
     l = set_lightcurve_keywords(surface, filter=filter)
 
     hdul = fits.HDUList([p, s, l])
-    with open(filename, "wb") as f:
-        hdul.writeto(f, **kw)
+    hdul.writeto(filename, **kw)
 
 
 def to_hlsp(surface, filename, is_smarts=False, smarts_kw=None, **kw):

@@ -710,17 +710,18 @@ class Surface(object):
         """
         to_pickle(self, filename)
 
-    def to_fits(self, filename, filter="NONE"):
+    def to_fits(self, filename, filter="NONE", **kw):
         """
         Write Surface object to fits file.
 
         Args:
             filename (str): output file path.
             filter (str): filter for photometry. Default is "NONE".
-
+            **kw: keyword arguments to be passed to HDUList.writeto
+            
         Returns None.
         """
-        to_fits(self, filename, filter=filter)
+        to_fits(self, filename, filter=filter, **kw)
 
 
 def read_fits(filename):
