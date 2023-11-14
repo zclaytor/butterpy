@@ -142,33 +142,7 @@ class Flutter(object):
         """
         self._assert_dataframe()
         for i, row in self.DataFrame.iterrows():
-            s = Surface()
-
-            r = s.emerge_regions(
-                ndays=self.duration,
-                activity_level=row["activity_level"],
-                butterfly=row["butterfly"],
-                cycle_period=row["cycle_period"],
-                cycle_overlap=row["cycle_overlap"],
-                max_lat=row["max_lat"],
-                min_lat=row["min_lat"])
-
-            time = np.arange(0, self.duration, self.cadence) + self.cadence
-
-            l = s.evolve_spots(
-                time=time,
-                inclination=row["inclination"], 
-                period=row["period"],
-                shear=row["shear"], 
-                tau_evol=row["tau_evol"])
-            
-            s.plot_butterfly()
-            plt.savefig(f"butterfly{i}.png")
-
-            s.plot_lightcurve()
-            plt.savefig(f"lightcurve{i}.png")
-
-            s.to_fits(f"sim{i}.fits")
+            self._run_one(row, i)
 
     def fly(self):
         """Alias for `Flutter.run` to fit with the butterfly theme.
@@ -177,4 +151,32 @@ class Flutter(object):
         return self.run()
     
     def _run_one(self, row, i=None):
-        self.assert_dataframe()
+        s = Surface()
+
+        r = s.emerge_regions(
+            ndays=self.duration,
+            activity_level=row["activity_level"],
+            butterfly=row["butterfly"],
+            cycle_period=row["cycle_period"],
+            cycle_overlap=row["cycle_overlap"],
+            max_lat=row["max_lat"],
+            min_lat=row["min_lat"])
+
+        time = np.arange(0, self.duration, self.cadence) + self.cadence
+
+        l = s.evolve_spots(
+            time=time,
+            inclination=row["inclination"], 
+            period=row["period"],
+            shear=row["shear"], 
+            tau_evol=row["tau_evol"])
+        
+        #s.plot_butterfly()
+        #plt.savefig(f"butterfly{i}.png")
+
+        #s.plot_lightcurve()
+        #plt.savefig(f"lightcurve{i}.png")
+
+        #s.to_fits(f"sim{i}.fits")
+
+        return s
