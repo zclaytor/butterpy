@@ -493,7 +493,7 @@ class Surface(object):
         # where alpha = spot contrast * spot area 
                 
         self.lightcurve = self.compute_lightcurve(time)
-        return self.lightcurve       
+        return self.lightcurve
         
     def compute_lightcurve(self, time):
         """
