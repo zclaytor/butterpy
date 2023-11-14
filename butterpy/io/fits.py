@@ -2,7 +2,7 @@ from astropy.io import fits
 from astropy.table import Table
 
 
-def to_fits(surface, filename, filter="TESS", **kw):
+def to_fits(surface, filename, filter="NONE", **kw):
     """
     Parameters
     ----------

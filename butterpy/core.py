@@ -710,16 +710,17 @@ class Surface(object):
         """
         to_pickle(self, filename)
 
-    def to_fits(self, filename):
+    def to_fits(self, filename, filter="NONE"):
         """
         Write Surface object to fits file.
 
         Args:
             filename (str): output file path.
+            filter (str): filter for photometry. Default is "NONE".
 
         Returns None.
         """
-        to_fits(self, filename)
+        to_fits(self, filename, filter=filter)
 
 
 def read_fits(filename):
