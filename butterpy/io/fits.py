@@ -2,7 +2,7 @@ from astropy.io import fits
 from astropy.table import Table
 
 
-def to_fits(surface, filename, **kw):
+def to_fits(surface, filename, filter="TESS", **kw):
     """
     Parameters
     ----------
@@ -14,7 +14,7 @@ def to_fits(surface, filename, **kw):
 
     p = set_sim_keywords(surface)
     s = fits.table_to_hdu(surface.regions)
-    l = set_lightcurve_keywords(surface)
+    l = set_lightcurve_keywords(surface, filter=filter)
 
     hdul = fits.HDUList([p, s, l])
     with open(filename, "wb") as f:
