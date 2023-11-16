@@ -226,40 +226,74 @@ class Composite(Distribution):
     
 
 class Boolean(Distribution):
-    """docs
+    """Distribution of True (1) and False (0) values, with
+    P(True) = p
     """
     def __init__(self, p=0.5):
-        """docs
+        """Initialize Boolean distribution.
+
+        Args:
+            p (float): Probability of drawing a 1 (True).
+                Must be between 0 and 1.
         """
         super().__init__(min=0, max=1, shape="Boolean")
         assert 0 <= p <= 1, "`p` must be between 0 and 1."
         self.p = p
 
     def __repr__(self):
-        """docs
+        """Print distribution shape and "True" probability.
         """
         return f"Boolean distribution with p(True) = {self.p}"
     
     def sample(self, size=None):
+        """Sample the distribution, with optional `size` argument. 
+        `size` is passed directly to `numpy.random.choice`, so the behavior
+        matches the `numpy` behavior.
+
+        Args:
+            size (int): The number of times to sample the distribution. 
+                Defaults to None, in which case a single float is returned.
+                Otherwise, an array with length `size` is returned.
+
+        Returns:
+            sample (float or numpy.ndarray): The samples from the distribution.
+        """
         return np.random.choice(
             [1, 0], p=[self.p, 1-self.p], size=size)
     
 
 class Fixed(Distribution):
-    """docs
+    """Single value "Distribution" at value `v`.
+    Serves as a convenience function so fixed values can be included
+    in a Composite distribution.
     """
     def __init__(self, v=0):
-        """docs
+        """Initialize Fixed distribution.
+
+        Args:
+            v (float): The value of the "Distribution".
         """
         super().__init__(min=v, max=v, shape="Fixed")
         self.v = v
 
     def __repr__(self):
-        """docs
+        """Print distribution shape and value.
         """
         return f"Fixed distribution at {self.v}"
     
     def sample(self, size=None):
+        """Sample the distribution, with optional `size` argument. 
+        `size` is passed directly to `numpy.full`, so the behavior
+        matches the `numpy` behavior.
+
+        Args:
+            size (int): The number of times to sample the distribution. 
+                Defaults to None, in which case a single float is returned.
+                Otherwise, an array with length `size` is returned.
+
+        Returns:
+            sample (float or numpy.ndarray): The samples from the distribution.
+        """
         if size is None:
             return self.v
         return np.full(size, self.v)
