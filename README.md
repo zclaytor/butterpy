@@ -1,4 +1,9 @@
-# Butterpy
+# [Butterpy](https://github.com/zclaytor/butterpy)
+
+[![GitHub version](https://badge.fury.io/gh/zclaytor%2Fbutterpy.svg)](https://badge.fury.io/gh/zclaytor%2Fbutterpy)
+[![PyPI version](https://badge.fury.io/py/butterpy.svg)](https://badge.fury.io/py/butterpy)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4722052.svg)](https://doi.org/10.5281/zenodo.4722052)
+[![Paper](https://img.shields.io/badge/read-the_paper-blue)](https://ui.adsabs.harvard.edu/abs/2022ApJ...927..219C/abstract)
 
 Simulate starspot evolution and the corresponding lightcurves.
 
