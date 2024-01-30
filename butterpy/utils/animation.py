@@ -59,7 +59,7 @@ def ortho_animation(surface, time, window_size=50, fig_kw=None, **kw):
     fig.subplots_adjust(
         top=0.93, bottom=0.12, left=0.21, right=0.95, hspace=0.05)
     ax1 = fig.add_subplot(gs[0], 
-        projection=ccrs.Orthographic(0, 90 - surface.incl*180/np.pi))
+        projection=ccrs.Orthographic(0, 90 - surface.inclination*180/np.pi))
     ax2 = fig.add_subplot(gs[1])
 
     ax1.set_global()
@@ -243,7 +243,7 @@ if __name__ == "__main__":
 
     s = Surface()
     s.emerge_regions(activity_level=5, min_lat=10, max_lat=60, cycle_period=5, cycle_overlap=1)
-    s.evolve_spots(period=10, incl=45)
+    s.evolve_spots(period=10, inclination=45)
 
     s.plot_butterfly()
     anim = animate_spots(s, np.arange(100, 200, 0.5), projection="ortho")
