@@ -91,6 +91,7 @@ def ortho_animation(surface, time, window_size=50, fig_kw=None, **kw):
     ax2.set_ylabel("Relative Flux")
     ax2.vlines(0.5, color="r", ymin=0, ymax=1, transform=ax2.transAxes)
     title = fig.suptitle("", x=0.57)
+    fig.tight_layout()
     fig.align_labels()
 
     ax = (ax1, ax2)
