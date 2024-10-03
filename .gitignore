@@ -148,3 +148,6 @@ vscode
 
 # Jupyter cache
 *.ipynb_checkpoints 
+
+# Mac junk
+*.DS_Store
