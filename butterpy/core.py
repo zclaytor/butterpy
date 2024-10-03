@@ -95,10 +95,13 @@ class Surface(object):
         tau2=15,
         nlon=36,
         nlat=16,
+        tsurf=None,
+        tspot=None,
     ):     
         """
         Note:
-            You usually don't need to change the defaults for `Surface`.
+            You usually don't need to change the defaults for `Surface`,
+            except for `tsurf` and `tspot` if desired.
 
         Args:
             nbins (int): the number of discrete active region areas.
@@ -110,7 +113,8 @@ class Surface(object):
                 preexisting region's emergence.
             nlon (int): number of longitude bins in the Surface grid.
             nlat (int): number of latitude bins in the Surface grid.
-            
+            tsurf (float): ambient surface temperature in Kelvins.
+            tspot (float): spot temperature in Kelvins.
         """
         #self.areas = max_area / np.exp(delta_lnA * np.arange(nbins))
         self.nbins = nbins # number of area bins
@@ -125,6 +129,12 @@ class Surface(object):
         self.nspots = None
         self.lightcurve = None
         self.wavelet_power = None
+        
+        if tsurf is not None and tspot is not None:
+            self.tspot = tspot
+            self.tsurf = tsurf
+            self.contrast = (tspot/tsurf)**4
+
 
     def __repr__(self):
         """Representation method for Surface.
@@ -132,6 +142,9 @@ class Surface(object):
         repr = f"butterpy Surface from {type(self)} with:"
 
         repr += f"\n    {self.nlat} latitude bins by {self.nlon} longitude bins"
+
+        if self.tspot is not None:
+            repr += f"\n    Tsurf = {self.tsurf:.0f} K and Tspot = {self.tspot:.0f} (contrast = {self.contrast:.2f})"
 
         if self.regions is not None:
             repr += f"\n    N regions = {len(self.regions)}"
@@ -412,13 +425,13 @@ class Surface(object):
     def evolve_spots(
         self,
         time=None,
-        inclination=90, 
+        inclination=90,
         period=PROT_SUN,
-        shear=0.3, 
+        shear=0.3,
         diffrot_func=sin2,
         spot_func=gaussian_spots,
         tau_evol=5.0,
-        alpha_med=0.0001,       
+        alpha_med=0.0001,
         threshold=0.1,
     ):
         """
