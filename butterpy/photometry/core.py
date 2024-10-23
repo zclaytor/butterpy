@@ -6,8 +6,9 @@ set of filters.
 """
 
 import os
-import pandas as pd
 import matplotlib.pyplot as plt
+
+from astropy.io import ascii
 
 
 _root = os.path.abspath(os.path.dirname(__file__))
@@ -35,11 +36,11 @@ def get_filter(name):
     if mission.lower() == "roman":
         try:
             datapath = os.path.join(_root, "filterdata/Roman_effarea_v8_median_20240301.csv")
-            fdata = pd.read_csv(datapath, usecols=["Wave", filter.upper()])
-        except ValueError:
+            fdata = ascii.read(datapath, include_names=["Wave", filter.upper()])
+            f = Filter(fdata["Wave"].value, fdata[filter].value, name=name)
+        except KeyError:
             raise NotImplementedError(f"Filter '{name}' not implemented.")
-
-        return Filter(fdata["Wave"].values, fdata[filter].values, name=name)
+        return f
     else:
         raise NotImplementedError(f"Filter '{name}' not implemented.")
 
