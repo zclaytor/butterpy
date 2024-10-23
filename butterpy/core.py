@@ -11,9 +11,10 @@ from .utils.spotevol import gaussian_spots
 from .utils.diffrot import sin2
 from .utils.joyslaw import tilt
 from .utils.animation import animate_spots
+from .utils.blackbody import BlackBody
 from .io.pkl import to_pickle, read_pickle
 from .io.fits import to_fits
-
+from .photometry import get_filter
 
 D2S = 1*u.day.to(u.s)
 
@@ -134,24 +135,22 @@ class Surface(object):
             self.tspot = tspot
             self.tsurf = tsurf
             self.contrast = (tspot/tsurf)**4
+        else:
+            self.tspot = self.tsurf = self.contrast = None
 
 
     def __repr__(self):
         """Representation method for Surface.
         """
         repr = f"butterpy Surface from {type(self)} with:"
-
         repr += f"\n    {self.nlat} latitude bins by {self.nlon} longitude bins"
 
         if self.tspot is not None:
             repr += f"\n    Tsurf = {self.tsurf:.0f} K and Tspot = {self.tspot:.0f} (contrast = {self.contrast:.2f})"
-
         if self.regions is not None:
             repr += f"\n    N regions = {len(self.regions)}"
-
         if self.lightcurve is not None:
             repr += f"\n    lightcurve length = {len(self.time)}, duration = {self.time.max() - self.time.min()}"
-
         if self.wavelet_power is not None:
             repr += f"\n    wavelet_power shape = {self.wavelet_power.shape}"
         
@@ -508,7 +507,7 @@ class Surface(object):
         self.lightcurve = self.compute_lightcurve(time)
         return self.lightcurve
         
-    def compute_lightcurve(self, time):
+    def compute_lightcurve(self, time, filters=None):
         """
         Calculates the flux modulation for all spots.
 
@@ -523,6 +522,10 @@ class Surface(object):
                 The array of time values at which to compute the flux modulation.
                 If `None` is passed, defaults to 0.1-day cadence and duration
                 of `self.duration`: `np.arange(0, self.duration, 0.1)`.
+            filters (list):
+                The list of filter names for which to compute the flux.
+                Defaults to `None`, in which case the normalized, bolometric
+                flux is computed and returned.
 
         Returns:
             lc (LightCurve): observation times and flux modulation for all spots.        
@@ -769,28 +772,37 @@ def read_fits(filename):
     return s
 
 
-class LightCurve(object):
+class LightCurve(Table):
     """
     Most basic light curve class with time and flux attributes.
     For more mature features, use Lightkurve.
     """
-    def __init__(self, time, flux):
+    def __init__(self, time, flux, filters=None):
         """
         Initialize the light curve.
 
         Args:
             time (numpy array): array of time values corresponding to flux measurements.
             flux (numpy array): array of flux measurements.
+            filters (list): list of filter names.
         """
         self.time = time
         self.flux = flux
+        self.filters = filters
 
-    def __repr__(self):
-        """Representation method for LightCurve.
-        """
-        return repr(Table(data=[self.time, self.flux], names=["time", "flux"]))
+        if flux.ndim == 1:
+            data = (time, flux)
+        else:
+            data = (time, *flux.T)
 
-    def plot(self, time_unit=None, flux_unit=None, **kw):
+        if filters is None:
+            names = ["flux"]
+        else:
+            names = filters
+
+        super().__init__(data=data, names=["time", *names])
+
+    def plot(self, time_unit=None, flux_unit=None, show_labels=False, **kw):
         """
         Plot flux versus time.
 
@@ -806,7 +818,12 @@ class LightCurve(object):
         """
         fig, ax = plt.subplots()
 
-        ax.plot(self.time, self.flux, **kw)
+        if show_labels:
+            labels = self.filters
+        else:
+            labels = []
+
+        ax.plot(self.time, self.flux, label=self.filters, **kw)
         
         xlabel = "Time"
         if time_unit is not None:
@@ -817,5 +834,7 @@ class LightCurve(object):
             ylabel += f" ({flux_unit})"
 
         ax.set(xlabel=xlabel, ylabel=ylabel)
+        if show_labels:
+            ax.legend()
 
         return fig, ax

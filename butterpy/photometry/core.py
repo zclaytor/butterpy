@@ -26,7 +26,6 @@ class Filter:
         ax.plot(self.wavelength, self.response, **kw)
         return ax
 
-
     def __repr__(self):
         return f"{type(self)} with name '{self.name}'"
 

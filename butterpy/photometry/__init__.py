@@ -1,1 +1,1 @@
-from core import Filter, get_filter
+from .core import Filter, get_filter
