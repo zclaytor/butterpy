@@ -552,17 +552,7 @@ class Surface(object):
             flux += self.calc_i(time, i)
 
         if filters is not None:
-            output_flux = np.zeros((len(flux), len(filters)))
-            filts = [get_filter(f) for f in filters] # TODO: pass get_filter(f) a list to get one array
-            wavelength = filts[0].wavelength*1e4 # TODO: enforce units
-            ambient_bb = BlackBody(self.tsurf, wavelength)
-            spot_bb = BlackBody(self.tspot, wavelength)
-            for i, f in enumerate(filts):
-                ambient_flux = np.outer(flux, ambient_bb.flux*f.response)
-                spot_flux = np.outer(1-flux, spot_bb.flux*f.response)
-                total_flux = ambient_flux + spot_flux
-                output_flux[:, i] = np.trapz(total_flux, x=wavelength, axis=1)
-            flux = output_flux/output_flux.max()
+            flux = self.filter_flux(flux, filters)
             
         lc = LightCurve(time, flux, filters=filters)
         return lc
@@ -638,6 +628,47 @@ class Surface(object):
             return self.lat, phase, area, dF_t, 
         return dF_t
 
+    def filter_flux(self, flux, filters):
+        """
+        Takes the white light flux (analogous to the sum of areas*contrast of each spot)
+        and computes bandpass-dependent light curves corresponding to the provided filters.
+        Requires `tsurf` and `tspot` to be set.
+
+        Args:
+            flux (ndarray): the array of white light (unfiltered) flux.
+            filters (list): the list of filters for the desired light curves.
+
+        Returns:
+            filtered_flux (ndarray): array of shape (len(flux), len(filters)) representing
+                the light curve in each of the provided filters.
+
+        TODO: allow user to provide their own filter response curve.
+        """
+        # ensure the temperatures have been set
+        self.assert_temperatures()
+
+        # Initialize filtered flux array
+        filtered_flux = np.zeros((len(flux), len(filters)))
+
+        # Get filter response curves
+        filts = [get_filter(f, wavelength_unit="angstrom") for f in filters] # TODO: pass get_filter(f) a list to get one array
+
+        # Initialize blackbody curves
+        wavelength = filts[0].wavelength
+        ambient_bb = BlackBody(self.tsurf, wavelength)
+        spot_bb = BlackBody(self.tspot, wavelength)
+
+        # Loop over filters, summing ambient and spot flux
+        for i, f in enumerate(filts):
+            ambient_flux = np.outer(flux, ambient_bb.flux*f.response)
+            spot_flux = np.outer(1-flux, spot_bb.flux*f.response)
+            total_flux = ambient_flux + spot_flux
+            filtered_flux[:, i] = np.trapz(total_flux, x=wavelength, axis=1)
+
+        # Normalize filter light curves, preserving relative flux between filters
+        filtered_flux /= filtered_flux.max()
+        return filtered_flux
+
     def compute_wps(self, bin_size=None):
         """
         Computes the (optionally binned) Morlet wavelet power spectrum.
@@ -664,6 +695,12 @@ class Surface(object):
         """
         self.assert_lightcurve()
         return self.lightcurve.plot(*args, **kw)
+
+    def assert_temperatures(self):
+        """ If `tspot` and `tsurf` haven't been set, raise an error.
+        """
+        assert self.tsurf is not None, "`tsurf` has not been set."
+        assert self.tspot is not None, "`tspot` has not been set."
 
     def assert_regions(self):
         """ If `regions` hasn't been run, raise an error
