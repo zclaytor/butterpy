@@ -432,6 +432,7 @@ class Surface(object):
         tau_evol=5.0,
         alpha_med=0.0001,
         threshold=0.1,
+        filters=None
     ):
         """
         Generate initial parameter set for spots and compute light curve. 
@@ -504,7 +505,7 @@ class Surface(object):
         # scale amax to achieve desired median alpha, 
         # where alpha = spot contrast * spot area 
                 
-        self.lightcurve = self.compute_lightcurve(time)
+        self.lightcurve = self.compute_lightcurve(time, filters=filters)
         return self.lightcurve
         
     def compute_lightcurve(self, time, filters=None):
@@ -550,7 +551,20 @@ class Surface(object):
         for i in np.arange(self.nspots):
             flux += self.calc_i(time, i)
 
-        lc = LightCurve(time, flux)
+        if filters is not None:
+            output_flux = np.zeros((len(flux), len(filters)))
+            filts = [get_filter(f) for f in filters] # TODO: pass get_filter(f) a list to get one array
+            wavelength = filts[0].wavelength*1e4 # TODO: enforce units
+            ambient_bb = BlackBody(self.tsurf, wavelength)
+            spot_bb = BlackBody(self.tspot, wavelength)
+            for i, f in enumerate(filts):
+                ambient_flux = np.outer(flux, ambient_bb.flux*f.response)
+                spot_flux = np.outer(1-flux, spot_bb.flux*f.response)
+                total_flux = ambient_flux + spot_flux
+                output_flux[:, i] = np.trapz(total_flux, x=wavelength, axis=1)
+            flux = output_flux/output_flux.max()
+            
+        lc = LightCurve(time, flux, filters=filters)
         return lc
 
     def calc_i(self, time, i):
