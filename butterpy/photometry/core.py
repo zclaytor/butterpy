@@ -9,6 +9,7 @@ import os
 import matplotlib.pyplot as plt
 
 from astropy.io import ascii
+import astropy.units as u
 
 
 _root = os.path.abspath(os.path.dirname(__file__))
@@ -31,13 +32,18 @@ class Filter:
         return f"{type(self)} with name '{self.name}'"
 
 
-def get_filter(name):
+def get_filter(name, wavelength_unit="nm"):
     mission, filter = name.split(".")
+    
+    if isinstance(wavelength_unit, str):
+        wavelength_unit = u.Unit(wavelength_unit)
+
     if mission.lower() == "roman":
         try:
             datapath = os.path.join(_root, "filterdata/Roman_effarea_v8_median_20240301.csv")
             fdata = ascii.read(datapath, include_names=["Wave", filter.upper()])
-            f = Filter(fdata["Wave"].value, fdata[filter].value, name=name)
+            wavelength = fdata["Wave"].value * u.micron.to(wavelength_unit)
+            f = Filter(wavelength, fdata[filter].value, name=name)
         except KeyError:
             raise NotImplementedError(f"Filter '{name}' not implemented.")
         return f
