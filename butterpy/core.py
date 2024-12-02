@@ -12,7 +12,7 @@ from .utils.diffrot import sin2
 from .utils.joyslaw import tilt
 from .utils.animation import animate_spots
 from .utils.blackbody import BlackBody
-from .io.pkl import to_pickle, read_pickle
+# from .io.pkl import to_pickle, read_pickle
 from .io.fits import to_fits
 from .photometry import get_filter
 
@@ -766,16 +766,16 @@ class Surface(object):
         """
         return animate_spots(self, *args, **kw)
     
-    def to_pickle(self, filename):
-        """
-        Write Surface object to pickle file.
+    # def to_pickle(self, filename):
+    #     """
+    #     Write Surface object to pickle file.
 
-        Args:
-            filename (str): output file path.
+    #     Args:
+    #         filename (str): output file path.
 
-        Returns None.
-        """
-        to_pickle(self, filename)
+    #     Returns None.
+    #     """
+    #     to_pickle(self, filename)
 
     def to_fits(self, filename, filter="NONE", **kw):
         """

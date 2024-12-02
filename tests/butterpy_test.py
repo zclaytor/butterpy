@@ -2,7 +2,7 @@ import os
 import pytest
 import numpy as np
 from astropy.table import Table
-from butterpy import Surface, read_pickle, read_fits
+from butterpy import Surface, read_fits
 
 
 cwd = os.path.dirname(os.path.abspath(__file__))
@@ -54,16 +54,16 @@ def test_lightcurve(default_surface):
 # def test_plots():
 #     assert 0, "tests not yet implemented."
 
-def test_pickle(default_surface, tmp_path):
-    s = default_surface
-    fname = tmp_path / "test-surface.pkl"
-    s.to_pickle(fname)
-    sprime = read_pickle(fname)
+# def test_pickle(default_surface, tmp_path):
+#     s = default_surface
+#     fname = tmp_path / "test-surface.pkl"
+#     s.to_pickle(fname)
+#     sprime = read_pickle(fname)
 
-    for i, j in zip(s.regions.iterrows(), sprime.regions.iterrows()):
-        assert i == pytest.approx(j), "Rows from unpickled surface do not match original."
+#     for i, j in zip(s.regions.iterrows(), sprime.regions.iterrows()):
+#         assert i == pytest.approx(j), "Rows from unpickled surface do not match original."
 
-    assert s.flux == pytest.approx(sprime.flux), "Unpickled flux does not match original."
+#     assert s.flux == pytest.approx(sprime.flux), "Unpickled flux does not match original."
 
 def test_fits(default_surface, tmp_path):
     s = default_surface

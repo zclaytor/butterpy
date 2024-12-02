@@ -3,6 +3,7 @@
 
 import pickle as pk
 
+raise DeprecationWarning("The use of the `pickle` module in butterpy is deprecated. Support may be restored later.")
 
 def to_pickle(surface, filename):
     """
