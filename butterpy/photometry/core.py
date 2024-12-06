@@ -43,7 +43,7 @@ def get_filter(name, wavelength_unit="nm"):
             datapath = os.path.join(_root, "filterdata/Roman_effarea_v8_median_20240301.csv")
             fdata = ascii.read(datapath, include_names=["Wave", filter.upper()])
             wavelength = fdata["Wave"].value * u.micron.to(wavelength_unit)
-            f = Filter(wavelength, fdata[filter].value, name=name)
+            f = Filter(wavelength, fdata[filter.upper()].value, name=name)
         except KeyError:
             raise NotImplementedError(f"Filter '{name}' not implemented.")
         return f
