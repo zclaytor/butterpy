@@ -90,7 +90,7 @@ if __name__ == "__main__":
     r = s.emerge_regions(
         activity_level=1, min_lat=5, max_lat=35,
         cycle_period=3, cycle_overlap=1, ndays=3600)
-    r.write(os.path.join(cwd, "data/default_surface2.fits"))
+    r.write(os.path.join(cwd, "data/default_surface.fits"))
     
     l = s.evolve_spots(time=np.arange(0, 3600, 0.1))
-    np.save(os.path.join(cwd, "data/default_flux2.npy"), l.flux)
+    np.save(os.path.join(cwd, "data/default_flux.npy"), l.flux)
