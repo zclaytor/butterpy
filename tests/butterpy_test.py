@@ -31,6 +31,10 @@ def load_test_surface():
 def load_test_flux():
     return np.load(os.path.join(cwd, "data/default_flux.npy"))
 
+@pytest.fixture(scope="session")
+def load_test_roman_flux():
+    return np.load(os.path.join(cwd, "data/default_flux_roman.npy"))
+
 def test_regions(default_surface_regions):
     regions = default_surface_regions.regions
     assert isinstance(regions, Table), "Result of `regions` call is not an astropy Table."
@@ -82,6 +86,14 @@ def test_calc_t(default_surface):
         new_f = 1 + s._calc_t(t).sum()
         assert f == pytest.approx(new_f), "`calc_t` flux does not match expectation."
 
+def test_roman_filters(default_surface_regions, load_test_roman_flux):
+    # Note that this must come after the previous tests so as not to clobber the loaded Surface.
+    surface = default_surface_regions
+    surface.tsurf = 5800
+    surface.tspot = 4500
+    l = surface.evolve_spots(time=np.arange(0, 3600, 0.1), filters=["roman.f062", "roman.f146"])
+    l_expected = load_test_roman_flux
+    assert np.array(l) == pytest.approx(l_expected), "Roman filter light curves do not match."
 
 if __name__ == "__main__":
     # Generate test data
