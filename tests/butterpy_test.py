@@ -81,3 +81,16 @@ def test_calc_t(default_surface):
     for t, f in zip(s.time[::100], s.flux[::100]):
         new_f = 1 + s._calc_t(t).sum()
         assert f == pytest.approx(new_f), "`calc_t` flux does not match expectation."
+
+
+if __name__ == "__main__":
+    # Generate test data
+    np.random.seed(88)
+    s = Surface()
+    r = s.emerge_regions(
+        activity_level=1, min_lat=5, max_lat=35,
+        cycle_period=3, cycle_overlap=1, ndays=3600)
+    r.write(os.path.join(cwd, "data/default_surface2.fits"))
+    
+    l = s.evolve_spots(time=np.arange(0, 3600, 0.1))
+    np.save(os.path.join(cwd, "data/default_flux2.npy"), l.flux)
