@@ -41,6 +41,9 @@ def test_regions_output(default_surface_regions, load_test_surface):
     for i, j in zip(regions.iterrows(), expected.iterrows()):
         assert i == pytest.approx(j), "Rows from calculated surface do not match expectation."
 
+def test_repr(default_surface):
+    assert len(repr(default_surface)) == 181, "Surface representation is not the expected length."
+
 def test_flux(default_surface, load_test_flux):
     f_calc = default_surface.lightcurve.flux
     f_expected = load_test_flux
