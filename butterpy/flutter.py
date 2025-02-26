@@ -24,7 +24,9 @@ class Flutter(object):
         shear=Composite(
             [LogUniform(-1, -0.1), LogUniform(0.1, 1), Fixed(0)],
             weights=[0.25, 0.5, 0.25]),
-        tau_evol=LogUniform(1, 10)):
+        tau_evol=LogUniform(1, 10),
+        tsurf=None,
+        tspot=None):
         """DOCSTRING
         """
         self.duration = duration
@@ -42,6 +44,9 @@ class Flutter(object):
         self.period = period
         self.shear = shear
         self.tau_evol = tau_evol
+
+        self.tsurf = tsurf
+        self.tspot = tspot
 
         self.sample(self.n_sims)
 
@@ -72,6 +77,10 @@ class Flutter(object):
         self.DataFrame["shear"] = self.shear.sample(n_sims)
         self.DataFrame["tau_evol"] = self.tau_evol.sample(n_sims)
         self.DataFrame["butterfly"] = self.butterfly.sample(n_sims)
+
+        if self.tsurf is not None:
+            self.DataFrame["tsurf"] = self.tsurf.sample(n_sims)
+            self.DataFrame["tspot"] = self.tspot.sample(n_sims)
 
         self.DataFrame.index.name = "simulation_number"
         return self.DataFrame
