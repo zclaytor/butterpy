@@ -777,18 +777,17 @@ class Surface(object):
     #     """
     #     to_pickle(self, filename)
 
-    def to_fits(self, filename, filter="NONE", **kw):
+    def to_fits(self, filename, **kw):
         """
         Write Surface object to fits file.
 
         Args:
             filename (str): output file path.
-            filter (str): filter for photometry. Default is "NONE".
             **kw: keyword arguments to be passed to HDUList.writeto
             
         Returns None.
         """
-        to_fits(self, filename, filter=filter, **kw)
+        to_fits(self, filename, **kw)
 
 
 def read_fits(filename):
@@ -818,7 +817,7 @@ def read_fits(filename):
 
         s.regions = Table(hdul[1].data)
 
-        s.lightcurve = LightCurve(hdul[2].data["time"], hdul[2].data["flux"])
+        s.lightcurve = lightcurve_from_hdu(hdul[2])
 
     return s
 
@@ -889,3 +888,18 @@ class LightCurve(Table):
             ax.legend()
 
         return fig, ax
+    
+def lightcurve_from_hdu(hdu):
+    time = hdu.data["TIME"].astype(float)
+    
+    filters = hdu.header["FILTER"]
+    if filters == "NONE":
+        filters = None
+        flux = hdu.data["FLUX"]
+    elif filters == "MULTI":
+        filters = [hdu.header[label] for label in hdu.header if label.startswith("FILTER") and label != "FILTER"]
+        flux = hdu.data[filters]
+    else:
+        flux = hdu.data[filters]
+    
+    return LightCurve(time=time, flux=flux.astype(float), filters=filters)

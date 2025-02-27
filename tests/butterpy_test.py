@@ -88,7 +88,7 @@ def test_calc_t(default_surface):
 
 if __name__ == "__main__":
     # Generate test data
-    np.random.seed(88)
+    np.random.seed(42)
     s = Surface()
     r = s.emerge_regions(
         activity_level=1, min_lat=5, max_lat=35,
