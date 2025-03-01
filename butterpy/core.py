@@ -898,7 +898,7 @@ def lightcurve_from_hdu(hdu):
         flux = hdu.data["FLUX"]
     elif filters == "MULTI":
         filters = [hdu.header[label] for label in hdu.header if label.startswith("FILTER") and label != "FILTER"]
-        flux = hdu.data[filters]
+        flux = np.column_stack([hdu.data[f] for f in filters])
     else:
         flux = hdu.data[filters]
     

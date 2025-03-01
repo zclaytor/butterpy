@@ -108,7 +108,7 @@ def set_lightcurve_keywords(surface):
             else:
                 fmt = "02d"
             for i, f in enumerate(filters):
-                hdu.header[f"FILTER{i:{fmt}}"] = f
+                hdu.header[f"FILTER{i+1:{fmt}}"] = f
         else:
             hdu.header["FILTER"] = filters
     else:
