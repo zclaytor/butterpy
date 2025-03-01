@@ -817,6 +817,8 @@ def read_fits(filename):
         try:
             s.tsurf = hdul[0].header["TSURF"]
             s.tspot = hdul[0].header["TSPOT"]
+            s.contrast = (s.tspot/s.tsurf)**4
+
         except KeyError:
             pass
 
