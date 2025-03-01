@@ -814,6 +814,11 @@ def read_fits(filename):
         s.shear = hdul[0].header["DIFFROT"]
         s.tau_decay = hdul[0].header["TSPOT"]
         s.butterfly = hdul[0].header["BFLY"]
+        try:
+            s.tsurf = hdul[0].header["TSURF"]
+            s.tspot = hdul[0].header["TSPOT"]
+        except KeyError:
+            pass
 
         s.regions = Table(hdul[1].data)
 
