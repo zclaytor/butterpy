@@ -166,9 +166,8 @@ class Surface(object):
         max_lat=28,
         min_lat=7,
         prob_corr=0.001,
-        model_act=True,
-        set_phase=0.5
-    ):
+        vary_emergence=True,
+        ):
         """     
         Simulates the emergence and evolution of starspots. 
         Output is a Table of active regions.
@@ -191,6 +190,9 @@ class Surface(object):
             prob_corr (float, optional, default=0.001): The probability of 
                 correlated active region emergence (relative to uncorrelated 
                 emergence).
+            vary_emergence (bool, optional, default=True): Whether to vary 
+                the rate of spot emergence (True) or leave it constant at
+                the maximum (False).
 
         Returns:
             regions: astropy Table where each row is an active region with 
@@ -236,13 +238,14 @@ class Surface(object):
         self.max_lat = max_lat
         self.min_lat = min_lat
         self.prob_corr = prob_corr
+        self.vary_emergence = vary_emergence
 
         # factor from integration over bin size (I think)
-        dcon = np.exp(0.5*self.delta_lnA)- np.exp(-0.5*self.delta_lnA)
+        dcon = np.exp(0.5*self.delta_lnA) - np.exp(-0.5*self.delta_lnA)
 
         amplitude = 10*activity_level
-        ncycle = 365 * cycle_period
-        nclen = 365 * (cycle_period + cycle_overlap)
+        ncycle = 365*cycle_period
+        nclen = 365*(cycle_period + cycle_overlap)
 
         fact = np.exp(self.delta_lnA*np.arange(self.nbins)) # array of area reduction factors
         ftot = fact.sum()                   # sum of reduction factors
@@ -268,19 +271,23 @@ class Surface(object):
             index = (self.tau1 <= tau) & (tau < self.tau2)
             rc0 = np.where(index, prob_corr/(self.tau2-self.tau1), 0)
 
-            ncur = nday // ncycle # index of current active cycle
-            for icycle in [0, 1]: # loop over current and previous cycle
-                nc = ncur - icycle # index of current or previous cycle
-                nstart = ncycle*nc # start day of cycle
-                if model_act==True:
+            if self.vary_emergence or self.butterfly:
+                icycles = [0, 1]
+                ncur = nday // ncycle # index of current active cycle
+            else:
+                icycles = [0] # only one active "cycle" at a time
+
+            for icycle in icycles: # loop over current and previous cycle
+                if self.vary_emergence or self.butterfly:
+                    nc = ncur - icycle # index of current or previous cycle
+                    nstart = ncycle*nc # start day of cycle
                     phase = (nday - nstart) / nclen # phase relative to cycle start day
-                else:
-                    phase=set_phase
+                        
                 if not (0 <= phase <= 1): # phase outside of [0, 1] is nonphysical
-                    continue
+                        continue
 
                 # Determine active latitude bins
-                if butterfly:
+                if self.butterfly:
                     latavg, latrms = exponential_latitudes(min_lat, max_lat, phase)
                 else:
                     latavg, latrms = random_latitudes(min_lat, max_lat)
@@ -289,13 +296,20 @@ class Surface(object):
                 
                 # Emergence rate of largest uncorrelated regions (number per day,
                 # both hemispheres), from Shrijver and Harvey (1994)
-                ru0_tot = amplitude*np.sin(np.pi*phase)**2 * dcon/self.max_area
+                ru0_tot = amplitude*dcon/self.max_area
+
+                if self.vary_emergence:
+                    ru0_tot *= np.sin(np.pi*phase)**2
+
                 # Uncorrelated emergence rate per lat/lon bin, as function of lat
                 jlat = np.arange(self.nlat, dtype=int)
                 p = np.exp(-((l1 + dlat*(0.5+jlat) - latavg)/latrms)**2)
                 ru0 = ru0_tot*p/(p.sum()*self.nlon*2)
 
                 for k in [0, 1]: # loop over hemisphere and latitude
+                    if not self.vary_emergence and not self.butterfly:
+                        nc = k
+
                     for j in jlat:
                         r0 = ru0[j] + rc0[:, j, k] # rate per lon, lat, and hem
                         rtot = r0.sum() # rate per lat, hem
@@ -323,6 +337,7 @@ class Surface(object):
 
                             if nb == 0:
                                 tau[i, j, k] = 0
+        
         return self.regions
 
     def _add_region_cycle(self, nday, nc, lat, lon, k, bsize):
@@ -418,7 +433,7 @@ class Surface(object):
         # Compute bipole positions
         dph = 0
         dth = 0.5*bsize
-        thcen = 0.5*np.pi - lat # k determines hemisphere
+        thcen = 0.5*np.pi - lat
         phpos = phcen + dph
         phneg = phcen - dph
         thpos = thcen + dth
