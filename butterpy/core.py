@@ -243,22 +243,22 @@ class Surface(object):
         # factor from integration over bin size (I think)
         dcon = np.exp(0.5*self.delta_lnA) - np.exp(-0.5*self.delta_lnA)
 
-        amplitude = 10*activity_level
-        ncycle = 365*cycle_period
-        nclen = 365*(cycle_period + cycle_overlap)
+        amplitude = 10 * activity_level
+        ncycle = 365 * cycle_period
+        nclen = 365 * (cycle_period + cycle_overlap)
 
-        fact = np.exp(self.delta_lnA*np.arange(self.nbins)) # array of area reduction factors
+        fact = np.exp(self.delta_lnA * np.arange(self.nbins)) # array of area reduction factors
         ftot = fact.sum()                   # sum of reduction factors
-        bsiz = np.sqrt(self.max_area/fact)  # array of bipole separations (deg)
+        bsiz = np.sqrt(self.max_area / fact)  # array of bipole separations (deg)
         tau = np.zeros((self.nlon, self.nlat, 2), dtype=int) + self.tau2
         dlon = 360 / self.nlon
 
-        if butterfly:                       # Really we want spots to emerge in a
-            l1 = max(min_lat-7, 0)          # range around the average active lat,
-            l2 = min(max_lat+7, 90)         # so we bump the boundaries a bit.
+        if self.butterfly:                  # Really we want spots to emerge in a
+            l1 = max(min_lat - 7, 0)          # range around the average active lat,
+            l2 = min(max_lat + 7, 90)         # so we bump the boundaries a bit.
         else:                               
             l1, l2 = min_lat, max_lat
-        dlat = (l2-l1)/self.nlat                 
+        dlat = (l2-l1) / self.nlat                 
 
         self.regions = Table(names=('nday', 'thpos', 'phpos','thneg','phneg', 'width', 'bmax', 'ang'),
             dtype=(int, float, float, float, float, float, float, float))
@@ -269,7 +269,7 @@ class Surface(object):
             # i.e., for bsiz[0]
             tau += 1
             index = (self.tau1 <= tau) & (tau < self.tau2)
-            rc0 = np.where(index, prob_corr/(self.tau2-self.tau1), 0)
+            rc0 = np.where(index, prob_corr / (self.tau2-self.tau1), 0)
 
             if self.vary_emergence or self.butterfly:
                 icycles = [0, 1]
@@ -280,8 +280,8 @@ class Surface(object):
             for icycle in icycles: # loop over current and previous cycle
                 if self.vary_emergence or self.butterfly:
                     nc = ncur - icycle # index of current or previous cycle
-                    nstart = ncycle*nc # start day of cycle
-                    phase = (nday - nstart) / nclen # phase relative to cycle start day
+                    nstart = ncycle * nc # start day of cycle
+                    phase = (nday-nstart) / nclen # phase relative to cycle start day
                         
                 if not (0 <= phase <= 1): # phase outside of [0, 1] is nonphysical
                         continue
@@ -296,7 +296,7 @@ class Surface(object):
                 
                 # Emergence rate of largest uncorrelated regions (number per day,
                 # both hemispheres), from Shrijver and Harvey (1994)
-                ru0_tot = amplitude*dcon/self.max_area
+                ru0_tot = amplitude * dcon / self.max_area
 
                 if self.vary_emergence:
                     ru0_tot *= np.sin(np.pi*phase)**2
@@ -326,11 +326,11 @@ class Surface(object):
 
                             # determine longitude
                             i = 0
-                            sumb += (r0[0]-rtot)*fact[nb]
+                            sumb += (r0[0]-rtot) * fact[nb]
                             while x > sumb:
                                 i += 1
                                 sumb += r0[i]*fact[nb]
-                            lon = dlon*(np.random.uniform() + i)
+                            lon = dlon * (np.random.uniform() + i)
                             lat = l1 + dlat*(np.random.uniform() + j)
 
                             self._add_region_cycle(nday, nc, lat, lon, k, bsize)
