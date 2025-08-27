@@ -166,6 +166,8 @@ class Surface(object):
         max_lat=28,
         min_lat=7,
         prob_corr=0.001,
+        model_act=True,
+        set_phase=0.5
     ):
         """     
         Simulates the emergence and evolution of starspots. 
@@ -270,7 +272,10 @@ class Surface(object):
             for icycle in [0, 1]: # loop over current and previous cycle
                 nc = ncur - icycle # index of current or previous cycle
                 nstart = ncycle*nc # start day of cycle
-                phase = (nday - nstart) / nclen # phase relative to cycle start day
+                if model_act==True:
+                    phase = (nday - nstart) / nclen # phase relative to cycle start day
+                else:
+                    phase=set_phase
                 if not (0 <= phase <= 1): # phase outside of [0, 1] is nonphysical
                     continue
 
