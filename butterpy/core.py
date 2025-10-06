@@ -283,7 +283,7 @@ class Surface(object):
                     nstart = ncycle * nc # start day of cycle
                     phase = (nday-nstart) / nclen # phase relative to cycle start day
                         
-                if not (0 <= phase <= 1): # phase outside of [0, 1] is nonphysical
+                    if not (0 <= phase <= 1): # phase outside of [0, 1] is nonphysical
                         continue
 
                 # Determine active latitude bins
