@@ -11,9 +11,10 @@ from .utils.spotevol import gaussian_spots
 from .utils.diffrot import sin2
 from .utils.joyslaw import tilt
 from .utils.animation import animate_spots
-from .io.pkl import to_pickle, read_pickle
+from .utils.blackbody import BlackBody
+# from .io.pkl import to_pickle, read_pickle
 from .io.fits import to_fits
-
+from .photometry import get_filter
 
 D2S = 1*u.day.to(u.s)
 
@@ -95,10 +96,13 @@ class Surface(object):
         tau2=15,
         nlon=36,
         nlat=16,
+        tsurf=None,
+        tspot=None,
     ):     
         """
         Note:
-            You usually don't need to change the defaults for `Surface`.
+            You usually don't need to change the defaults for `Surface`,
+            except for `tsurf` and `tspot` if desired.
 
         Args:
             nbins (int): the number of discrete active region areas.
@@ -110,7 +114,8 @@ class Surface(object):
                 preexisting region's emergence.
             nlon (int): number of longitude bins in the Surface grid.
             nlat (int): number of latitude bins in the Surface grid.
-            
+            tsurf (float): ambient surface temperature in Kelvins.
+            tspot (float): spot temperature in Kelvins.
         """
         #self.areas = max_area / np.exp(delta_lnA * np.arange(nbins))
         self.nbins = nbins # number of area bins
@@ -125,20 +130,27 @@ class Surface(object):
         self.nspots = None
         self.lightcurve = None
         self.wavelet_power = None
+        
+        if tsurf is not None and tspot is not None:
+            self.tspot = tspot
+            self.tsurf = tsurf
+            self.contrast = (tspot/tsurf)**4
+        else:
+            self.tspot = self.tsurf = self.contrast = None
+
 
     def __repr__(self):
         """Representation method for Surface.
         """
         repr = f"butterpy Surface from {type(self)} with:"
-
         repr += f"\n    {self.nlat} latitude bins by {self.nlon} longitude bins"
 
+        if self.tspot is not None:
+            repr += f"\n    Tsurf = {self.tsurf:.0f} K and Tspot = {self.tspot:.0f} (contrast = {self.contrast:.2f})"
         if self.regions is not None:
             repr += f"\n    N regions = {len(self.regions)}"
-
         if self.lightcurve is not None:
             repr += f"\n    lightcurve length = {len(self.time)}, duration = {self.time.max() - self.time.min()}"
-
         if self.wavelet_power is not None:
             repr += f"\n    wavelet_power shape = {self.wavelet_power.shape}"
         
@@ -154,7 +166,8 @@ class Surface(object):
         max_lat=28,
         min_lat=7,
         prob_corr=0.001,
-    ):
+        vary_emergence=True,
+        ):
         """     
         Simulates the emergence and evolution of starspots. 
         Output is a Table of active regions.
@@ -177,6 +190,9 @@ class Surface(object):
             prob_corr (float, optional, default=0.001): The probability of 
                 correlated active region emergence (relative to uncorrelated 
                 emergence).
+            vary_emergence (bool, optional, default=True): Whether to vary 
+                the rate of spot emergence (True) or leave it constant at
+                the maximum (False).
 
         Returns:
             regions: astropy Table where each row is an active region with 
@@ -222,26 +238,27 @@ class Surface(object):
         self.max_lat = max_lat
         self.min_lat = min_lat
         self.prob_corr = prob_corr
+        self.vary_emergence = vary_emergence
 
         # factor from integration over bin size (I think)
-        dcon = np.exp(0.5*self.delta_lnA)- np.exp(-0.5*self.delta_lnA)
+        dcon = np.exp(0.5*self.delta_lnA) - np.exp(-0.5*self.delta_lnA)
 
-        amplitude = 10*activity_level
+        amplitude = 10 * activity_level
         ncycle = 365 * cycle_period
         nclen = 365 * (cycle_period + cycle_overlap)
 
-        fact = np.exp(self.delta_lnA*np.arange(self.nbins)) # array of area reduction factors
+        fact = np.exp(self.delta_lnA * np.arange(self.nbins)) # array of area reduction factors
         ftot = fact.sum()                   # sum of reduction factors
-        bsiz = np.sqrt(self.max_area/fact)  # array of bipole separations (deg)
+        bsiz = np.sqrt(self.max_area / fact)  # array of bipole separations (deg)
         tau = np.zeros((self.nlon, self.nlat, 2), dtype=int) + self.tau2
         dlon = 360 / self.nlon
 
-        if butterfly:                       # Really we want spots to emerge in a
-            l1 = max(min_lat-7, 0)          # range around the average active lat,
-            l2 = min(max_lat+7, 90)         # so we bump the boundaries a bit.
+        if self.butterfly:                  # Really we want spots to emerge in a
+            l1 = max(min_lat - 7, 0)          # range around the average active lat,
+            l2 = min(max_lat + 7, 90)         # so we bump the boundaries a bit.
         else:                               
             l1, l2 = min_lat, max_lat
-        dlat = (l2-l1)/self.nlat                 
+        dlat = (l2-l1) / self.nlat                 
 
         self.regions = Table(names=('nday', 'thpos', 'phpos','thneg','phneg', 'width', 'bmax', 'ang'),
             dtype=(int, float, float, float, float, float, float, float))
@@ -252,18 +269,25 @@ class Surface(object):
             # i.e., for bsiz[0]
             tau += 1
             index = (self.tau1 <= tau) & (tau < self.tau2)
-            rc0 = np.where(index, prob_corr/(self.tau2-self.tau1), 0)
+            rc0 = np.where(index, prob_corr / (self.tau2-self.tau1), 0)
 
-            ncur = nday // ncycle # index of current active cycle
-            for icycle in [0, 1]: # loop over current and previous cycle
-                nc = ncur - icycle # index of current or previous cycle
-                nstart = ncycle*nc # start day of cycle
-                phase = (nday - nstart) / nclen # phase relative to cycle start day
+            if self.vary_emergence or self.butterfly:
+                icycles = [0, 1]
+                ncur = nday // ncycle # index of current active cycle
+            else:
+                icycles = [0] # only one active "cycle" at a time
+
+            for icycle in icycles: # loop over current and previous cycle
+                if self.vary_emergence or self.butterfly:
+                    nc = ncur - icycle # index of current or previous cycle
+                    nstart = ncycle * nc # start day of cycle
+                    phase = (nday-nstart) / nclen # phase relative to cycle start day
+                        
                 if not (0 <= phase <= 1): # phase outside of [0, 1] is nonphysical
-                    continue
+                        continue
 
                 # Determine active latitude bins
-                if butterfly:
+                if self.butterfly:
                     latavg, latrms = exponential_latitudes(min_lat, max_lat, phase)
                 else:
                     latavg, latrms = random_latitudes(min_lat, max_lat)
@@ -272,13 +296,20 @@ class Surface(object):
                 
                 # Emergence rate of largest uncorrelated regions (number per day,
                 # both hemispheres), from Shrijver and Harvey (1994)
-                ru0_tot = amplitude*np.sin(np.pi*phase)**2 * dcon/self.max_area
+                ru0_tot = amplitude * dcon / self.max_area
+
+                if self.vary_emergence:
+                    ru0_tot *= np.sin(np.pi*phase)**2
+
                 # Uncorrelated emergence rate per lat/lon bin, as function of lat
                 jlat = np.arange(self.nlat, dtype=int)
                 p = np.exp(-((l1 + dlat*(0.5+jlat) - latavg)/latrms)**2)
                 ru0 = ru0_tot*p/(p.sum()*self.nlon*2)
 
                 for k in [0, 1]: # loop over hemisphere and latitude
+                    if not self.vary_emergence and not self.butterfly:
+                        nc = k
+
                     for j in jlat:
                         r0 = ru0[j] + rc0[:, j, k] # rate per lon, lat, and hem
                         rtot = r0.sum() # rate per lat, hem
@@ -295,17 +326,18 @@ class Surface(object):
 
                             # determine longitude
                             i = 0
-                            sumb += (r0[0]-rtot)*fact[nb]
+                            sumb += (r0[0]-rtot) * fact[nb]
                             while x > sumb:
                                 i += 1
                                 sumb += r0[i]*fact[nb]
-                            lon = dlon*(np.random.uniform() + i)
+                            lon = dlon * (np.random.uniform() + i)
                             lat = l1 + dlat*(np.random.uniform() + j)
 
                             self._add_region_cycle(nday, nc, lat, lon, k, bsize)
 
                             if nb == 0:
                                 tau[i, j, k] = 0
+        
         return self.regions
 
     def _add_region_cycle(self, nday, nc, lat, lon, k, bsize):
@@ -401,7 +433,7 @@ class Surface(object):
         # Compute bipole positions
         dph = 0
         dth = 0.5*bsize
-        thcen = 0.5*np.pi - lat # k determines hemisphere
+        thcen = 0.5*np.pi - lat
         phpos = phcen + dph
         phneg = phcen - dph
         thpos = thcen + dth
@@ -412,14 +444,15 @@ class Surface(object):
     def evolve_spots(
         self,
         time=None,
-        inclination=90, 
+        inclination=90,
         period=PROT_SUN,
-        shear=0.3, 
+        shear=0.3,
         diffrot_func=sin2,
         spot_func=gaussian_spots,
         tau_evol=5.0,
-        alpha_med=0.0001,       
+        alpha_med=0.0001,
         threshold=0.1,
+        filters=None
     ):
         """
         Generate initial parameter set for spots and compute light curve. 
@@ -492,10 +525,10 @@ class Surface(object):
         # scale amax to achieve desired median alpha, 
         # where alpha = spot contrast * spot area 
                 
-        self.lightcurve = self.compute_lightcurve(time)
+        self.lightcurve = self.compute_lightcurve(time, filters=filters)
         return self.lightcurve
         
-    def compute_lightcurve(self, time):
+    def compute_lightcurve(self, time, filters=None):
         """
         Calculates the flux modulation for all spots.
 
@@ -510,6 +543,10 @@ class Surface(object):
                 The array of time values at which to compute the flux modulation.
                 If `None` is passed, defaults to 0.1-day cadence and duration
                 of `self.duration`: `np.arange(0, self.duration, 0.1)`.
+            filters (list):
+                The list of filter names for which to compute the flux.
+                Defaults to `None`, in which case the normalized, bolometric
+                flux is computed and returned.
 
         Returns:
             lc (LightCurve): observation times and flux modulation for all spots.        
@@ -534,7 +571,10 @@ class Surface(object):
         for i in np.arange(self.nspots):
             flux += self.calc_i(time, i)
 
-        lc = LightCurve(time, flux)
+        if filters is not None:
+            flux = self.filter_flux(flux, filters)
+            
+        lc = LightCurve(time, flux, filters=filters)
         return lc
 
     def calc_i(self, time, i):
@@ -608,6 +648,47 @@ class Surface(object):
             return self.lat, phase, area, dF_t, 
         return dF_t
 
+    def filter_flux(self, flux, filters):
+        """
+        Takes the white light flux (analogous to the sum of areas*contrast of each spot)
+        and computes bandpass-dependent light curves corresponding to the provided filters.
+        Requires `tsurf` and `tspot` to be set.
+
+        Args:
+            flux (ndarray): the array of white light (unfiltered) flux.
+            filters (list): the list of filters for the desired light curves.
+
+        Returns:
+            filtered_flux (ndarray): array of shape (len(flux), len(filters)) representing
+                the light curve in each of the provided filters.
+
+        TODO: allow user to provide their own filter response curve.
+        """
+        # ensure the temperatures have been set
+        self.assert_temperatures()
+
+        # Initialize filtered flux array
+        filtered_flux = np.zeros((len(flux), len(filters)))
+
+        # Get filter response curves
+        filts = [get_filter(f, wavelength_unit="angstrom") for f in filters] # TODO: pass get_filter(f) a list to get one array
+
+        # Initialize blackbody curves
+        wavelength = filts[0].wavelength
+        ambient_bb = BlackBody(self.tsurf, wavelength)
+        spot_bb = BlackBody(self.tspot, wavelength)
+
+        # Loop over filters, summing ambient and spot flux
+        for i, f in enumerate(filts):
+            ambient_flux = np.outer(flux, ambient_bb.flux*f.response)
+            spot_flux = np.outer(1-flux, spot_bb.flux*f.response)
+            total_flux = ambient_flux + spot_flux
+            filtered_flux[:, i] = np.trapz(total_flux, x=wavelength, axis=1)
+
+        # Normalize filter light curves, preserving relative flux between filters
+        filtered_flux /= filtered_flux.max()
+        return filtered_flux
+
     def compute_wps(self, bin_size=None):
         """
         Computes the (optionally binned) Morlet wavelet power spectrum.
@@ -634,6 +715,12 @@ class Surface(object):
         """
         self.assert_lightcurve()
         return self.lightcurve.plot(*args, **kw)
+
+    def assert_temperatures(self):
+        """ If `tspot` and `tsurf` haven't been set, raise an error.
+        """
+        assert self.tsurf is not None, "`tsurf` has not been set."
+        assert self.tspot is not None, "`tspot` has not been set."
 
     def assert_regions(self):
         """ If `regions` hasn't been run, raise an error
@@ -699,29 +786,28 @@ class Surface(object):
         """
         return animate_spots(self, *args, **kw)
     
-    def to_pickle(self, filename):
-        """
-        Write Surface object to pickle file.
+    # def to_pickle(self, filename):
+    #     """
+    #     Write Surface object to pickle file.
 
-        Args:
-            filename (str): output file path.
+    #     Args:
+    #         filename (str): output file path.
 
-        Returns None.
-        """
-        to_pickle(self, filename)
+    #     Returns None.
+    #     """
+    #     to_pickle(self, filename)
 
-    def to_fits(self, filename, filter="NONE", **kw):
+    def to_fits(self, filename, **kw):
         """
         Write Surface object to fits file.
 
         Args:
             filename (str): output file path.
-            filter (str): filter for photometry. Default is "NONE".
             **kw: keyword arguments to be passed to HDUList.writeto
             
         Returns None.
         """
-        to_fits(self, filename, filter=filter, **kw)
+        to_fits(self, filename, **kw)
 
 
 def read_fits(filename):
@@ -748,36 +834,52 @@ def read_fits(filename):
         s.shear = hdul[0].header["DIFFROT"]
         s.tau_decay = hdul[0].header["TSPOT"]
         s.butterfly = hdul[0].header["BFLY"]
+        try:
+            s.tsurf = hdul[0].header["TSURF"]
+            s.tspot = hdul[0].header["TSPOT"]
+            s.contrast = (s.tspot/s.tsurf)**4
+
+        except KeyError:
+            pass
 
         s.regions = Table(hdul[1].data)
 
-        s.lightcurve = LightCurve(hdul[2].data["time"], hdul[2].data["flux"])
+        s.lightcurve = lightcurve_from_hdu(hdul[2])
 
     return s
 
 
-class LightCurve(object):
+class LightCurve(Table):
     """
     Most basic light curve class with time and flux attributes.
     For more mature features, use Lightkurve.
     """
-    def __init__(self, time, flux):
+    def __init__(self, time, flux, filters=None):
         """
         Initialize the light curve.
 
         Args:
             time (numpy array): array of time values corresponding to flux measurements.
             flux (numpy array): array of flux measurements.
+            filters (list): list of filter names.
         """
         self.time = time
         self.flux = flux
+        self.filters = filters
 
-    def __repr__(self):
-        """Representation method for LightCurve.
-        """
-        return repr(Table(data=[self.time, self.flux], names=["time", "flux"]))
+        if flux.ndim == 1:
+            data = (time, flux)
+        else:
+            data = (time, *flux.T)
 
-    def plot(self, time_unit=None, flux_unit=None, **kw):
+        if filters is None:
+            names = ["flux"]
+        else:
+            names = filters
+
+        super().__init__(data=data, names=["time", *names])
+
+    def plot(self, time_unit=None, flux_unit=None, show_labels=False, **kw):
         """
         Plot flux versus time.
 
@@ -793,7 +895,12 @@ class LightCurve(object):
         """
         fig, ax = plt.subplots()
 
-        ax.plot(self.time, self.flux, **kw)
+        if show_labels:
+            labels = self.filters
+        else:
+            labels = []
+
+        ax.plot(self.time, self.flux, label=self.filters, **kw)
         
         xlabel = "Time"
         if time_unit is not None:
@@ -804,5 +911,22 @@ class LightCurve(object):
             ylabel += f" ({flux_unit})"
 
         ax.set(xlabel=xlabel, ylabel=ylabel)
+        if show_labels:
+            ax.legend()
 
         return fig, ax
+    
+def lightcurve_from_hdu(hdu):
+    time = hdu.data["TIME"].astype(float)
+    
+    filters = hdu.header["FILTER"]
+    if filters == "NONE":
+        filters = None
+        flux = hdu.data["FLUX"]
+    elif filters == "MULTI":
+        filters = [hdu.header[label] for label in hdu.header if label.startswith("FILTER") and label != "FILTER"]
+        flux = np.column_stack([hdu.data[f] for f in filters])
+    else:
+        flux = hdu.data[filters]
+    
+    return LightCurve(time=time, flux=flux.astype(float), filters=filters)

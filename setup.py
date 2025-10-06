@@ -18,6 +18,7 @@ setup(
     license="MIT",
     python_requires="==3.*",
     packages=find_packages(),
+    install_requires=["numpy", "pandas", "matplotlib", "astropy", "cartopy"],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",

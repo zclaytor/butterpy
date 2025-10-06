@@ -1,8 +1,7 @@
 from astropy.io import fits
-from astropy.table import Table
 
 
-def to_fits(surface, filename, filter="NONE", **kw):
+def to_fits(surface, filename, **kw):
     """
     Parameters
     ----------
@@ -14,13 +13,14 @@ def to_fits(surface, filename, filter="NONE", **kw):
 
     p = set_sim_keywords(surface)
     s = fits.table_to_hdu(surface.regions)
-    l = set_lightcurve_keywords(surface, filter=filter)
+    s.name = "regions"
+    l = set_lightcurve_keywords(surface)
 
     hdul = fits.HDUList([p, s, l])
     hdul.writeto(filename, **kw)
 
 
-def to_hlsp(surface, filename, is_smarts=False, smarts_kw=None, **kw):
+def to_hlsp(surface, filename, hlsp_kw=None, **kw):
     """
     Parameters
     ----------
@@ -33,9 +33,9 @@ def to_hlsp(surface, filename, is_smarts=False, smarts_kw=None, **kw):
 
     p = fits.PrimaryHDU()
 
-    if is_smarts:
+    if hlsp_kw is not None:
         # These keywords are required for MAST HLSP
-        p = set_smarts_keywords(p, smarts_kw)
+        p = set_hlsp_keywords(p, hlsp_kw)
 
     p = set_sim_keywords(surface, hdu=p)
     l = set_lightcurve_keywords(surface)
@@ -46,8 +46,12 @@ def to_hlsp(surface, filename, is_smarts=False, smarts_kw=None, **kw):
         hdul.writeto(f, **kw)
 
 
-def set_smarts_keywords(hdu, smarts_kw):
-    sim_number = smarts_kw.pop("sim_number")
+def set_hlsp_keywords(hdu, hlsp_kw):
+    mission = hlsp_kw.pop("TELESCOP")
+    if mission not in ("TESS"):
+        raise NotImplementedError(f"Mission {mission} keywords not implemented.")
+    
+    sim_number = hlsp_kw.pop("sim_number")
     
     hdu.header["DATE-BEG"] = "2018-07-25T19:29:42.708Z", "ISO-8601 formatted DateTime for obs start"
     hdu.header["DATE-END"] = "2019-07-17T20:29:29.973Z", "ISO-8601 formatted DateTime for obs end"
@@ -64,7 +68,7 @@ def set_smarts_keywords(hdu, smarts_kw):
     hdu.header["OBSERVAT"] = "TESS", "observatory used to inform simulation"
     hdu.header["REFERENC"] = "2021arXiv210414566C", "ADS bibcode for data reference"
     hdu.header["TELAPSE"] = 357.04151926726604, "[d] time elapsed between start- and end-time"
-    hdu.header["TELESCOP"] = "TESS", "telescope used to inform simulation"
+    hdu.header["TELESCOP"] = mission, "telescope used to inform simulation"
     hdu.header["XPOSURE"] = 1800, "[s] exposure time"
     hdu.header["SIMULATD"] = True, "simulated, T (true) or F (false)"
     return hdu
@@ -83,16 +87,33 @@ def set_sim_keywords(surface, hdu=None):
     hdu.header["DIFFROT"] = surface.shear, "lat. rotation shear, normalized to equator"
     hdu.header["TSPOT"] = surface.tau_decay, "spot decay time normalized by period"
     hdu.header["BFLY"] = surface.butterfly, "spots emerge like butterfly (T) or random (F)"
+    if surface.tsurf is not None:
+        hdu.header["TSURF"] = surface.tsurf, "ambient surface temperature in K"
+        hdu.header["TSPOT"] = surface.tspot, "spot temperature in K"
     return hdu
 
-def set_lightcurve_keywords(surface, filter="TESS"):
-    time, flux = surface.time, surface.flux
+def set_lightcurve_keywords(surface):
+    lc = surface.lightcurve
     hdu = fits.BinTableHDU(
-        data=Table([time, flux], names=["time", "flux"]),
+        data=lc,
         name="lightcurve",
     )
-    hdu.header["BUNIT"] = "relative", "brightness or flux unit"
-    hdu.header["FILTER"] = filter, "name of filter used"
+    
+    filters = lc.filters
+    if filters is not None:
+        if isinstance(filters, list):
+            hdu.header["FILTER"] = "MULTI", "name of filter used"
+            if len(filters) < 10:
+                fmt = "d"
+            else:
+                fmt = "02d"
+            for i, f in enumerate(filters):
+                hdu.header[f"FILTER{i+1:{fmt}}"] = f
+        else:
+            hdu.header["FILTER"] = filters
+    else:
+        hdu.header["FILTER"] = "NONE", "name of filter used"
+    hdu.header["BUNIT"] = "RELATIVE", "brightness or flux unit"
     return hdu
 
 def set_wavelet_keywords(surface, pmin=0.1, pmax=180):

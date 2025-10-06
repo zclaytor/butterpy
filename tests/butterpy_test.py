@@ -2,7 +2,7 @@ import os
 import pytest
 import numpy as np
 from astropy.table import Table
-from butterpy import Surface, read_pickle, read_fits
+from butterpy import Surface, read_fits
 
 
 cwd = os.path.dirname(os.path.abspath(__file__))
@@ -41,6 +41,9 @@ def test_regions_output(default_surface_regions, load_test_surface):
     for i, j in zip(regions.iterrows(), expected.iterrows()):
         assert i == pytest.approx(j), "Rows from calculated surface do not match expectation."
 
+def test_repr(default_surface):
+    assert len(repr(default_surface)) == 181, "Surface representation is not the expected length."
+
 def test_flux(default_surface, load_test_flux):
     f_calc = default_surface.lightcurve.flux
     f_expected = load_test_flux
@@ -54,16 +57,16 @@ def test_lightcurve(default_surface):
 # def test_plots():
 #     assert 0, "tests not yet implemented."
 
-def test_pickle(default_surface, tmp_path):
-    s = default_surface
-    fname = tmp_path / "test-surface.pkl"
-    s.to_pickle(fname)
-    sprime = read_pickle(fname)
+# def test_pickle(default_surface, tmp_path):
+#     s = default_surface
+#     fname = tmp_path / "test-surface.pkl"
+#     s.to_pickle(fname)
+#     sprime = read_pickle(fname)
 
-    for i, j in zip(s.regions.iterrows(), sprime.regions.iterrows()):
-        assert i == pytest.approx(j), "Rows from unpickled surface do not match original."
+#     for i, j in zip(s.regions.iterrows(), sprime.regions.iterrows()):
+#         assert i == pytest.approx(j), "Rows from unpickled surface do not match original."
 
-    assert s.flux == pytest.approx(sprime.flux), "Unpickled flux does not match original."
+#     assert s.flux == pytest.approx(sprime.flux), "Unpickled flux does not match original."
 
 def test_fits(default_surface, tmp_path):
     s = default_surface
@@ -81,3 +84,16 @@ def test_calc_t(default_surface):
     for t, f in zip(s.time[::100], s.flux[::100]):
         new_f = 1 + s._calc_t(t).sum()
         assert f == pytest.approx(new_f), "`calc_t` flux does not match expectation."
+
+
+if __name__ == "__main__":
+    # Generate test data
+    np.random.seed(42)
+    s = Surface()
+    r = s.emerge_regions(
+        activity_level=1, min_lat=5, max_lat=35,
+        cycle_period=3, cycle_overlap=1, ndays=3600)
+    r.write(os.path.join(cwd, "data/default_surface.fits"))
+    
+    l = s.evolve_spots(time=np.arange(0, 3600, 0.1))
+    np.save(os.path.join(cwd, "data/default_flux.npy"), l.flux)

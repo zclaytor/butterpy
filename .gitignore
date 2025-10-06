@@ -1,6 +1,10 @@
 # Created by https://www.gitignore.io/api/python
 # Edit at https://www.gitignore.io/?templates=python
 
+diagnostics/fits/
+diagnostics/plots/
+scripts/output/
+
 ### Python ###
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -144,3 +148,6 @@ vscode
 
 # Jupyter cache
 *.ipynb_checkpoints 
+
+# Mac junk
+*.DS_Store

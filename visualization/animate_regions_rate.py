@@ -77,8 +77,8 @@ def regions(butterfly=True, activityrate=1.0, cyclelength=1.0,
     im2 = ax[1].imshow(south.T, extent=(0, 360, -maxlat, -minlat), **kw)
     fig.colorbar(im2, ax=ax[1], label="Emergence Probability Density", extend="min")
     title = fig.suptitle("day = 0")
-    ax[1].set(xlabel="Longitude (deg)", ylabel="Latitude (deg)")
-    ax[0].set(ylabel="Latitude (deg)")
+    ax[1].set(xlabel="Longitude (deg)", ylabel="Latitude (deg)", ylim=(-maxlat-5, -minlat+5))
+    ax[0].set(ylabel="Latitude (deg)", ylim=(minlat-5, maxlat+5))
     fig.tight_layout()
 
     p1 = ax[0].scatter([], [], c="w", edgecolor="k", s=1)
@@ -199,7 +199,7 @@ def add_region(nc, lon, lat, k, bsize):
 if __name__ == "__main__":
     np.random.seed(88)
     
-    r = regions(activityrate=1, minlat=20, maxlat=30, 
+    r = regions(activityrate=1, minlat=10, maxlat=30, 
         cyclelength=3, cycleoverlap=1, ndays=3600)
     
     butterfly(r)
